@@ -11,7 +11,7 @@ export async function sendCrmNotification(subject, body) {
       return; // Silently skip — notifications not configured
     }
 
-    await fetch(`http://${window.location.hostname}:8000/api/send-notification`, {
+    await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/send-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -146,7 +146,7 @@ export default function SettingsTab({ onProfileChange }) {
       return;
     }
     try {
-      const res = await fetch(`http://${window.location.hostname}:8000/api/send-notification`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/send-notification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

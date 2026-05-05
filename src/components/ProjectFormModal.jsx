@@ -35,8 +35,8 @@ export default function ProjectFormModal({ onClose, onSave, prefill = {}, existi
     setSaving(true);
     try {
       const url = isEdit
-        ? `http://${window.location.hostname}:8000/api/projects/${existingProject.id}`
-        : `http://${window.location.hostname}:8000/api/projects`;
+        ? `${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects/${existingProject.id}`
+        : `${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects`;
       const method = isEdit ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,

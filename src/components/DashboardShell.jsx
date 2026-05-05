@@ -61,9 +61,9 @@ export default function DashboardShell() {
     const fetchData = async () => {
       try {
         const [leadsRes, metricsRes, projectsRes] = await Promise.all([
-          fetch(`http://${window.location.hostname}:8000/api/leads`),
-          fetch(`http://${window.location.hostname}:8000/api/metrics`),
-          fetch(`http://${window.location.hostname}:8000/api/projects`)
+          fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/leads`),
+          fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/metrics`),
+          fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects`)
         ]);
         const leadsData = await leadsRes.json();
         const metricsData = await metricsRes.json();
@@ -91,7 +91,7 @@ export default function DashboardShell() {
 
     try {
       // Perform the database update in the background
-      const res = await fetch(`http://${window.location.hostname}:8000/api/leads/${leadId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/leads/${leadId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -105,7 +105,7 @@ export default function DashboardShell() {
           );
         }
         // Fetch new metrics in the background
-        const metricsRes = await fetch(`http://${window.location.hostname}:8000/api/metrics`);
+        const metricsRes = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/metrics`);
         const metricsData = await metricsRes.json();
         setMetrics(metricsData.map(m => ({ ...m, ...METRIC_STYLES[m.id] })));
       }

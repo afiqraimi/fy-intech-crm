@@ -45,7 +45,7 @@ export default function ProjectsTab() {
   const handleDelete = async (id) => {
     const project = projects.find(p => p.id === id);
     try {
-      await fetch(`http://${window.location.hostname}:8000/api/projects/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects/${id}`, { method: 'DELETE' });
       const remaining = projects.filter(p => p.id !== id);
       setProjects(remaining);
       setSelectedProject(remaining[0] || null);
@@ -68,7 +68,7 @@ export default function ProjectsTab() {
 
   const fetchProjects = async () => {
     try {
-      const res = await fetch(`http://${window.location.hostname}:8000/api/projects`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects`);
       const data = await res.json();
       setProjects(data);
       if (data.length > 0) setSelectedProject(data[0]);
@@ -87,7 +87,7 @@ export default function ProjectsTab() {
     setEditingStage(false);
 
     try {
-      await fetch(`http://${window.location.hostname}:8000/api/projects/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStage, last_update: today })

@@ -13,7 +13,7 @@ export default function InboundTab() {
 
   const fetchInbounds = async () => {
     try {
-      const res = await fetch(`http://${window.location.hostname}:8000/api/inbound`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/inbound`);
       const data = await res.json();
       setInbounds(data);
       if (data.length > 0 && !selectedLead) {
@@ -34,7 +34,7 @@ export default function InboundTab() {
     }
 
     try {
-      await fetch(`http://${window.location.hostname}:8000/api/inbound/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/inbound/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
