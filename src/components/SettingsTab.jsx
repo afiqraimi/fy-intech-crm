@@ -150,7 +150,7 @@ export default function SettingsTab({ onProfileChange }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to_email: prefs.notifEmail,
+          to_emails: prefs.notifEmail.split(',').map(e => e.trim()),
           smtp_email: prefs.notifSmtp,
           smtp_password: prefs.notifPassword,
           subject: 'FY Intech CRM — Test Notification',
