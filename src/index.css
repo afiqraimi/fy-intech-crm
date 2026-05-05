@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-crm-dark: #0a0a0a;
+  --color-crm-darker: #000000;
+  --color-crm-card: #121212;
+  --color-crm-border: #262626;
+  --color-crm-accent: #ffffff;
+  --color-crm-accentHover: #e5e5e5;
+  --color-crm-text: #ffffff;
+  --color-crm-textMuted: #a3a3a3;
+}
+
+body {
+  background-color: var(--color-crm-darker);
+  color: var(--color-crm-text);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: var(--color-crm-darker);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-crm-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-crm-textMuted);
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-crm-darker/40 backdrop-blur-md border border-crm-border/30 shadow-2xl;
+  }
+  .glass-panel-heavy {
+    @apply bg-crm-dark/60 backdrop-blur-lg border border-crm-border/50 shadow-2xl;
+  }
+  .hud-glow {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}

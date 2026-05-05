@@ -1,0 +1,991 @@
+ID,Company Name,Industry,Location,VR Potential Score (%),Status
+11,AirAsia,airlines/aviation,"KLIA, Malaysia",63,New
+12,SIA Engineering Company,airlines/aviation,"Singapore, Singapore",72,New
+13,ST Engineering,information technology & services,"Singapore, Singapore",63,New
+14,Quest Global,information technology & services,"Singapore, Singapore",99,New
+15,Malaysia Aviation Group,airlines/aviation,"Sepang, Malaysia",87,New
+16,Singapore Airlines,airlines/aviation,"Singapore, Singapore",74,New
+17,Turkish Aerospace Malaysia,aviation & aerospace,"Cyberjaya, Malaysia",65,New
+18,Civil Aviation Authority of Singapore,airlines/aviation,"Singapore, Singapore",82,New
+19,PETRONAS,oil & energy,"Kuala Lumpur, Malaysia",76,New
+20,MMC Oil and Gas Engineering,oil & energy,"Kuala Lumpur, Malaysia",66,New
+21,Khatib & Alami,design,"Singapore, Singapore",65,New
+22,Meta Oil & Gas,oil & energy,"Kuala Lumpur, Malaysia",76,New
+23,China Aviation Oil (Singapore) Corporation Limited,oil & energy,"Singapore, Singapore",78,New
+24,Puma Energy,oil & energy,"Singapore, Singapore",77,New
+25,Weststar Aviation Group,airlines/aviation,"Kuala Lumpur, Malaysia",73,New
+26,SME Aerospace Sdn Bhd,aviation & aerospace,"Subang, Malaysia",60,New
+27,Systematic Aviation Services Group,aviation & aerospace,"Pelabuhan Klang, Malaysia",81,New
+28,Rotary Engineering,information technology & services,"Singapore, Singapore",82,New
+29,Getz Healthcare,medical devices,"Singapore, Singapore",97,New
+30,Malaysia Marine & Heavy Engineering,oil & energy,"Kuala Lumpur, Malaysia",73,New
+31,Trafigura,oil & energy,"Singapore, Singapore",87,New
+32,Laminaar Aviation Infotech,airlines/aviation,"Singapore, Singapore",74,New
+33,BOC Aviation,airlines/aviation,"Singapore, Singapore",61,New
+34,Shopee,information technology & services,"Singapore, Singapore",62,New
+35,International SOS,hospital & health care,"Singapore, Singapore",95,New
+36,Malaysia Airports,airlines/aviation,"Sepang, Malaysia",92,New
+37,Sapura Energy Berhad,oil & energy,"Kuala Lumpur, Malaysia",86,New
+38,MHS Aviation Berhad,airlines/aviation,"Petaling Jaya, Malaysia",60,New
+39,Galaxy Aerospace (M) Sdn. Bhd.,airlines/aviation,"Shah Alam, Malaysia",93,New
+40,Dviation Group,airlines/aviation,"Shah Alam, Malaysia",71,New
+41,Sunway Construction Group Berhad,construction,"Subang Jaya, Malaysia",81,New
+42,Malaysia Airlines,airlines/aviation,"Sepang, Malaysia",63,New
+43,PETRONAS Lubricants International,oil & energy,"Kuala Lumpur, Malaysia",90,New
+44,G7 Aerospace Sdn Bhd,airlines/aviation,"Cyberjaya, Malaysia",68,New
+45,SATS Ltd.,airlines/aviation,"Singapore, Singapore",72,New
+46,Top Glove,medical devices,"Shah Alam, Malaysia",94,New
+47,Airbus Asia Training Centre (AATC),airlines/aviation,"Singapore, Singapore",61,New
+48,MODEC Offshore Production Systems (Singapore) / Offshore Frontier Solutions,oil & energy,"Singapore, Singapore",61,New
+49,Lazada,information technology & services,"Singapore, Singapore",60,New
+50,Synergy Engineering,oil & energy,"Kuala Lumpur, Malaysia",77,New
+51,ST Logistics,logistics & supply chain,"Singapore, Singapore",68,New
+52,Manpower Singapore,staffing & recruiting,"Singapore, Singapore",92,New
+53,Oil and Gas Industry,oil & energy,"Singapore, Singapore",60,New
+54,Destini Oil Services Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",71,New
+55,Bumi Armada,oil & energy,"Kuala Lumpur, Malaysia",67,New
+56,Malindo Air,airlines/aviation,"Petaling Jaya, Malaysia",60,New
+57,JGC Construction International,construction,"Singapore, Singapore",69,New
+58,Bruhat Logistics | Project Freight Forwarding,logistics & supply chain,"Singapore, Singapore",74,New
+59,Zuellig Pharma,hospital & health care,"Singapore, Singapore",80,New
+60,EP ENGINEERING SDN. BHD.,oil & energy,"Federal Territory, Malaysia",64,New
+61,Avensys Consulting,information technology & services,"Singapore, Singapore",96,New
+62,MISC Group,logistics & supply chain,"Kuala Lumpur, Malaysia",71,New
+63,Wilmar International,food production,"Singapore, Singapore",73,New
+64,HRD Corp - Human Resource Development Corporation,government administration,"Kuala Lumpur, Malaysia",96,New
+65,Toyo Engineering & Construction Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",89,New
+66,Wasco,oil & energy,"Kuala Lumpur, Malaysia",90,New
+67,IBS Software,information technology & services,"Singapore, Singapore",95,New
+68,SEPANG AIRCRAFT ENGINEERING,airlines/aviation,"Sepang, Malaysia",99,New
+69,T7 Global Berhad,oil & energy,"Kuala Lumpur, Malaysia",70,New
+70,Destini Group,aviation & aerospace,"Shah Alam, Malaysia",93,New
+71,FGV Holdings Berhad,food production,"Kuala Lumpur, Malaysia",87,New
+72,Petra Energy Berhad,oil & energy,"Petaling Jaya, Malaysia",91,New
+73,Roundtable on Sustainable Palm Oil (RSPO),nonprofit organization management,"Kuala Lumpur, Malaysia",87,New
+74,Seatrium,shipbuilding,"Singapore, Singapore",85,New
+75,Emeritus,higher education,"Singapore, Singapore",74,New
+76,Olam Agri,food production,"Singapore, Singapore",63,New
+77,SJ Group,professional training & coaching,"Singapore, Singapore",95,New
+78,Asia AeroTechnic (AAT),airlines/aviation,"Shah Alam, Malaysia",69,New
+79,RGE,paper & forest products,"Singapore, Singapore",68,New
+80,Frencken,mechanical or industrial engineering,"Singapore, Singapore",78,New
+81,IJM Corporation Berhad,construction,"Petaling Jaya, Malaysia",66,New
+82,Makino Asia Group,machinery,"Singapore, Singapore",87,New
+83,SAM Group,aviation & aerospace,"Singapore, Singapore",92,New
+84,IHH Healthcare,hospital & health care,"Kuala Lumpur, Malaysia",78,New
+85,Positivity ®,online media,"Singapore, Singapore",60,New
+86,Golden Agri-Resources (GAR),food production,"Singapore, Singapore",61,New
+87,National University of Singapore,higher education,"Singapore, Singapore",96,New
+88,Dyson,electrical/electronic manufacturing,"Singapore, Singapore",62,New
+89,Bosch ASEAN,information technology & services,"Singapore, Singapore",76,New
+90,Sime Darby,investment management,"Petaling Jaya, Malaysia",92,New
+91,YTL Construction,construction,"Kuala Lumpur, Malaysia",78,New
+92,SD Guthrie Berhad,farming,"Petaling Jaya, Malaysia",94,New
+93,MAB Engineering,airlines/aviation,"Sepang, Malaysia",99,New
+94,SHEIN,apparel & fashion,"Singapore, Singapore",98,New
+95,Ocean Network Express,logistics & supply chain,"Singapore, Singapore",77,New
+96,Grab,information technology & services,"Singapore, Singapore",79,New
+97,Jetstar Asia Airways,airlines/aviation,"Singapore, Singapore",75,New
+98,foodpanda,internet,"Singapore, Singapore",64,New
+99,DBS Bank,banking,"Singapore, Singapore",77,New
+100,Layang Layang Aerospace,aviation & aerospace,"Miri, Malaysia",93,New
+101,Straive,management consulting,"Singapore, Singapore",88,New
+102,EMAS GROUP,oil & energy,"Singapore, Singapore",64,New
+103,PERSOL APAC,human resources,"Singapore, Singapore",95,New
+104,Synergy Marine Group,maritime,"Singapore, Singapore",97,New
+105,AIROD Aerospace Technology,aviation & aerospace,"Shah Alam, Malaysia",80,New
+106,Changi Airport Group,aviation & aerospace,"Singapore, Singapore",84,New
+107,Velesto Energy Berhad,oil & energy,"Kuala Lumpur, Malaysia",97,New
+108,Muhibbah Engineering (M) BHD.,construction,"Klang, Malaysia",87,New
+109,Universiti Kuala Lumpur,education management,"Kuala Lumpur, Malaysia",95,New
+110,KPJ Healthcare Bhd,hospital & health care,"Kuala Lumpur, Malaysia",80,New
+111,Agoda,information technology & services,"Singapore, Singapore",83,New
+112,Civil Aviation Authority of Malaysia,aviation & aerospace,Malaysia,88,New
+113,PetroChina International (Singapore),oil & energy,"Singapore, Singapore",66,New
+114,Leopad Group,oil & energy,"Kuala Lumpur, Malaysia",67,New
+115,Hartalega,medical devices,"Sepang, Malaysia",97,New
+116,BW Group,maritime,"Singapore, Singapore",63,New
+117,Nanyang Technological University Singapore,higher education,"Singapore, Singapore",72,New
+118,"A*STAR - Agency for Science, Technology and Research",research,"Singapore, Singapore",65,New
+119,IMC Ship Services,maritime,"Singapore, Singapore",66,New
+120,"Atlantic, Gulf & Pacific Company (AG&P)",oil & energy,"Singapore, Singapore",78,New
+121,DRB-HICOM Berhad,automotive,"Shah Alam, Malaysia",67,New
+122,Sembcorp Marine Ltd,shipbuilding,"Singapore, Singapore",83,New
+123,Boeing Composites Malaysia,aviation & aerospace,"Bukit Kayu Hitam, Malaysia",62,New
+124,Keppel Offshore & Marine,maritime,"Singapore, Singapore",91,New
+125,PACC Offshore Services Holdings Ltd,maritime,"Singapore, Singapore",64,New
+126,Zenix Aerospace Upeca,aviation & aerospace,"Shah Alam, Malaysia",99,New
+127,Olam,food & beverages,"Singapore, Singapore",74,New
+128,Petron Malaysia Refining & Marketing Bhd,oil & energy,"Kuala Lumpur, Malaysia",85,New
+129,Nanyang Polytechnic,higher education,"Singapore, Singapore",60,New
+130,EnergyEdge - PetroEdge & PowerEdge,professional training & coaching,"Singapore, Singapore",73,New
+131,GAMUDA,construction,"Petaling Jaya, Malaysia",77,New
+132,Crypto.com,financial services,"Singapore, Singapore",83,New
+133,Antares Marine,maritime,"Singapore, Singapore",63,New
+134,Misi Setia Oil & Gas (MSOG) Sdn Bhd,oil & energy,"Semenyih, Malaysia",96,New
+135,Miclyn Express Offshore,maritime,"Singapore, Singapore",94,New
+136,Ultra Deep Solutions,oil & energy,"Singapore, Singapore",93,New
+137,Kulicke & Soffa,semiconductors,"Singapore, Singapore",65,New
+138,BASF PETRONAS Chemicals Sdn. Bhd.,chemicals,Malaysia,95,New
+139,Aesen,maritime,"Singapore, Singapore",64,New
+140,CTRM Aero Composites,airlines/aviation,"Batu Berendam, Malaysia",70,New
+141,ASMPT Ltd,semiconductors,"Singapore, Singapore",68,New
+142,NCS Group,information technology & services,"Singapore, Singapore",88,New
+143,Tenaga Nasional Berhad,utilities,"Kuala Lumpur, Malaysia",82,New
+144,Dialog Group Berhad,oil & energy,"Petaling Jaya, Malaysia",97,New
+145,Mindsprint,information technology & services,"Singapore, Singapore",82,New
+146,Aerospec Supplies Pte Ltd,aviation & aerospace,"Singapore, Singapore",83,New
+147,Asia Digital Engineering (ADE),airlines/aviation,"Sepang, Malaysia",70,New
+148,Mun Siong Engineering Limited,oil & energy,"Singapore, Singapore",71,New
+149,Traveloka,information technology & services,"Singapore, Singapore",68,New
+150,Pos Aviation (a subsidiary of Pos Malaysia),airlines/aviation,"Sepang, Malaysia",60,New
+151,Woh Hup Group,construction,"Singapore, Singapore",83,New
+152,Lidl & Kaufland Asia,retail,"Singapore, Singapore",87,New
+153,LUXASIA,luxury goods & jewelry,"Singapore, Singapore",95,New
+154,KPMG Singapore,management consulting,"Singapore, Singapore",85,New
+155,JTC Corporation,government administration,"Singapore, Singapore",85,New
+156,Digital,marketing & advertising,"Singapore, Singapore",83,New
+157,Sembcorp Industries Ltd,utilities,"Singapore, Singapore",61,New
+158,Jurong Engineering Limited,construction,"Singapore, Singapore",74,New
+159,Rensol Recruitment,staffing & recruiting,"Singapore, Singapore",99,New
+160,Temasek Polytechnic,higher education,"Singapore, Singapore",72,New
+161,Sapura Acergy Sdn.Bhd,oil & energy,"Seri Kembangan, Malaysia",62,New
+162,Building and Construction Authority Singapore,government administration,"Singapore, Singapore",77,New
+163,MGH Group,logistics & supply chain,"Singapore, Singapore",98,New
+164,Randstad Singapore,staffing & recruiting,"Singapore, Singapore",80,New
+165,Universiti Teknologi MARA,higher education,"Shah Alam, Malaysia",74,New
+166,Singapore Aero Engine Services Private Limited (SAESL),aviation & aerospace,"Singapore, Singapore",74,New
+167,ENNOVI,electrical/electronic manufacturing,"Singapore, Singapore",79,New
+168,Thome Group,maritime,"Singapore, Singapore",67,New
+169,ZALORA Group,information technology & services,"Singapore, Singapore",65,New
+170,Pos Aviation Sdn Bhd,airlines/aviation,"Sepang, Malaysia",88,New
+171,Sunway Healthcare Group,hospital & health care,"Subang Jaya, Malaysia",84,New
+172,Optimum Solutions Pte Ltd,information technology & services,"Singapore, Singapore",85,New
+173,Charterhouse Partnership | Asia,staffing & recruiting,"Singapore, Singapore",98,New
+174,UEM Edgenta Berhad,civil engineering,"Kuala Lumpur, Malaysia",72,New
+175,KodeKloud,e-learning,"Singapore, Singapore",60,New
+176,Pacific International Lines (PTE) Ltd,logistics & supply chain,"Singapore, Singapore",81,New
+177,Malaysia Airlines Academy,airlines/aviation,"Petaling Jaya, Malaysia",73,New
+178,Hibiscus Petroleum Berhad,oil & energy,"Kuala Lumpur, Malaysia",84,New
+179,RiDiK (a Subsidiary of CLPS. Nasdaq: CLPS),information technology & services,"Singapore, Singapore",61,New
+180,Noble Group,logistics & supply chain,"Singapore, Singapore",68,New
+181,JAPFA,food production,"Singapore, Singapore",97,New
+182,Sarawak Oil Palms,machinery,"Miri, Malaysia",68,New
+183,Kerry Consulting,staffing & recruiting,"Singapore, Singapore",91,New
+184,Kimly Construction Pte Ltd,construction,"Singapore, Singapore",71,New
+185,Sapura Drilling,oil & energy,"Kuala Lumpur, Malaysia",83,New
+186,Helius Technologies,information technology & services,"Singapore, Singapore",94,New
+187,Meinhardt Group,civil engineering,"Singapore, Singapore",79,New
+188,element14 Electronics,electrical/electronic manufacturing,"Singapore, Singapore",72,New
+189,EPOMS Sdn. Bhd.,oil & energy,"Petaling Jaya, Malaysia",61,New
+190,SingHealth,hospital & health care,"Singapore, Singapore",74,New
+191,UEM Group Berhad,civil engineering,"Kuala Lumpur, Malaysia",66,New
+192,MARA Corporation Sdn Bhd,investment management,"Kuala Lumpur, Malaysia",99,New
+193,Universiti Teknologi PETRONAS,higher education,"Bota, Malaysia",71,New
+194,Star Alliance,airlines/aviation,"Singapore, Singapore",97,New
+195,Admal Aviation College,airlines/aviation,"Sepang, Malaysia",88,New
+196,Altus Oil & Gas Services,oil & energy,"Singapore, Singapore",73,New
+197,MMC Corporation Berhad,investment management,"Kuala Lumpur, Malaysia",79,New
+198,XP Power,electrical/electronic manufacturing,"Singapore, Singapore",75,New
+199,CTRM Composites Engineering,aviation & aerospace,"Batu Berendam, Malaysia",83,New
+200,Vallianz Offshore Marine,maritime,"Singapore, Singapore",77,New
+201,Sabre Asia Pacific,airlines/aviation,"Singapore, Singapore",91,New
+202,AEROTREE DEFENCE & SERVICES SDN BHD,airlines/aviation,"Kuala Lumpur, Malaysia",75,New
+203,Jet Aviation (Asia Pacific) Pte Ltd,aviation & aerospace,"Singapore, Singapore",85,New
+204,Kuala Lumpur Kepong Berhad,farming,"Ipoh, Malaysia",70,New
+205,Yinson,investment management,"Kuala Lumpur, Malaysia",79,New
+206,SkillsFuture SG,government administration,"Singapore, Singapore",86,New
+207,Intellect,mental health care,"Singapore, Singapore",78,New
+208,APRIL,paper & forest products,"Singapore, Singapore",68,New
+209,DSTA,defense & space,"Singapore, Singapore",62,New
+210,Talentvis,staffing & recruiting,"Singapore, Singapore",77,New
+211,Jawatan Kosong,government administration,"Kuala Lumpur, Malaysia",92,New
+212,Venture Corporation Limited,electrical/electronic manufacturing,"Singapore, Singapore",68,New
+213,JonDavidson Pte Ltd,staffing & recruiting,"Singapore, Singapore",77,New
+214,Space Executive,staffing & recruiting,"Singapore, Singapore",72,New
+215,PRefChem,oil & energy,"Pengerang, Malaysia",85,New
+216,Altus Oil & Gas Malaysia Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",76,New
+217,TUAH,oil & energy,"Kuala Lumpur, Malaysia",78,New
+218,Singapore Aero Support Services Pte Ltd,aviation & aerospace,"Singapore, Singapore",63,New
+219,Doo Group,financial services,"Singapore, Singapore",73,New
+220,OMRON Asia Pacific,machinery,"Singapore, Singapore",81,New
+221,Cartrack,information technology & services,"Singapore, Singapore",68,New
+222,United Tec Construction Pte Ltd,construction,"Singapore, Singapore",94,New
+223,Napier Healthcare,information technology & services,"Singapore, Singapore",84,New
+224,Sime Darby Industrial Sdn Bhd,machinery,"Puchong, Malaysia",99,New
+225,Airfoil Services Sdn Bhd,aviation & aerospace,"Petaling Jaya, Malaysia",83,New
+226,Moglix,mechanical or industrial engineering,"Singapore, Singapore",99,New
+227,Swire Shipping,logistics & supply chain,"Singapore, Singapore",76,New
+228,Nimbus Marine Group,maritime,"Singapore, Singapore",65,New
+229,Q Collection,apparel & fashion,"Singapore, Singapore",65,New
+230,Process Engineering Specialists,information technology & services,"Singapore, Singapore",60,New
+231,Sime Darby Plantation,farming,"Petaling Jaya, Malaysia",90,New
+232,TDCX,outsourcing/offshoring,"Singapore, Singapore",73,New
+233,Cloud4C Services,information technology & services,"Singapore, Singapore",93,New
+234,IHH HEALTHCARE MALAYSIA,hospital & health care,"Kuala Lumpur, Malaysia",83,New
+235,Acteus Group,logistics & supply chain,"Singapore, Singapore",88,New
+236,"Murphy Oil, Malaysia",oil & energy,"Kuala Lumpur, Malaysia",65,New
+237,Pharmaniaga Berhad,pharmaceuticals,"Shah Alam, Malaysia",70,New
+238,Great Eastern,insurance,"Singapore, Singapore",79,New
+239,Singapore Polytechnic,higher education,"Singapore, Singapore",71,New
+240,Cladtek,oil & energy,"Singapore, Singapore",97,New
+241,Dynaciate Engineering Sdn Bhd,construction,"Pasir Gudang, Malaysia",76,New
+242,PT Batik Air Indonesia,airlines/aviation,"Petaling Jaya, Malaysia",73,New
+243,20Cube Logistics,logistics & supply chain,"Singapore, Singapore",78,New
+244,Antler,venture capital & private equity,"Singapore, Singapore",88,New
+245,ofi,food & beverages,"Singapore, Singapore",87,New
+246,Touch 'n Go Group,financial services,"Kuala Lumpur, Malaysia",95,New
+247,Singapore General Hospital,hospital & health care,"Singapore, Singapore",73,New
+248,Bosch Malaysia,machinery,"Petaling Jaya, Malaysia",79,New
+249,Glints,human resources,"Singapore, Singapore",86,New
+250,Mason & Co,staffing & recruiting,Malaysia,60,New
+251,The Weststar Group,automotive,"Kuala Lumpur, Malaysia",78,New
+252,Marutee,information technology & services,"Singapore, Singapore",99,New
+253,Monroe Consulting Group,staffing & recruiting,"Singapore, Singapore",89,New
+254,Powen Engineering Pte Ltd,construction,"Singapore, Singapore",87,New
+255,Sysmex Asia Pacific,medical devices,"Singapore, Singapore",62,New
+256,Sea,information technology & services,"Singapore, Singapore",94,New
+257,PSA Singapore,maritime,"Singapore, Singapore",84,New
+258,RSP,architecture & planning,"Singapore, Singapore",68,New
+259,Offshore Engineering Resources (OER) Pte Ltd,human resources,"Singapore, Singapore",89,New
+260,"Coca-Cola Beverages Singapore, Malaysia & Brunei",mechanical or industrial engineering,"Kuala Lumpur, Malaysia",75,New
+261,Wilhelmsen Ship Management,logistics & supply chain,"Singapore, Singapore",61,New
+262,Malaysian Palm Oil Council (MPOC),nonprofit organization management,"Petaling Jaya, Malaysia",62,New
+263,Maukerja Malaysia,human resources,"Kuala Lumpur, Malaysia",78,New
+264,Wah Loon Engineering Pte Ltd,construction,"Singapore, Singapore",85,New
+265,Malaysian Investment Development Authority,investment management,"Kuala Lumpur, Malaysia",84,New
+266,Enterprise Singapore,government administration,"Singapore, Singapore",79,New
+267,"e2i, Employment & Employability Institute",nonprofit organization management,"Singapore, Singapore",72,New
+268,PCI,electrical/electronic manufacturing,"Singapore, Singapore",75,New
+269,Interplex,electrical/electronic manufacturing,"Singapore, Singapore",94,New
+270,Human Resources Online,online media,"Singapore, Singapore",63,New
+271,INSTEP - Institut Teknologi Petroleum PETRONAS,oil & energy,"Kuala Terengganu, Malaysia",78,New
+272,CADIT Consultants Asia Pte Ltd,information technology & services,"Singapore, Singapore",91,New
+273,HOPE Technik,information technology & services,"Singapore, Singapore",91,New
+274,Ninja Van,transportation/trucking/railroad,"Singapore, Singapore",86,New
+275,PaxOcean,shipbuilding,"Singapore, Singapore",98,New
+276,CIMB,financial services,"Kuala Lumpur, Malaysia",63,New
+277,Shapadu Corporation,oil & energy,"Shah Alam, Malaysia",84,New
+278,Renoir Consulting,management consulting,"Singapore, Singapore",83,New
+279,Offshore Construction Specialists Pte Ltd,oil & energy,"Singapore, Singapore",71,New
+280,Synapxe,information technology & services,"Singapore, Singapore",85,New
+281,SP Manufacturing Pte Ltd.,electrical/electronic manufacturing,"Singapore, Singapore",65,New
+282,UBF Maintenance Sdn Bhd,oil & energy,"Kijal, Malaysia",86,New
+283,Zahrawi Group,medical devices,"Kuala Lumpur, Malaysia",76,New
+284,Maxeon Solar Technologies,semiconductors,"Singapore, Singapore",60,New
+285,Swire Pacific Offshore,maritime,"Singapore, Singapore",89,New
+286,CloudSEK,computer & network security,"Singapore, Singapore",86,New
+287,ELSA ENERGY,oil & energy,"Kuala Lumpur, Malaysia",93,New
+288,Caldic APAC,chemicals,"Singapore, Singapore",92,New
+289,SPEMOCEAN,oil & energy,"Singapore, Singapore",61,New
+290,Klook,information technology & services,"Singapore, Singapore",67,New
+291,Zilingo,information technology & services,"Singapore, Singapore",67,New
+292,Olympus APAC,medical devices,"Singapore, Singapore",78,New
+293,SGInnovate,venture capital & private equity,"Singapore, Singapore",69,New
+294,PSA International,logistics & supply chain,"Singapore, Singapore",74,New
+295,Kemuncak Lanai Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",98,New
+296,GoComet,logistics & supply chain,"Singapore, Singapore",61,New
+297,CapitaLand,real estate,"Singapore, Singapore",88,New
+298,Workforce Singapore,government administration,"Singapore, Singapore",91,New
+299,Balanced Engineering & Construction,information technology & services,"Singapore, Singapore",78,New
+300,Averis,outsourcing/offshoring,"Kuala Lumpur, Malaysia",68,New
+301,National University Health System,hospital & health care,"Singapore, Singapore",80,New
+302,Universiti Malaysia Pahang Al-Sultan Abdullah,higher education,"Pekan, Malaysia",96,New
+303,PRASARANA MALAYSIA BERHAD,logistics & supply chain,"Petaling Jaya, Malaysia",84,New
+304,Exasoft,information technology & services,"Singapore, Singapore",85,New
+305,NIOSH Certification Sdn Bhd,international trade & development,"Bandar Baru Bangi, Malaysia",67,New
+306,Esco,research,"Singapore, Singapore",71,New
+307,PetroSync Global Pte Ltd,oil & energy,"Singapore, Singapore",61,New
+308,Pengerang Terminals (Two) Sdn Bhd,logistics & supply chain,"Pengerang, Malaysia",67,New
+309,MOH Holdings (Singapore),hospital & health care,"Singapore, Singapore",94,New
+310,Sime Darby Property,real estate,"Petaling Jaya, Malaysia",92,New
+311,Indorama Corporation,chemicals,"Singapore, Singapore",90,New
+312,SP Group,utilities,"Singapore, Singapore",76,New
+313,Tabung Haji,financial services,"Kuala Lumpur, Malaysia",87,New
+314,Kim Heng Ltd,oil & energy,"Singapore, Singapore",82,New
+315,Ministry of Manpower,government administration,"Singapore, Singapore",66,New
+316,Scoot,airlines/aviation,"Singapore, Singapore",83,New
+317,Apeiron Bioenergy,environmental services,"Singapore, Singapore",69,New
+318,PwC Malaysia,professional training & coaching,"Kuala Lumpur, Malaysia",64,New
+319,ELITE DIGITAL LOGISTICS,logistics & supply chain,"Singapore, Singapore",62,New
+320,Britoil Offshore Services Pte Ltd,oil & energy,"Singapore, Singapore",66,New
+321,EDOTCO Group,telecommunications,"Shah Alam, Malaysia",75,New
+322,MYAirline,airlines/aviation,"Subang Jaya, Malaysia",94,New
+323,M.T.M. Ship Management,maritime,"Singapore, Singapore",73,New
+324,GTR,airlines/aviation,"Sepang, Malaysia",60,New
+325,Singapore Manufacturing Federation,nonprofit organization management,"Singapore, Singapore",89,New
+326,Resorts World Sentosa,hospitality,"Singapore, Singapore",85,New
+327,Aalst Chocolate,food production,"Singapore, Singapore",96,New
+328,TWI South East Asia,professional training & coaching,"Shah Alam, Malaysia",76,New
+329,Raya Airways,airlines/aviation,"Cyberjaya, Malaysia",62,New
+330,Straits Construction Singapore Pte Ltd,construction,"Singapore, Singapore",63,New
+331,ViTrox Corporation Berhad,electrical/electronic manufacturing,"Simpang Ampat, Malaysia",94,New
+332,Mitsubishi Power Asia Pacific,oil & energy,"Singapore, Singapore",92,New
+333,IRD Global,hospital & health care,"Singapore, Singapore",82,New
+334,Eastern Pacific Shipping Pte. Ltd.,maritime,"Singapore, Singapore",73,New
+335,TO THE NEW,information technology & services,"Singapore, Singapore",76,New
+336,FairPrice Group,retail,"Singapore, Singapore",96,New
+337,Tolaram,mechanical or industrial engineering,"Singapore, Singapore",69,New
+338,Transmedic Group,medical devices,"Singapore, Singapore",96,New
+339,Certis,security & investigations,"Singapore, Singapore",62,New
+340,SIR Ventures Sdn Bhd,airlines/aviation,"Petaling Jaya, Malaysia",96,New
+341,Mah Sing Group Berhad,real estate,"Kuala Lumpur, Malaysia",62,New
+342,The Ascott Limited,hospitality,"Singapore, Singapore",86,New
+343,Space Matrix,design,"Singapore, Singapore",83,New
+344,RedDoorz,hospitality,"Singapore, Singapore",82,New
+345,Boustead Heavy Industries Corporation Berhad,maritime,"Kuala Lumpur, Malaysia",74,New
+346,Base Maintenance Malaysia,airlines/aviation,"Petaling Jaya, Malaysia",66,New
+347,InMobi Advertising,marketing & advertising,"Singapore, Singapore",77,New
+348,Raffles Medical Group,hospital & health care,"Singapore, Singapore",81,New
+349,BIGO,information technology & services,"Singapore, Singapore",84,New
+350,Samsung Southeast Asia & Oceania,electrical/electronic manufacturing,"Singapore, Singapore",76,New
+351,GovTech Singapore,information technology & services,"Singapore, Singapore",77,New
+352,Kebabangan Petroleum Operating Company Sdn. Bhd. (KPOC),oil & energy,"Kuala Lumpur, Malaysia",93,New
+353,Avisena Healthcare,hospital & health care,"Shah Alam, Malaysia",89,New
+354,Group-IB,computer & network security,"Singapore, Singapore",92,New
+355,Yinson Production,oil & energy,"Singapore, Singapore",83,New
+356,Frasers Property Limited,real estate,"Singapore, Singapore",60,New
+357,IQVIA Asia Pacific,hospital & health care,"Singapore, Singapore",96,New
+358,Telekom Malaysia,telecommunications,"Kuala Lumpur, Malaysia",78,New
+359,KPMG Malaysia,professional training & coaching,"Petaling Jaya, Malaysia",62,New
+360,DKA Aerospace Pte. Ltd,airlines/aviation,"Singapore, Singapore",66,New
+361,Malaysian Palm Oil Board,government administration,"Kajang, Malaysia",71,New
+362,YSQ International,tobacco,"Singapore, Singapore",68,New
+363,"OBAYASHI CORPORATION, Asia-Pacific Regional Headquarters",construction,"Singapore, Singapore",76,New
+364,PIL Logistics Pte Ltd,logistics & supply chain,"Singapore, Singapore",70,New
+365,Universiti Teknologi Malaysia,higher education,"Skudai, Malaysia",95,New
+366,Ngee Ann Polytechnic,higher education,"Singapore, Singapore",98,New
+367,Achieve Group,staffing & recruiting,"Singapore, Singapore",85,New
+368,Singapore Flying College,aviation & aerospace,"Singapore, Singapore",81,New
+369,CADG,construction,"Singapore, Singapore",97,New
+370,Systems on Silicon Manufacturing Company Pte Ltd (SSMC),semiconductors,"Singapore, Singapore",75,New
+371,HOYA Surgical Optics,medical devices,"Singapore, Singapore",64,New
+372,SIRIM Berhad,research,"Shah Alam, Malaysia",81,New
+373,ESR Group,real estate,"Singapore, Singapore",64,New
+374,GIC,financial services,"Singapore, Singapore",69,New
+375,Blueleaf Energy,renewables & environment,"Singapore, Singapore",98,New
+376,Keppel FELS Ltd,oil & energy,"Singapore, Singapore",62,New
+377,Unipec Singapore Pte Ltd,oil & energy,"Singapore, Singapore",60,New
+378,Lotte Chemical Titan (M) Sdn. Bhd.,chemicals,"Petaling Jaya, Malaysia",82,New
+379,The Sparks Foundation,government administration,"Singapore, Singapore",81,New
+380,Malaysia External Trade Development Corporation (MATRADE),international trade & development,"Kuala Lumpur, Malaysia",87,New
+381,PTTEP JDX & PC JDA Joint Operations Sdn Bhd (PPJO),oil & energy,"Kuala Lumpur, Malaysia",80,New
+382,CrimsonLogic,information technology & services,"Singapore, Singapore",84,New
+383,Kuok Group Singapore,investment management,"Singapore, Singapore",60,New
+384,Hafnia,maritime,"Singapore, Singapore",77,New
+385,Asia Projects Engineering Pte. Ltd.,mechanical or industrial engineering,"Singapore, Singapore",98,New
+386,SCIENTE,information technology & services,"Singapore, Singapore",71,New
+387,OBAYASHI SINGAPORE PRIVATE LIMITED,construction,"Singapore, Singapore",80,New
+388,Yeo Hiap Seng (Yeo’s),food & beverages,"Singapore, Singapore",75,New
+389,ABI,oil & energy,"Singapore, Singapore",72,New
+390,YLL Offshore Services,oil & energy,"Singapore, Singapore",97,New
+391,Carigali-PTTEPI Operating Company Sdn Bhd,oil & energy,Malaysia,86,New
+392,Sunningdale Tech Ltd,plastics,"Singapore, Singapore",75,New
+393,Vinda SEA,mechanical or industrial engineering,"Kapar, Malaysia",91,New
+394,NHG Health,hospital & health care,"Singapore, Singapore",61,New
+395,Maker Lab,marketing & advertising,"Singapore, Singapore",66,New
+396,SharkNinja APAC,electrical/electronic manufacturing,"Singapore, Singapore",89,New
+397,Millennium Hotels and Resorts,hospitality,"Singapore, Singapore",82,New
+398,CTRM Aviation Sdn Bhd,airlines/aviation,"Batu Berendam, Malaysia",64,New
+399,Carigali Hess Operating Company Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",85,New
+400,Republic Polytechnic,higher education,"Singapore, Singapore",93,New
+401,Sealand – A Maersk Company,transportation/trucking/railroad,"Singapore, Singapore",96,New
+402,Tan Tock Seng Hospital,hospital & health care,"Singapore, Singapore",69,New
+403,Ferrotec Manufacturing Malaysia,semiconductors,"Kulim, Malaysia",94,New
+404,Hallin Marine,oil & energy,"Singapore, Singapore",87,New
+405,PEOPLE PROFILERS,staffing & recruiting,"Singapore, Singapore",99,New
+406,Ranosys,information technology & services,"Singapore, Singapore",80,New
+407,TMM Engineering Services Sdn. Bhd.,oil & energy,"Kijal, Malaysia",75,New
+408,Jurong Port,logistics & supply chain,"Singapore, Singapore",76,New
+409,SK Energy International,oil & energy,"Singapore, Singapore",63,New
+410,First Resources Ltd.,farming,"Singapore, Singapore",78,New
+411,Strategic Marine,shipbuilding,"Singapore, Singapore",83,New
+412,Sapura Baker Hughes TPS Sdn Bhd,oil & energy,"Shah Alam, Malaysia",75,New
+413,DELEUM,oil & energy,"Kuala Lumpur, Malaysia",65,New
+414,Jebsen & Jessen Group,international trade & development,"Singapore, Singapore",87,New
+415,Emerald Clinical,research,"Singapore, Singapore",60,New
+416,Petroleum Sarawak Berhad,oil & energy,"Kuching, Malaysia",82,New
+417,Singapore Management University,higher education,"Singapore, Singapore",64,New
+418,Institute of Technical Education,higher education,"Singapore, Singapore",69,New
+419,Menarini Asia-Pacific,pharmaceuticals,"Singapore, Singapore",98,New
+420,ROTORTRADE,aviation & aerospace,"Singapore, Singapore",74,New
+421,GE Vernova in Asia,environmental services,"Singapore, Singapore",69,New
+422,Dart Global Logistics,logistics & supply chain,"Singapore, Singapore",94,New
+423,NIPSEA Group I Nippon Paint,chemicals,"Singapore, Singapore",79,New
+424,Cekap Technical Services Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",67,New
+425,Tiong Woon Corporation Holding Ltd,transportation/trucking/railroad,"Singapore, Singapore",86,New
+426,Duopharma Biotech Berhad,pharmaceuticals,"Kuala Lumpur, Malaysia",84,New
+427,The Straits Times,publishing,"Singapore, Singapore",95,New
+428,Hanwha Offshore Singapore,oil & energy,"Singapore, Singapore",83,New
+429,PLUS Malaysia,consumer services,"Petaling Jaya, Malaysia",91,New
+430,Sustainability Economics.ai,information technology & services,"Singapore, Singapore",95,New
+431,Mapletree,real estate,"Singapore, Singapore",76,New
+432,Uzma Group,oil & energy,"Petaling Jaya, Malaysia",65,New
+433,Maxis,telecommunications,"Kuala Lumpur, Malaysia",73,New
+434,MRCB,construction,"Kuala Lumpur, Malaysia",98,New
+435,HMI Managed Healthcare,"health, wellness & fitness","Singapore, Singapore",75,New
+436,CHI - Centre for Healthcare Innovation,hospital & health care,"Singapore, Singapore",90,New
+437,Bachy Soletanche Singapore,construction,"Singapore, Singapore",99,New
+438,Hi-P International,electrical/electronic manufacturing,"Singapore, Singapore",95,New
+439,Proton,automotive,"Subang Jaya, Malaysia",74,New
+440,Pentamaster Corporation Berhad (Official),semiconductors,"Bayan Lepas, Malaysia",84,New
+441,Suruhanjaya Perkhidmatan Awam Malaysia (SPA),government administration,"Putrajaya, Malaysia",69,New
+442,Kajima (Malaysia) Sdn. Bhd.,construction,"Kuala Lumpur, Malaysia",82,New
+443,Maritime and Port Authority of Singapore (MPA),maritime,"Singapore, Singapore",98,New
+444,DP Architects,architecture & planning,"Singapore, Singapore",95,New
+445,Marina Bay Sands,hospitality,"Singapore, Singapore",98,New
+446,HIAP SENG ENGINEERING LTD,construction,"Singapore, Singapore",78,New
+447,Xepa-Soul Pattinson (Malaysia) Sdn Bhd,pharmaceuticals,"Cheng, Malaysia",95,New
+448,APACS - Asia Pacific Aircraft Component Services Sdn Bhd,airlines/aviation,"Shah Alam, Malaysia",73,New
+449,Hengyuan Refining Company Berhad,oil & energy,"Port Dickson, Malaysia",92,New
+450,TURCOMP BMB SDN BHD,machinery,"Shah Alam, Malaysia",98,New
+451,Novugen,pharmaceuticals,"Shah Alam, Malaysia",64,New
+452,CXC,human resources,"Singapore, Singapore",94,New
+453,PETRONAS Chemicals Group Berhad (PCG),oil & energy,"Kuala Lumpur, Malaysia",88,New
+454,LexCorp Industries Norge,aviation & aerospace,"Singapore, Singapore",89,New
+455,Cutech Group,oil & energy,"Singapore, Singapore",63,New
+456,HAS International,airlines/aviation,"Subang Jaya, Malaysia",65,New
+457,NTT DATA Asia Pacific,information technology & services,"Singapore, Singapore",87,New
+458,Kingfisher HR Solutions Group,staffing & recruiting,"Singapore, Singapore",88,New
+459,Malaysia Healthcare Travel Council,hospital & health care,"Kuala Lumpur, Malaysia",79,New
+460,Clearpack Group,machinery,"Singapore, Singapore",73,New
+461,Universiti Putra Malaysia,higher education,"Serdang, Malaysia",66,New
+462,Arth,construction,"Singapore, Singapore",92,New
+463,Filtrona,mechanical or industrial engineering,"Singapore, Singapore",78,New
+464,National University Hospital,hospital & health care,"Singapore, Singapore",65,New
+465,ENGIE South East Asia,utilities,"Singapore, Singapore",83,New
+466,ZEE Engineering Group,oil & energy,"Petaling Jaya, Malaysia",72,New
+467,Asia Pacific University of Technology and Innovation (APU / APIIT),higher education,"Kuala Lumpur, Malaysia",75,New
+468,CFLD International,real estate,"Singapore, Singapore",73,New
+469,Goodpack,logistics & supply chain,"Singapore, Singapore",83,New
+470,Pacific Radiance Ltd,maritime,"Singapore, Singapore",63,New
+471,Vena Group,renewables & environment,"Singapore, Singapore",95,New
+472,AERODYNE GROUP,aviation & aerospace,"Cyberjaya, Malaysia",77,New
+473,PKT Logistics Group Sdn Bhd,logistics & supply chain,"Shah Alam, Malaysia",88,New
+474,Malaysia Rapid Transit Corporation Sdn Bhd (MRT Corp),construction,"Kuala Lumpur, Malaysia",94,New
+475,U3 Infotech,information technology & services,"Singapore, Singapore",61,New
+476,Gulf Marine,oil & energy,"Singapore, Singapore",99,New
+477,Anchanto,information technology & services,"Singapore, Singapore",67,New
+478,EPIC Berhad,oil & energy,"Teluk Kalong, Malaysia",66,New
+479,Accord Innovations,information technology & services,"Singapore, Singapore",84,New
+480,Sime Motors,automotive,Malaysia,83,New
+481,Aditya Birla Global Trading (formerly Swiss Singapore),international trade & development,"Singapore, Singapore",71,New
+482,Duke-NUS Medical School,higher education,"Singapore, Singapore",76,New
+483,SeaLead,logistics & supply chain,"Singapore, Singapore",94,New
+484,Navig8 Group,maritime,"Singapore, Singapore",60,New
+485,MIMS Pte Ltd,hospital & health care,"Singapore, Singapore",65,New
+486,Manufacturing Integration Technology Ltd,machinery,"Singapore, Singapore",92,New
+487,YCH Group,logistics & supply chain,"Singapore, Singapore",98,New
+488,BP Healthcare Group,hospital & health care,"Shah Alam, Malaysia",79,New
+489,KCPL,oil & energy,"Singapore, Singapore",75,New
+490,NYK SHIPMANAGEMENT PTE LTD,maritime,"Singapore, Singapore",73,New
+491,Singapore Post,logistics & supply chain,"Singapore, Singapore",66,New
+492,Port of Tanjung Pelepas,maritime,"Gelang Patah, Malaysia",80,New
+493,SD Guthrie International,international trade & development,"Petaling Jaya, Malaysia",99,New
+494,Bluewhale Offshore,oil & energy,"Singapore, Singapore",62,New
+495,AAL Shipping,maritime,"Singapore, Singapore",85,New
+496,Ministry of Health (Singapore),government administration,"Singapore, Singapore",73,New
+497,S P Setia,real estate,"Shah Alam, Malaysia",67,New
+498,Technical University of Munich (TUM) Asia,higher education,"Singapore, Singapore",63,New
+499,WCT Holdings Berhad,construction,"Petaling Jaya, Malaysia",98,New
+500,Talent Corporation Malaysia Berhad (TalentCorp),government relations,"Petaling Jaya, Malaysia",92,New
+501,FUJIFILM Healthcare Asia Pacific,medical devices,"Singapore, Singapore",84,New
+502,Fuji Electric (Malaysia) Sdn. Bhd.,semiconductors,"Kulim, Malaysia",66,New
+503,Temus,management consulting,"Singapore, Singapore",63,New
+504,Teleport,logistics & supply chain,"Kuala Lumpur, Malaysia",65,New
+505,Malaysia Digital Economy Corporation (MDEC),government relations,"Cyberjaya, Malaysia",82,New
+506,National Trades Union Congress (NTUC),nonprofit organization management,"Singapore, Singapore",76,New
+507,Ngai Chin Construction Pte Ltd,construction,"Singapore, Singapore",74,New
+508,Land Transport Authority (LTA) Singapore,government administration,"Singapore, Singapore",91,New
+509,GreyB,management consulting,"Singapore, Singapore",99,New
+510,FIBS Logistics,logistics & supply chain,"Singapore, Singapore",86,New
+511,Fong’s Engineering and Manufacturing Pte Ltd,medical devices,"Singapore, Singapore",96,New
+512,Pan Pacific Hotels Group,hospitality,"Singapore, Singapore",79,New
+513,YTL Corporation Bhd,construction,"Kuala Lumpur, Malaysia",68,New
+514,GLP,real estate,"Singapore, Singapore",86,New
+515,HRSB Holdings Sdn Bhd,oil & energy,"Masjid Tanah, Malaysia",80,New
+516,Oceancare Corporation Sdn. Bhd. (Official),outsourcing/offshoring,"Miri, Malaysia",98,New
+517,TUFF,oil & energy,"Singapore, Singapore",89,New
+518,NAIM Holdings Berhad,real estate,"Kuching, Malaysia",67,New
+519,Pteris Global Limited,airlines/aviation,"Singapore, Singapore",82,New
+520,Manus AI,information technology & services,"Singapore, Singapore",82,New
+521,Thome Offshore Management Pte Ltd,maritime,"Singapore, Singapore",84,New
+522,Jadestone Energy,oil & energy,"Singapore, Singapore",69,New
+523,ADA,management consulting,"Singapore, Singapore",80,New
+524,ALPS Pte. Ltd.,logistics & supply chain,"Singapore, Singapore",96,New
+525,Alliance to End Plastic Waste,environmental services,"Singapore, Singapore",87,New
+526,IMDA,government administration,"Singapore, Singapore",93,New
+527,World Cargo Airlines (WCA),airlines/aviation,"Dengkil, Malaysia",82,New
+528,Scomi Group Bhd,oil & energy,"Petaling Jaya, Malaysia",75,New
+529,Vance Bioenergy Sdn. Bhd.,chemicals,"Pasir Gudang, Malaysia",61,New
+530,Mirxes,research,"Singapore, Singapore",75,New
+531,HHA ASSOCIATES SDN BHD,oil & energy,"Kuala Lumpur, Malaysia",64,New
+532,iNova Pharmaceuticals,pharmaceuticals,"Singapore, Singapore",90,New
+533,Hovid Bhd,pharmaceuticals,"Ipoh, Malaysia",83,New
+534,Tokio Marine Insurance Group (Asia),insurance,"Singapore, Singapore",75,New
+535,Pengerang Terminals Sdn Bhd,logistics & supply chain,"Pengerang, Malaysia",63,New
+536,Doctor Anywhere,hospital & health care,"Singapore, Singapore",61,New
+537,Milvik Bima,consumer services,"Singapore, Singapore",82,New
+538,HMI Medical,hospital & health care,"Singapore, Singapore",84,New
+539,Pecca Group Berhad,mechanical or industrial engineering,"Kuala Lumpur, Malaysia",69,New
+540,CoverGo | Insurtech,insurance,"Singapore, Singapore",60,New
+541,Mindvalley,e-learning,"Kuala Lumpur, Malaysia",64,New
+542,Singapore Institute of Management,government administration,"Singapore, Singapore",98,New
+543,Melorita Healthcare,staffing & recruiting,"Petaling Jaya, Malaysia",83,New
+544,VME,oil & energy,"Puchong, Malaysia",93,New
+545,Executive Offshore,oil & energy,"Singapore, Singapore",67,New
+546,Pioneer Engineering Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",66,New
+547,Asia Infrastructure Solutions,construction,"Singapore, Singapore",98,New
+548,Singapore Component Solutions,airlines/aviation,"Singapore, Singapore",70,New
+549,Sunway Medical Centre,hospital & health care,"Subang Jaya, Malaysia",95,New
+550,Bitdeer (NASDAQ: BTDR),information technology & services,"Singapore, Singapore",79,New
+551,Pavilion Energy,oil & energy,"Singapore, Singapore",96,New
+552,Agrocorp International,international trade & development,"Singapore, Singapore",71,New
+553,UEM Sunrise Berhad,real estate,"Kuala Lumpur, Malaysia",92,New
+554,PRISM+,electrical/electronic manufacturing,"Singapore, Singapore",95,New
+555,Universiti Sains Malaysia,higher education,"Gelugor, Malaysia",84,New
+556,NS BlueScope,building materials,"Singapore, Singapore",74,New
+557,NTUC LearningHub,professional training & coaching,"Singapore, Singapore",75,New
+558,GASOFFSHORE,staffing & recruiting,"Miri, Malaysia",92,New
+559,FatHopes Energy,renewables & environment,"Petaling Jaya, Malaysia",89,New
+560,Ministry of Defence of Singapore,government administration,"Singapore, Singapore",64,New
+561,Carimin Sdn. Bhd.,oil & energy,"Kuala Lumpur, Malaysia",98,New
+562,Eruditus,government administration,"Singapore, Singapore",75,New
+563,Malaysia Board of Technologists,nonprofit organization management,"Putrajaya, Malaysia",72,New
+564,nSearch Global,information technology & services,"Singapore, Singapore",78,New
+565,The Business Times,publishing,"Singapore, Singapore",71,New
+566,EFTECH Energy Solutions,oil & energy,"Kuala Lumpur, Malaysia",93,New
+567,PAPE Engineering Pte Ltd,oil & energy,"Singapore, Singapore",75,New
+568,Avetics Global,mechanical or industrial engineering,"Singapore, Singapore",98,New
+569,Yokogawa ASEAN,machinery,"Singapore, Singapore",82,New
+570,Singapore Institute of Technology,higher education,"Singapore, Singapore",63,New
+571,Synagie Group Asia & Europe,information technology & services,"Singapore, Singapore",80,New
+572,Fonda Global Engineering Pte Ltd,civil engineering,"Singapore, Singapore",86,New
+573,Jardine Engineering (Singapore) Pte Ltd,information technology & services,"Singapore, Singapore",92,New
+574,AET,maritime,"Singapore, Singapore",64,New
+575,ENEOS Xplora Malaysia Limited,oil & energy,"Kuala Lumpur, Malaysia",62,New
+576,Circles,information technology & services,"Singapore, Singapore",99,New
+577,Ranhill Worley Sdn Bhd,oil & energy,Malaysia,83,New
+578,Ministry of Trade and Industry (Singapore),international trade & development,"Singapore, Singapore",76,New
+579,ZUS COFFEE,food & beverages,"Shah Alam, Malaysia",70,New
+580,UTOC Engineering Pte Ltd,machinery,"Singapore, Singapore",62,New
+581,Minconsult Sdn Bhd,civil engineering,"Petaling Jaya, Malaysia",65,New
+582,Recruit Express Group,human resources,"Singapore, Singapore",60,New
+583,Nera Telecommunications Ltd,information technology & services,"Singapore, Singapore",80,New
+584,AIA Singapore,insurance,"Singapore, Singapore",99,New
+585,AI Singapore,information technology & services,"Singapore, Singapore",84,New
+586,Tanoto Foundation,nonprofit organization management,"Singapore, Singapore",87,New
+587,Pacific Basin Shipping Limited,maritime,"Singapore, Singapore",87,New
+588,PetroChina International,oil & energy,"Singapore, Singapore",67,New
+589,Chiyoda Singapore (Pte) Ltd,oil & energy,"Singapore, Singapore",79,New
+590,Serba Dinamik,oil & energy,"Shah Alam, Malaysia",99,New
+591,DAR Energy Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",87,New
+592,Samudera Shipping Line Ltd,maritime,"Singapore, Singapore",69,New
+593,BPE Energy Sdn Bhd 𝘧𝘰𝘳𝘮𝘦𝘳𝘭𝘺 𝘬𝘯𝘰𝘸𝘯 𝘢𝘴 𝘉𝘗𝘌 𝘌𝘯𝘨𝘪𝘯𝘦𝘦𝘳𝘪𝘯𝘨 & 𝘚𝘦𝘳𝘷𝘪𝘤𝘦s,renewables & environment,"Ampang, Malaysia",85,New
+594,DSO National Laboratories,defense & space,"Singapore, Singapore",93,New
+595,R&B Switchgear Group,electrical/electronic manufacturing,"Singapore, Singapore",65,New
+596,Neurones IT Asia,information technology & services,"Singapore, Singapore",90,New
+597,Agency for Integrated Care (Singapore),hospital & health care,"Singapore, Singapore",90,New
+598,Verticurl,marketing & advertising,"Singapore, Singapore",65,New
+599,MMC Engineering,construction,"Kuala Lumpur, Malaysia",89,New
+600,Morimatsu Dialog (Malaysia),oil & energy,"Pengerang, Malaysia",88,New
+601,MMC-Gamuda,construction,"Petaling Jaya, Malaysia",88,New
+602,JGC ASIA PACIFIC PTE. LTD.,construction,"Singapore, Singapore",87,New
+603,Ahmad Zaki Resources Berhad (AZRB),construction,"Kuala Lumpur, Malaysia",77,New
+604,Genting Plantations,farming,"Kuala Lumpur, Malaysia",67,New
+605,Toyota Malaysia,automotive,"Shah Alam, Malaysia",91,New
+606,Yayasan Peneraju,education management,"Kuala Lumpur, Malaysia",99,New
+607,m,aviation & aerospace,"Singapore, Singapore",99,New
+608,ESCATEC - Providers of Electronic Manufacturing Services,electrical/electronic manufacturing,"Bayan Lepas, Malaysia",72,New
+609,Nextyn,information services,"Singapore, Singapore",93,New
+610,Axiata,telecommunications,"Kuala Lumpur, Malaysia",64,New
+611,Sumitomo Mitsui Banking Corporation (SMBC) Asia Pacific,banking,"Singapore, Singapore",61,New
+612,Changi General Hospital,hospital & health care,"Singapore, Singapore",64,New
+613,Heriot-Watt University Malaysia,education management,Malaysia,96,New
+614,SIRIM QAS International,international trade & development,"Shah Alam, Malaysia",90,New
+615,Cantier Systems,information technology & services,"Singapore, Singapore",87,New
+616,GREATECH TECHNOLOGY BERHAD,machinery,"Bayan Lepas, Malaysia",76,New
+617,Universiti Tun Hussein Onn Malaysia,higher education,"Parit Raja, Malaysia",68,New
+618,Star Media Group Berhad,publishing,"Petaling Jaya, Malaysia",89,New
+619,Two Offshore Marine Sdn. Bhd.,oil & energy,"Kuala Lumpur, Malaysia",76,New
+620,SMRT Corporation Ltd,transportation/trucking/railroad,"Singapore, Singapore",73,New
+621,Guthrie Engineering (S) Pte Ltd,construction,"Singapore, Singapore",96,New
+622,SleekFlow,information technology & services,"Singapore, Singapore",86,New
+623,AmBank Group,financial services,"Kuala Lumpur, Malaysia",75,New
+624,Secretlab,mechanical or industrial engineering,"Singapore, Singapore",91,New
+625,KARGO XPRESS (M JETS INTERNATIONAL),airlines/aviation,"Petaling Jaya, Malaysia",77,New
+626,Teambuild Construction Group,construction,"Singapore, Singapore",63,New
+627,51Talk,e-learning,"Singapore, Singapore",76,New
+628,"Tremco Construction Products Group, Asia Pacific",construction,"Singapore, Singapore",81,New
+629,Panasonic Asia Pacific,electrical/electronic manufacturing,"Singapore, Singapore",70,New
+630,National University of Malaysia (UKM),higher education,"Bangi, Malaysia",88,New
+631,BW LPG,maritime,"Singapore, Singapore",69,New
+632,NETS,financial services,"Singapore, Singapore",84,New
+633,CMC Engineering Sdn Bhd,telecommunications,"Ampang, Malaysia",88,New
+634,Motul Asia Pacific,oil & energy,"Singapore, Singapore",78,New
+635,Mi Equipment,semiconductors,"Bayan Lepas, Malaysia",82,New
+636,MGB Berhad,construction,"Petaling Jaya, Malaysia",93,New
+637,FPSO Ventures,oil & energy,"Kuala Lumpur, Malaysia",81,New
+638,Aster,chemicals,"Singapore, Singapore",76,New
+639,"Love, Bonito",apparel & fashion,"Singapore, Singapore",84,New
+640,Watsons Singapore,retail,"Singapore, Singapore",75,New
+641,Berge Bulk,maritime,"Singapore, Singapore",81,New
+642,Singapore Jobs,marketing & advertising,"Singapore, Singapore",78,New
+643,Beam Mobility,consumer services,"Singapore, Singapore",86,New
+644,Hubble.Build,information technology & services,"Singapore, Singapore",63,New
+645,Perbadanan Usahawan Nasional Berhad (PUNB),financial services,"Kuala Lumpur, Malaysia",91,New
+646,Asian Technology Solutions,information technology & services,"Singapore, Singapore",73,New
+647,Vestigo Petroleum Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",62,New
+648,Fraser & Neave Holdings Bhd (F&N),food & beverages,"Shah Alam, Malaysia",75,New
+649,PERTUBUHAN KESELAMATAN SOSIAL (PERKESO),government relations,"Kuala Lumpur, Malaysia",80,New
+650,ICE Petroleum,oil & energy,Malaysia,74,New
+651,Gear Inc.,outsourcing/offshoring,"Singapore, Singapore",93,New
+652,DyStar,chemicals,"Singapore, Singapore",95,New
+653,Public Works Department Malaysia [Jabatan Kerja Raya Malaysia],civil engineering,"Kuala Lumpur, Malaysia",90,New
+654,Sime Darby Motors,automotive,"Petaling Jaya, Malaysia",73,New
+655,Pan-United Corporation,construction,"Singapore, Singapore",84,New
+656,UTAC,semiconductors,"Singapore, Singapore",78,New
+657,Structo,machinery,"Singapore, Singapore",98,New
+658,ADVANCE.AI,information technology & services,"Singapore, Singapore",67,New
+659,IMU University,higher education,Malaysia,82,New
+660,Novade Solutions,information technology & services,"Singapore, Singapore",95,New
+661,Halcon Primo Logistics,logistics & supply chain,"Singapore, Singapore",73,New
+662,BMW Group Malaysia,automotive,"Cyberjaya, Malaysia",84,New
+663,VentureBlick,"health, wellness & fitness","Singapore, Singapore",73,New
+664,"Ministry of Education, Singapore (MOE)",education management,"Singapore, Singapore",73,New
+665,Experian Asia Pacific,information services,"Singapore, Singapore",71,New
+666,YCP,management consulting,"Singapore, Singapore",67,New
+667,Workfall,information technology & services,"Singapore, Singapore",63,New
+668,Beyonics Pte Ltd,machinery,"Singapore, Singapore",75,New
+669,Rwna Engineering Sdn Bhd,oil & energy,Malaysia,77,New
+670,Sengkang General Hospital,hospital & health care,"Singapore, Singapore",97,New
+671,Multimedia University,higher education,"Cyberjaya, Malaysia",90,New
+672,Siong Construction & Engineering Pte Ltd,civil engineering,"Singapore, Singapore",84,New
+673,Lazada Logistics Malaysia,transportation/trucking/railroad,"Subang Jaya, Malaysia",69,New
+674,EMURGO,information technology & services,"Singapore, Singapore",61,New
+675,Asian Football Confederation (AFC),sports,"Kuala Lumpur, Malaysia",76,New
+676,Etika Group of Companies,food & beverages,"Bandar Baru Bangi, Malaysia",60,New
+677,Universiti Tenaga Nasional,government administration,"Seri Kembangan, Malaysia",99,New
+678,SIN-KUNG LOGISTICS BERHAD,logistics & supply chain,"Shah Alam, Malaysia",96,New
+679,DayOne,information technology & services,"Singapore, Singapore",81,New
+680,Digile,information technology & services,"Singapore, Singapore",63,New
+681,Berlitz Marine & Offshore Group,maritime,"Singapore, Singapore",76,New
+682,RRecruiter,human resources,"Singapore, Singapore",84,New
+683,Virtuos,computer games,"Singapore, Singapore",75,New
+684,Singapore University of Technology and Design (SUTD),higher education,"Singapore, Singapore",80,New
+685,PURETECH ENGINEERING PTE LTD,construction,"Singapore, Singapore",69,New
+686,Aonic,aviation & aerospace,"Subang Jaya, Malaysia",67,New
+687,BreadTalk Group Pte Ltd,food & beverages,"Singapore, Singapore",75,New
+688,Affle,information technology & services,"Singapore, Singapore",84,New
+689,The Polyolefin Company (Singapore) Pte Ltd,chemicals,"Singapore, Singapore",70,New
+690,Grand Venture Technology Private Limited,machinery,"Singapore, Singapore",70,New
+691,REC,renewables & environment,"Singapore, Singapore",79,New
+692,Wehaya Sdn. Bhd.,oil & energy,"Miri, Malaysia",66,New
+693,Millennium Technology Services,information technology & services,"Singapore, Singapore",80,New
+694,Sapaad,information technology & services,"Singapore, Singapore",72,New
+695,VariFlight,airlines/aviation,"Singapore, Singapore",88,New
+696,Samsonite Group APAC & Middle East,mechanical or industrial engineering,"Singapore, Singapore",96,New
+697,bolttech,insurance,"Singapore, Singapore",74,New
+698,"Shimizu Corporation, Singapore Office",construction,"Singapore, Singapore",96,New
+699,AIA Malaysia,insurance,"Kuala Lumpur, Malaysia",75,New
+700,JurongHealth Campus,hospital & health care,"Singapore, Singapore",63,New
+701,Changi Airports International Pte Ltd,airlines/aviation,"Singapore, Singapore",84,New
+702,Zak World of Façades,events services,"Singapore, Singapore",67,New
+703,Manpower Malaysia,staffing & recruiting,"Kuala Lumpur, Malaysia",71,New
+704,Pos Logistics Berhad,logistics & supply chain,"Subang Jaya, Malaysia",70,New
+705,Micron Concept Aerostructures Sdn Bhd,aviation & aerospace,"Shah Alam, Malaysia",61,New
+706,PRIVASIA Technology Berhad,information technology & services,"Petaling Jaya, Malaysia",60,New
+707,Kossan Rubber Industries Bhd.,medical devices,"Kapar, Malaysia",94,New
+708,TSH Resources Berhad,machinery,"Kuala Lumpur, Malaysia",74,New
+709,kuubiik,outsourcing/offshoring,"Singapore, Singapore",60,New
+710,TERENGGANU INC,investment management,"Kuala Terengganu, Malaysia",67,New
+711,RichLand Logistics,logistics & supply chain,"Singapore, Singapore",66,New
+712,AFFIN Group,banking,"Kuala Lumpur, Malaysia",69,New
+713,Aventra Group,information technology & services,"Kuala Lumpur, Malaysia",79,New
+714,Works,information technology & services,"Singapore, Singapore",61,New
+715,FM Global Logistics,logistics & supply chain,"Pelabuhan Klang, Malaysia",90,New
+716,TRD Singapore,defense & space,"Singapore, Singapore",73,New
+717,Tunku Abdul Rahman University of Management and Technology,higher education,"Kuala Lumpur, Malaysia",81,New
+718,Azeus Systems Limited,information technology & services,"Singapore, Singapore",68,New
+719,Porsche Asia Pacific Pte Ltd,automotive,"Singapore, Singapore",91,New
+720,Aden Group,facilities services,"Singapore, Singapore",99,New
+721,Grow Asia,staffing & recruiting,"Singapore, Singapore",79,New
+722,coto,"health, wellness & fitness","Singapore, Singapore",83,New
+723,Invest Selangor Berhad,nonprofit organization management,"Shah Alam, Malaysia",65,New
+724,Gobi Partners,venture capital & private equity,"Kuala Lumpur, Malaysia",96,New
+725,Shimadzu (Asia Pacific),research,"Singapore, Singapore",80,New
+726,Stratus Automation Sdn. Bhd.,machinery,"Bayan Lepas, Malaysia",72,New
+727,Maxima Global Executive Search,staffing & recruiting,"Singapore, Singapore",95,New
+728,JJ-Lurgi,machinery,"Shah Alam, Malaysia",74,New
+729,HS Aerosystem Sdn. Bhd.,aviation & aerospace,"Labu, Malaysia",63,New
+730,RecruitFirst,human resources,"Singapore, Singapore",86,New
+731,SF INTERNATIONAL,logistics & supply chain,"Singapore, Singapore",64,New
+732,Thakral One,information technology & services,"Singapore, Singapore",90,New
+733,UMW,investment management,"Kuala Lumpur, Malaysia",84,New
+734,MAB Kargo (MASkargo),airlines/aviation,"Sepang, Malaysia",73,New
+735,GS Engineering & Construction – Hock Lian Seng Infrastructure Joint Venture,construction,"Singapore, Singapore",82,New
+736,Malaysian Communications and Multimedia Commission,telecommunications,"Cyberjaya, Malaysia",84,New
+737,Lianson Fleet Group Berhad,oil & energy,"Kuala Lumpur, Malaysia",75,New
+738,Universiti Tunku Abdul Rahman (UTAR),higher education,"Kampar, Malaysia",87,New
+739,SapuraOMV Upstream (Sarawak) Inc.,oil & energy,"Kuala Lumpur, Malaysia",99,New
+740,Shiji Group,information technology & services,"Singapore, Singapore",68,New
+741,ASE Electronics (M) Sdn Bhd,semiconductors,"Bayan Lepas, Malaysia",62,New
+742,Prudential Assurance Company Singapore,financial services,"Singapore, Singapore",84,New
+743,FlyFirefly Sdn Bhd,airlines/aviation,"Petaling Jaya, Malaysia",61,New
+744,Intership Offshore,oil & energy,"Singapore, Singapore",96,New
+745,Aryan Solutions Pte Ltd,information technology & services,"Singapore, Singapore",74,New
+746,WorldFish,research,"Batu Maung, Malaysia",72,New
+747,Atomic Recruitment SEA,human resources,"Singapore, Singapore",83,New
+748,Cube Highways,investment management,"Singapore, Singapore",97,New
+749,Azbil Southeast Asia & India,machinery,"Singapore, Singapore",94,New
+750,Randstad Malaysia,staffing & recruiting,"Kuala Lumpur, Malaysia",86,New
+751,Samwoh Corporation Pte Ltd,construction,"Singapore, Singapore",66,New
+752,Malaysia University of Science and Technology,education management,"Petaling Jaya, Malaysia",82,New
+753,Gentari,renewables & environment,"Kuala Lumpur, Malaysia",77,New
+754,SKOM Sdn. Bhd.,maritime,"Kuala Lumpur, Malaysia",60,New
+755,WCT Construction Sdn Bhd,civil engineering,"Petaling Jaya, Malaysia",88,New
+756,Kemaman Bitumen Company Sdn Bhd,oil & energy,"Shah Alam, Malaysia",81,New
+757,Chemical Company of Malaysia Berhad,chemicals,"Petaling Jaya, Malaysia",61,New
+758,Kelington Group Berhad,facilities services,"Shah Alam, Malaysia",72,New
+759,CPF Board,government administration,"Singapore, Singapore",96,New
+760,SLNG - Singapore LNG Corporation Pte Ltd,oil & energy,"Singapore, Singapore",84,New
+761,TIME dotCom Berhad,telecommunications,"Shah Alam, Malaysia",98,New
+762,Dayang Enterprise Sdn Bhd,oil & energy,"Miri, Malaysia",64,New
+763,BCA Academy,higher education,"Singapore, Singapore",60,New
+764,Audex Pte Ltd,oil & energy,"Singapore, Singapore",84,New
+765,ShopBack,information technology & services,"Singapore, Singapore",90,New
+766,UTRACON Group,information technology & services,"Singapore, Singapore",99,New
+767,KS Drilling,oil & energy,"Singapore, Singapore",80,New
+768,Cetas Healthcare,market research,"Singapore, Singapore",92,New
+769,HASK,oil & energy,"Singapore, Singapore",92,New
+770,Universiti Pertahanan Nasional Malaysia,defense & space,"Kuala Lumpur, Malaysia",75,New
+771,CJ Century Logistics Holdings Berhad,logistics & supply chain,"Kapar, Malaysia",96,New
+772,HBA/Hirsch Bedner Associates,design,"Singapore, Singapore",99,New
+773,Hello Health Group,information technology & services,"Singapore, Singapore",87,New
+774,HRnetOne,human resources,"Singapore, Singapore",70,New
+775,Solarvest,renewables & environment,"Petaling Jaya, Malaysia",86,New
+776,SME Bank Malaysia,financial services,"Kuala Lumpur, Malaysia",66,New
+777,Trangile Services,information technology & services,"Singapore, Singapore",82,New
+778,Zuellig Pharma Malaysia,pharmaceuticals,"Shah Alam, Malaysia",79,New
+779,Hyphens Pharma International Ltd.,pharmaceuticals,"Singapore, Singapore",73,New
+780,Safeair Malaysia,airlines/aviation,"Sepang, Malaysia",95,New
+781,Pos Malaysia Berhad,package/freight delivery,"Kuala Lumpur, Malaysia",67,New
+782,Setegap Ventures Petroleum Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",93,New
+783,Elabram Group,human resources,Malaysia,97,New
+784,Wego.com,"leisure, travel & tourism","Singapore, Singapore",77,New
+785,Hengli Petrochemical International Pte. Ltd.,oil & energy,"Singapore, Singapore",76,New
+786,CTC Global Pte Ltd,information technology & services,"Singapore, Singapore",82,New
+787,"Consortium for Clinical Research and Innovation, Singapore (CRIS)",hospital & health care,"Singapore, Singapore",89,New
+788,Tiong Seng Contractors (Pte) Ltd,construction,"Singapore, Singapore",99,New
+789,respond.io,information technology & services,"Kuala Lumpur, Malaysia",74,New
+790,Canon Singapore,information technology & services,"Singapore, Singapore",66,New
+791,Tohtonku,mechanical or industrial engineering,"Petaling Jaya, Malaysia",74,New
+792,ORA,"health, wellness & fitness","Singapore, Singapore",78,New
+793,Pilot Construction Sdn Bhd,civil engineering,"Shah Alam, Malaysia",78,New
+794,ELITE Solar,renewables & environment,"Singapore, Singapore",81,New
+795,Etiqa Insurance and Takaful,financial services,"Kuala Lumpur, Malaysia",93,New
+796,Phoenix Contact (SEA),machinery,"Singapore, Singapore",64,New
+797,SILICON BOX,semiconductors,"Singapore, Singapore",64,New
+798,Lam Soon Edible Oils Sdn Bhd,food production,"Shah Alam, Malaysia",79,New
+799,Abhidi Solution,information technology & services,"Kuala Lumpur, Malaysia",74,New
+800,Lidl Asia Pte. Limited,retail,"Singapore, Singapore",90,New
+801,Azentio,information technology & services,"Singapore, Singapore",78,New
+802,Rajah & Tann Asia,law practice,"Singapore, Singapore",69,New
+803,Gene Solutions,research,"Singapore, Singapore",82,New
+804,Talent Trader Group,human resources,"Singapore, Singapore",75,New
+805,JB Cocoa,food production,"Singapore, Singapore",97,New
+806,CPG Corporation,architecture & planning,"Singapore, Singapore",85,New
+807,Aroona Solutions Group,oil & energy,"Kuala Lumpur, Malaysia",89,New
+808,Brunsfield International Group,real estate,"Kuala Lumpur, Malaysia",96,New
+809,SilTerra Malaysia Sdn. Bhd.,semiconductors,"Kulim, Malaysia",76,New
+810,U Mobile,telecommunications,"Kuala Lumpur, Malaysia",91,New
+811,Universiti Utara Malaysia,government administration,"Bukit Kayu Hitam, Malaysia",71,New
+812,Yoda Tech,information technology & services,"Singapore, Singapore",96,New
+813,Malaysia Rail Link Sdn Bhd (MRL),Rail transportation,"Kuala Lumpur, Malaysia",72,New
+814,Jamco Singapore Pte Ltd,airlines/aviation,"Singapore, Singapore",88,New
+815,Temasek Foundation,nonprofit organization management,"Singapore, Singapore",97,New
+816,AeroDarat,airlines/aviation,"Sepang, Malaysia",73,New
+817,Advanced MedTech,medical devices,"Singapore, Singapore",77,New
+818,Apar Technologies,information technology & services,"Singapore, Singapore",79,New
+819,Ben Line Group,maritime,"Singapore, Singapore",83,New
+820,AEM,electrical/electronic manufacturing,"Singapore, Singapore",60,New
+821,Ola Chat,information technology & services,"Singapore, Singapore",66,New
+822,Westports Malaysia,maritime,"Port Klang, Malaysia",69,New
+823,MMC GAMUDA KVMRT (T) SDN BHD,construction,"Kuala Lumpur, Malaysia",68,New
+824,Daikin Airconditioning (Singapore) Pte. Ltd.,electrical/electronic manufacturing,"Singapore, Singapore",86,New
+825,Honda Malaysia Sdn. Bhd.,automotive,"Alor Gajah, Malaysia",81,New
+826,Kacific Broadband Satellites Group,telecommunications,"Singapore, Singapore",85,New
+827,Institute of Singapore Chartered Accountants (ISCA),accounting,"Singapore, Singapore",90,New
+828,CYBERTEQ,information technology & services,"Singapore, Singapore",92,New
+829,Watsons Malaysia,retail,"Kuala Lumpur, Malaysia",93,New
+830,Energy Workforce Group,oil & energy,"Kuala Lumpur, Malaysia",70,New
+831,Gadang Group of Companies,construction,"Petaling Jaya, Malaysia",65,New
+832,CPP Petroleum Engineering (M) Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",68,New
+833,Fullerton Health,hospital & health care,"Singapore, Singapore",91,New
+834,Parcel Perform,information technology & services,"Singapore, Singapore",70,New
+835,reach52,hospital & health care,"Singapore, Singapore",97,New
+836,Web Synergies,information technology & services,"Singapore, Singapore",66,New
+837,Jungle Ventures,venture capital & private equity,"Singapore, Singapore",82,New
+838,Prime Quality Training,professional training & coaching,"Singapore, Singapore",68,New
+839,Khoo Teck Puat Hospital,hospital & health care,"Singapore, Singapore",84,New
+840,X-Press Feeders,maritime,"Singapore, Singapore",76,New
+841,The China Navigation Company,maritime,"Singapore, Singapore",94,New
+842,SCI Group,information technology & services,"Singapore, Singapore",77,New
+843,Daikin Malaysia Sdn Bhd,machinery,"Sungai Buloh, Malaysia",76,New
+844,SUPCON,machinery,"Singapore, Singapore",96,New
+845,Everstone Group,venture capital & private equity,"Singapore, Singapore",93,New
+846,Hyperwave Systems Engineering Sdn Bhd,oil & energy,"Kota Kinabalu, Malaysia",60,New
+847,MariApps Marine Solutions,information technology & services,"Singapore, Singapore",97,New
+848,Veolia | Water Tech Asia Pacific,environmental services,"Kuala Lumpur, Malaysia",69,New
+849,ESSEM GROUP,oil & energy,"Skudai, Malaysia",82,New
+850,Malayan Flour Mills Berhad,food production,"Kuala Lumpur, Malaysia",67,New
+851,Frencken Mechatronics (M) Sdn Bhd,machinery,"Bandar Baru Bangi, Malaysia",83,New
+852,Income Insurance Limited,insurance,"Singapore, Singapore",83,New
+853,Crescent Engineering (M) Sdn Bhd,oil & energy,"Kapar, Malaysia",75,New
+854,Neovation Consultancy Services,management consulting,"Singapore, Singapore",85,New
+855,Aleph-Labs,information technology & services,"Singapore, Singapore",70,New
+856,Sembawang Shipyard,maritime,"Singapore, Singapore",73,New
+857,StarHub,telecommunications,"Singapore, Singapore",66,New
+858,XERAFY,semiconductors,"Singapore, Singapore",74,New
+859,Cybermarine,maritime,"Singapore, Singapore",68,New
+860,Jiva,information technology & services,"Singapore, Singapore",63,New
+861,Inivos,information technology & services,"Singapore, Singapore",88,New
+862,AVPN,nonprofit organization management,"Singapore, Singapore",84,New
+863,Sime UMW,mechanical or industrial engineering,"Kuala Lumpur, Malaysia",64,New
+864,Wee Guan Construction,construction,"Singapore, Singapore",60,New
+865,Integrity,staffing & recruiting,"Singapore, Singapore",60,New
+866,MTQ Engineering Pte Ltd,oil & energy,"Singapore, Singapore",95,New
+867,Singapore Petroleum Company Limited,oil & energy,"Singapore, Singapore",79,New
+868,IHH HEALTHCARE SINGAPORE,hospital & health care,"Singapore, Singapore",60,New
+869,TNBResearch,research,"Bandar Baru Bangi, Malaysia",90,New
+870,Inter-Continental Oils and Fats (ICOF),international trade & development,"Singapore, Singapore",86,New
+871,CITAGLOBAL BERHAD,investment management,"Kuala Lumpur, Malaysia",82,New
+872,East Ventures,venture capital & private equity,"Singapore, Singapore",90,New
+873,Ensign InfoSecurity,computer & network security,"Singapore, Singapore",79,New
+874,MFE Formwork Technology,construction,"Rawang, Malaysia",93,New
+875,Zentact Systems,information technology & services,"Kuala Lumpur, Malaysia",74,New
+876,HRSB Engineering & Construction Sdn Bhd,oil & energy,Malaysia,85,New
+877,Quadrant.io (exited to Appen ASX:APX),information technology & services,"Singapore, Singapore",98,New
+878,SINGATAC,oil & energy,"Singapore, Singapore",68,New
+879,TF-AMD Penang,semiconductors,"Bayan Lepas, Malaysia",60,New
+880,Dornier MedTech,medical devices,"Singapore, Singapore",75,New
+881,ERS Energy Sdn Bhd,renewables & environment,"Kuala Lumpur, Malaysia",63,New
+882,Docquity,information technology & services,"Singapore, Singapore",69,New
+883,Vertex Holdings,venture capital & private equity,"Singapore, Singapore",60,New
+884,Sapura Secured Technologies,information technology & services,"Kuala Lumpur, Malaysia",72,New
+885,Lotus's Malaysia,retail,"Kuala Lumpur, Malaysia",87,New
+886,Taylor's University,higher education,"Subang Jaya, Malaysia",86,New
+887,MBSB Bank Berhad,banking,"Petaling Jaya, Malaysia",65,New
+888,EP Plus Group,pharmaceuticals,"Kuala Lumpur, Malaysia",70,New
+889,Amethyst Partners,staffing & recruiting,"Singapore, Singapore",78,New
+890,Hilti Singapore,construction,"Singapore, Singapore",74,New
+891,"Alexandra Hospital, Singapore",hospital & health care,"Singapore, Singapore",97,New
+892,Global Schools Group,government administration,"Singapore, Singapore",96,New
+893,Bridgestone Asia Pacific,automotive,"Singapore, Singapore",96,New
+894,"Malaysia Automotive, Robotics and IoT Institute (MARii)",government administration,"Cyberjaya, Malaysia",94,New
+895,Larsen Oil and Gas Pte Ltd,oil & energy,"Singapore, Singapore",73,New
+896,Neptune Pacific Direct Line,maritime,"Singapore, Singapore",91,New
+897,M1 Limited,telecommunications,"Singapore, Singapore",87,New
+898,Proton New Energy Technology Sdn Bhd,automotive,"Subang Jaya, Malaysia",96,New
+899,HollySys Automation Technologies,machinery,"Singapore, Singapore",91,New
+900,Universiti Teknikal Malaysia Melaka,higher education,"Durian Tunggal, Malaysia",81,New
+901,BDO Malaysia,accounting,"Kuala Lumpur, Malaysia",63,New
+902,Nova Buildings Group,construction,"Singapore, Singapore",98,New
+903,STATS ChipPAC,semiconductors,"Singapore, Singapore",60,New
+904,Patsnap,information technology & services,"Singapore, Singapore",83,New
+905,Ramsay Sime Darby Healthcare (CLOSED),hospital & health care,"Shah Alam, Malaysia",79,New
+906,MAMEE-Double Decker (M) Sdn Bhd,food production,"Subang Jaya, Malaysia",90,New
+907,Setel,information technology & services,"Kuala Lumpur, Malaysia",90,New
+908,WIZ.AI,information technology & services,"Singapore, Singapore",98,New
+909,Asia Group Advisors,government relations,"Singapore, Singapore",63,New
+910,Pacific Energy,oil & energy,"Singapore, Singapore",60,New
+911,Singapore Business Federation,international trade & development,"Singapore, Singapore",98,New
+912,LHN Limited,real estate,"Singapore, Singapore",66,New
+913,Taylor's College,higher education,"Kuala Lumpur, Malaysia",86,New
+914,JustCo,real estate,"Singapore, Singapore",70,New
+915,Persafe Engineering Sdn. Bhd.,oil & energy,"Bintulu, Malaysia",69,New
+916,Homage,hospital & health care,"Singapore, Singapore",86,New
+917,KK Women's and Children's Hospital,hospital & health care,"Singapore, Singapore",74,New
+918,Merkle Singapore,marketing & advertising,"Singapore, Singapore",96,New
+919,GrowthFn,human resources,"Kuala Lumpur, Malaysia",73,New
+920,Penang Skills Development Centre,government administration,"Bayan Lepas, Malaysia",86,New
+921,Validus Group,financial services,"Singapore, Singapore",64,New
+922,SG Enable,civic & social organization,"Singapore, Singapore",88,New
+923,PH Hydraulics & Engineering Pte Ltd,oil & energy,"Singapore, Singapore",62,New
+924,Sentosa Development Corporation,hospitality,"Singapore, Singapore",81,New
+925,Ryde,information technology & services,"Singapore, Singapore",91,New
+926,Singapore International Foundation,nonprofit organization management,"Singapore, Singapore",97,New
+927,AME International Pte Ltd,mechanical or industrial engineering,"Singapore, Singapore",64,New
+928,ComfortDelGro,logistics & supply chain,"Singapore, Singapore",97,New
+929,Guan Ho Construction Co (Pte) Ltd,construction,"Singapore, Singapore",67,New
+930,MIE-ENERGY,oil & energy,"Kuala Lumpur, Malaysia",77,New
+931,Dada Consultants,human resources,"Singapore, Singapore",82,New
+932,TMK Chemical Bhd.,chemicals,"Petaling Jaya, Malaysia",94,New
+933,Royce Pharma Manufacturing Sdn Bhd,pharmaceuticals,"Nilai, Malaysia",98,New
+934,Cloudologic,information technology & services,"Singapore, Singapore",90,New
+935,Dragages Singapore Pte Ltd,construction,"Singapore, Singapore",92,New
+936,Norstar Group of Companies,maritime,"Singapore, Singapore",82,New
+937,Tee Yih Jia Food Manufacturing Pte Ltd,food production,"Singapore, Singapore",60,New
+938,TRT,information technology & services,"Singapore, Singapore",67,New
+939,Cloud Kinetics,information technology & services,"Singapore, Singapore",84,New
+940,CCECC,civil engineering,"Singapore, Singapore",75,New
+941,MKRS GROUP OF COMPANIES,construction,"Kajang, Malaysia",93,New
+942,BDO Singapore,accounting,"Singapore, Singapore",79,New
+943,Tat Hong,machinery,"Singapore, Singapore",66,New
+944,PETRONAS Lubricants Marketing Malaysia Sdn. Bhd.,oil & energy,"Kuala Lumpur, Malaysia",90,New
+945,IPOS International,management consulting,"Singapore, Singapore",91,New
+946,Asia Pacific Breweries Singapore (Part of The HEINEKEN Company),food & beverages,"Singapore, Singapore",79,New
+947,Mewah Group,food & beverages,"Singapore, Singapore",60,New
+948,McPEC Marine & Offshore Engineering Pte Ltd,oil & energy,"Singapore, Singapore",97,New
+949,Genius Group Limited,education management,"Singapore, Singapore",97,New
+950,Pacific Inter-Link (PIL),mechanical or industrial engineering,Malaysia,91,New
+951,KJ Engineering Sdn Bhd,machinery,"Kuala Lumpur, Malaysia",67,New
+952,Hillhouse Investment,investment management,"Singapore, Singapore",91,New
+953,Kim Seng Heng Engineering Construction Pte Ltd,construction,"Singapore, Singapore",88,New
+954,Cittabase Solutions,information technology & services,"Singapore, Singapore",95,New
+955,MindPeers,mental health care,"Singapore, Singapore",82,New
+956,Universiti Malaysia Perlis,research,"Arau, Malaysia",71,New
+957,MOH Office for Healthcare Transformation (MOHT),"health, wellness & fitness","Singapore, Singapore",70,New
+958,Positka,information technology & services,"Singapore, Singapore",73,New
+959,BIPO,human resources,"Singapore, Singapore",82,New
+960,RAPSYS TECHNOLOGIES PTE LTD,information technology & services,"Singapore, Singapore",82,New
+961,Signia Hearing,medical devices,"Singapore, Singapore",93,New
+962,NTI Nanofilm,mechanical or industrial engineering,"Singapore, Singapore",77,New
+963,Eversendai Engineering Construction Private Limited,construction,"Subang Jaya, Malaysia",84,New
+964,Karex,medical devices,"Pelabuhan Klang, Malaysia",82,New
+965,Clearstate,information services,"Singapore, Singapore",81,New
+966,XSEED Education,government administration,"Singapore, Singapore",96,New
+967,StarCharge,electrical/electronic manufacturing,"Singapore, Singapore",77,New
+968,Wilmar Consultancy Services,information technology & services,"Singapore, Singapore",69,New
+969,Endowus,financial services,"Singapore, Singapore",97,New
+970,HABLEM OIL & GAS (M) SDN BHD,oil & energy,"Skudai, Malaysia",63,New
+971,Sivantos Group,medical devices,"Singapore, Singapore",77,New
+972,Management Development Institute of Singapore,higher education,"Singapore, Singapore",61,New
+973,TRANSWATER API  (157513-M),oil & energy,"Shah Alam, Malaysia",80,New
+974,Skill Quotient,information technology & services,"Kuala Lumpur, Malaysia",76,New
+975,#Web3,information technology & services,"Singapore, Singapore",86,New
+976,igloo,electrical/electronic manufacturing,"Singapore, Singapore",88,New
+977,Petronnic Sdn Bhd,oil & energy,"Kuala Lumpur, Malaysia",68,New
+978,Mitsubishi Chemical Methacrylates,chemicals,"Singapore, Singapore",60,New
+979,Adventus,information technology & services,"Singapore, Singapore",68,New
+980,Energy Drilling,oil & energy,"Singapore, Singapore",94,New
+981,Toyota Motor Asia,automotive,"Singapore, Singapore",90,New
+982,Senai Airport Terminal Services,aviation & aerospace,"Senai, Malaysia",70,New
+983,A*STAR Singapore Institute of Manufacturing Technology (A*STAR SIMTech),research,"Singapore, Singapore",92,New
+984,Keppel Ltd.,financial services,"Singapore, Singapore",92,New
+985,Prince Court Medical Centre Sdn Bhd (Official),hospital & health care,"Kuala Lumpur, Malaysia",92,New
+986,HTX (Home Team Science & Technology Agency),government administration,"Singapore, Singapore",74,New
+987,CompAsia,consumer services,"Singapore, Singapore",63,New
+988,Executive Group,maritime,"Singapore, Singapore",92,New
+989,Ubisoft Singapore,computer games,"Singapore, Singapore",76,New
+990,Ocentra Offshore Pte Ltd,oil & energy,"Singapore, Singapore",72,New
+991,Ditrolic Energy,utilities,Malaysia,75,New
+992,TNG Digital,financial services,"Kuala Lumpur, Malaysia",60,New
+993,Resilient Cities Network,civic & social organization,"Singapore, Singapore",61,New
+994,DRB-HICOM Defence Technologies (DEFTECH),defense & space,"Shah Alam, Malaysia",79,New
+995,Accuron Technologies Limited,mechanical or industrial engineering,"Singapore, Singapore",78,New
+996,POKKA PTE LTD,food & beverages,"Singapore, Singapore",77,New
+997,QL Resources Berhad,food production,"Shah Alam, Malaysia",97,New
+998,Berjaya Air,airlines/aviation,"Subang Jaya, Malaysia",92,New
+999,Bridge Data Centres,information technology & services,"Singapore, Singapore",63,New
+1000,Interactive Cares,e-learning,"Singapore, Singapore",76,New

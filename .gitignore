@@ -1,0 +1,10 @@
+node_modules/
+__pycache__/
+venv/
+env/
+.env
+crm.db
+dist/
+build/
+.DS_Store
+*.pyc
