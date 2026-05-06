@@ -69,7 +69,7 @@ export default function LoginPage() {
           <img src="/logo.png" alt="FY INTECH" className="h-10 w-auto drop-shadow-md" />
         </div>
         
-        <h2 className="text-2xl font-bold text-center text-white mb-2 tracking-tight">System Login</h2>
+        <h2 className="text-2xl font-bold text-center text-white mb-2 tracking-tight">FY CRM SECURE LOGIN</h2>
         <p className="text-crm-textMuted text-center text-sm mb-8">Enter your secure credentials to access the CRM.</p>
 
         {error && (
