@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Background3D from './components/Background3D';
 import Intro3D from './components/Intro3D';

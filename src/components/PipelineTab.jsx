@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { KanbanSquare, Plus, GripVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const COLUMNS = [

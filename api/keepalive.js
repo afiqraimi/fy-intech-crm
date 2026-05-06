@@ -1,3 +1,4 @@
+/* global process */
 /**
  * Vercel Cron Function: /api/keepalive
  * Pings the Render backend every 14 minutes to prevent cold starts.

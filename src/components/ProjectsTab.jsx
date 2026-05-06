@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Rocket, ChevronRight, Clock, CalendarDays, Activity, AlertTriangle, CheckCircle, Loader, RefreshCw, X, Edit3, Plus, ExternalLink, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectFormModal from './ProjectFormModal';
+import { apiFetch, apiJson } from '../utils/api';
 import { sendCrmNotification } from '../utils/notify';
 
 const STAGE_CONFIG = {
@@ -47,7 +48,7 @@ export default function ProjectsTab() {
   const handleDelete = async (id) => {
     const project = projects.find(p => p.id === id);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/projects/${id}`, { method: 'DELETE' });
       const remaining = projects.filter(p => p.id !== id);
       setProjects(remaining);
       setSelectedProject(remaining[0] || null);
@@ -64,14 +65,9 @@ export default function ProjectsTab() {
     }
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects`);
-      const data = await res.json();
+      const data = await apiJson('/api/projects');
       setProjects(data);
       if (data.length > 0) setSelectedProject(data[0]);
     } catch (error) {
@@ -79,7 +75,15 @@ export default function ProjectsTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) fetchProjects();
+    });
+    return () => { cancelled = true; };
+  }, [fetchProjects]);
 
   const updateStage = async (id, newStage) => {
     const today = new Date().toISOString().split('T')[0];
@@ -89,9 +93,8 @@ export default function ProjectsTab() {
     setEditingStage(false);
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects/${id}`, {
+      await apiJson(`/api/projects/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStage, last_update: today })
       });
       // 🔔 Notify
@@ -121,7 +124,7 @@ export default function ProjectsTab() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 flex flex-col md:flex-row gap-6" style={{ height: 'calc(100dvh - 140px)', minHeight: 0 }}>
+    <div className="animate-in fade-in duration-500 flex flex-col md:flex-row gap-4 md:gap-6 h-full min-h-0">
 
       {/* Left: Project List */}
       <div className={`w-full md:w-72 flex flex-col glass-panel rounded-2xl overflow-hidden border border-white/5 shrink-0 ${mobileDetailOpen ? 'hidden md:flex' : 'flex'}`}>
@@ -214,7 +217,7 @@ export default function ProjectsTab() {
               </div>
 
               {/* Header */}
-              <div className="p-8 border-b border-crm-border/50 bg-gradient-to-br from-crm-darker to-transparent">
+              <div className="p-5 md:p-8 border-b border-crm-border/50 bg-gradient-to-br from-crm-darker to-transparent">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
                   <div className="flex-1">
                     <p className="text-xs text-crm-textMuted uppercase tracking-widest mb-2 font-semibold">Active Client</p>
@@ -230,22 +233,35 @@ export default function ProjectsTab() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex w-full md:w-auto items-stretch md:items-center gap-3 flex-wrap">
                     {/* Service badge */}
                     <span className={`font-black text-sm uppercase tracking-wider border-2 px-3 py-1.5 rounded-lg ${SERVICE_COLORS[selectedProject.service_type] || 'text-white bg-white/10 border-white/20'}`}>
                       {selectedProject.service_type}
                     </span>
 
                     {/* Stage badge / edit button */}
-                    <div className="relative">
+                    <div className="relative w-full md:w-auto">
                       <button
                         onClick={() => setEditingStage(v => !v)}
-                        className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-sm font-bold transition-all hover:brightness-125 ${stageConf?.color}`}
+                        className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-sm font-bold transition-all hover:brightness-125 ${stageConf?.color}`}
                       >
                         <StageIcon size={14} />
                         <span>{selectedProject.stage}</span>
                         <Edit3 size={12} className="opacity-60" />
                       </button>
+
+                      <label className="md:hidden block text-[10px] text-crm-textMuted uppercase tracking-widest font-bold mb-2">
+                        Project Status
+                      </label>
+                      <select
+                        value={selectedProject.stage}
+                        onChange={(event) => updateStage(selectedProject.id, event.target.value)}
+                        className="md:hidden w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:ring-1 focus:ring-white/30"
+                      >
+                        {ALL_STAGES.map(stage => (
+                          <option key={stage} value={stage}>{stage}</option>
+                        ))}
+                      </select>
 
                       {/* Stage picker dropdown */}
                       <AnimatePresence>

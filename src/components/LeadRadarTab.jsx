@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
 import ProjectFormModal from './ProjectFormModal';
 
 const ScoreBadge = ({ score }) => {
-  let colorClass = '';
-  if (score >= 80) colorClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-  else if (score >= 50) colorClass = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-  else colorClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+  const colorClass = score >= 80
+    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+    : score >= 50
+      ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+      : 'bg-red-500/10 text-red-400 border-red-500/20';
 
   return (
     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${colorClass} flex items-center justify-center w-16`}>

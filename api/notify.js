@@ -1,3 +1,4 @@
+/* global process */
 /**
  * Vercel Serverless Function: /api/notify
  * Sends email via Resend (https://resend.com) — no SMTP, no App Password.

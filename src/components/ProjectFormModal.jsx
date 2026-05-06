@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { sendCrmNotification } from '../utils/notify';
+import { apiJson } from '../utils/api';
 
 const STAGES = ['POC Complete', 'Awaiting Feedback', 'In Development', 'Presented', 'Deployed', 'On Hold'];
 const SERVICES = ['VR', 'AR', 'MR', 'XR'];
@@ -34,17 +35,12 @@ export default function ProjectFormModal({ onClose, onSave, prefill = {}, existi
     }
     setSaving(true);
     try {
-      const url = isEdit
-        ? `${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects/${existingProject.id}`
-        : `${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/projects`;
+      const url = isEdit ? `/api/projects/${existingProject.id}` : '/api/projects';
       const method = isEdit ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const savedProject = await apiJson(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error('Failed to save');
-      const savedProject = await res.json();
       // 🔔 Notify
       if (isEdit) {
         sendCrmNotification(
@@ -59,7 +55,7 @@ export default function ProjectFormModal({ onClose, onSave, prefill = {}, existi
       }
       onSave(savedProject);
       onClose();
-    } catch (e) {
+    } catch {
       setError('Failed to save project. Please try again.');
     } finally {
       setSaving(false);

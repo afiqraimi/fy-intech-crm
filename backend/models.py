@@ -36,3 +36,10 @@ class AdminUser(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)                    # SHA-256 hash
     avatar = Column(String, nullable=True)            # base64 data URL
+
+class NotificationSettings(Base):
+    __tablename__ = "notification_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    enabled = Column(Boolean, default=False)
+    recipients = Column(String, default="")            # comma-separated emails

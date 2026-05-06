@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Inbox, Check, X, Clock, DollarSign, Mail, User, Building, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiJson } from '../utils/api';
 
 export default function InboundTab() {
   const [inbounds, setInbounds] = useState([]);
@@ -8,39 +9,38 @@ export default function InboundTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchInbounds();
+    let cancelled = false;
+
+    const loadInbounds = async () => {
+      try {
+        const data = await apiJson('/api/inbound');
+        if (cancelled) return;
+        setInbounds(data);
+        setSelectedLead(current => current || data[0] || null);
+      } catch (error) {
+        console.error('Error fetching inbound leads:', error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadInbounds();
+    return () => { cancelled = true; };
   }, []);
 
-  const fetchInbounds = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/inbound`);
-      const data = await res.json();
-      setInbounds(data);
-      if (data.length > 0 && !selectedLead) {
-        setSelectedLead(data[0]);
-      }
-    } catch (error) {
-      console.error("Error fetching inbound leads:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const updateStatus = async (id, newStatus) => {
-    // Optimistic UI update
     setInbounds(prev => prev.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
     if (selectedLead && selectedLead.id === id) {
       setSelectedLead({ ...selectedLead, status: newStatus });
     }
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "http://" + window.location.hostname + ":8000"}/api/inbound/${id}`, {
+      await apiJson(`/api/inbound/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
     } catch (error) {
-      console.error("Error updating inbound status:", error);
+      console.error('Error updating inbound status:', error);
     }
   };
 
@@ -50,8 +50,6 @@ export default function InboundTab() {
 
   return (
     <div className="animate-in fade-in duration-500 h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6">
-      
-      {/* Left List Pane */}
       <div className="w-full md:w-1/3 flex flex-col glass-panel rounded-2xl overflow-hidden border border-crm-border/50">
         <div className="p-5 border-b border-crm-border/50 bg-crm-darker/30 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3">
@@ -64,15 +62,15 @@ export default function InboundTab() {
             {inbounds.filter(l => l.status === 'New').length} New
           </span>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {inbounds.map(lead => (
-            <button 
+            <button
               key={lead.id}
               onClick={() => setSelectedLead(lead)}
               className={`w-full text-left p-4 rounded-xl transition-all duration-200 border ${
-                selectedLead?.id === lead.id 
-                  ? 'bg-white/10 border-white/20 shadow-lg' 
+                selectedLead?.id === lead.id
+                  ? 'bg-white/10 border-white/20 shadow-lg'
                   : 'bg-crm-card border-crm-border hover:bg-crm-border/50'
               }`}
             >
@@ -95,11 +93,10 @@ export default function InboundTab() {
         </div>
       </div>
 
-      {/* Right Detail Pane */}
       <div className="w-full md:w-2/3 glass-panel-heavy rounded-2xl border border-white/5 flex flex-col relative overflow-hidden shadow-2xl">
         <AnimatePresence mode="wait">
           {selectedLead ? (
-            <motion.div 
+            <motion.div
               key={selectedLead.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -107,7 +104,6 @@ export default function InboundTab() {
               transition={{ duration: 0.3 }}
               className="flex flex-col h-full"
             >
-              {/* Detail Header */}
               <div className="p-8 border-b border-crm-border/50 bg-gradient-to-br from-crm-darker to-transparent relative">
                 {selectedLead.status === 'Archived' && (
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50"></div>
@@ -118,7 +114,7 @@ export default function InboundTab() {
                 {selectedLead.status === 'New' && (
                   <div className="absolute top-0 left-0 w-full h-1 bg-purple-500/50"></div>
                 )}
-                
+
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h2 className="text-3xl font-black text-white mb-2">{selectedLead.company}</h2>
@@ -135,7 +131,7 @@ export default function InboundTab() {
                     {selectedLead.status}
                   </span>
                 </div>
-                
+
                 <div className="flex gap-4">
                   <div className="bg-black/40 border border-white/5 rounded-xl p-4 flex-1 backdrop-blur-sm">
                     <p className="text-[10px] text-crm-textMuted uppercase tracking-widest mb-1 font-semibold flex items-center">
@@ -158,7 +154,6 @@ export default function InboundTab() {
                 </div>
               </div>
 
-              {/* Message Body */}
               <div className="flex-1 p-8 overflow-y-auto">
                 <h4 className="text-xs font-bold text-crm-textMuted uppercase tracking-widest mb-4 flex items-center">
                   <AlertCircle size={14} className="mr-2" /> Original Inquiry Message
@@ -170,10 +165,9 @@ export default function InboundTab() {
                 </div>
               </div>
 
-              {/* Actions Footer */}
               <div className="p-6 border-t border-crm-border/50 bg-crm-darker/80 backdrop-blur-md flex justify-end space-x-3 shrink-0">
                 {selectedLead.status !== 'Archived' && (
-                  <button 
+                  <button
                     onClick={() => updateStatus(selectedLead.id, 'Archived')}
                     className="px-6 py-2.5 rounded-xl border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/10 transition-colors"
                   >
@@ -181,7 +175,7 @@ export default function InboundTab() {
                   </button>
                 )}
                 {selectedLead.status !== 'Reviewed' && (
-                  <button 
+                  <button
                     onClick={() => updateStatus(selectedLead.id, 'Reviewed')}
                     className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm transition-colors shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                   >

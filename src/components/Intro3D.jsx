@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
+import { hasAuthSession } from '../utils/auth';
 
 function IntroScene() {
   const meshRef = useRef();
@@ -35,8 +36,7 @@ export default function Intro3D() {
   useEffect(() => {
     const timer = setTimeout(() => {
       // Check if already authenticated, if so go to dashboard, else login
-      const isAuth = sessionStorage.getItem('isAuthenticated') === 'true';
-      navigate(isAuth ? '/dashboard' : '/login', { replace: true });
+      navigate(hasAuthSession() ? '/dashboard' : '/login', { replace: true });
     }, 4000); // 4 seconds total intro duration
     return () => clearTimeout(timer);
   }, [navigate]);

@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Icosahedron, MeshDistortMaterial, Float } from '@react-three/drei';
+import { MeshDistortMaterial, Float } from '@react-three/drei';
 import { Radar, ArrowRight, Rocket, CheckCircle, Clock, Loader } from 'lucide-react';
 
 function HologramCore() {
