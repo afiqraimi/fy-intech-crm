@@ -1,7 +1,7 @@
 /**
  * Vercel Cron Function: /api/keepalive
  * Pings the Render backend every 14 minutes to prevent cold starts.
- * Schedule is defined in vercel.json: "*/14 * * * *"
+ * Schedule is defined in vercel.json (every 14 minutes)
  */
 export default async function handler(req, res) {
   const BACKEND_URL = process.env.VITE_API_URL || process.env.BACKEND_URL;
