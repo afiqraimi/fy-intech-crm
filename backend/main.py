@@ -4,12 +4,32 @@ from sqlalchemy.orm import Session
 import models
 from database import engine, SessionLocal
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import hashlib
 
 models.Base.metadata.create_all(bind=engine)
+
+# ─── Seed default admin on first startup ──────────────────────────────────────
+def _hash(pw: str) -> str:
+    return hashlib.sha256(pw.encode()).hexdigest()
+
+def seed_admin():
+    db = SessionLocal()
+    try:
+        if db.query(models.AdminUser).count() == 0:
+            db.add(models.AdminUser(
+                name="Admin User",
+                email="admin@fyintech.com",
+                password_hash=_hash("admin"),
+            ))
+            db.commit()
+    finally:
+        db.close()
+
+seed_admin()
 
 app = FastAPI(title="FY Intech CRM API")
 
@@ -77,6 +97,82 @@ class ProjectUpdate(BaseModel):
     description: str | None = None
     next_action: str | None = None
     last_update: str | None = None
+
+# ─── Admin Auth Endpoints ─────────────────────────────────────────────────────
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class UpdateCredentialsRequest(BaseModel):
+    current_password: str
+    new_email: Optional[str] = None
+    new_password: Optional[str] = None
+    new_name: Optional[str] = None
+    new_avatar: Optional[str] = None
+
+class ProfileUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    avatar: Optional[str] = None  # base64 data URL
+
+@app.post("/api/auth/login")
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    admin = db.query(models.AdminUser).filter(
+        models.AdminUser.email == data.email
+    ).first()
+    if not admin or admin.password_hash != _hash(data.password):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    return {
+        "ok": True,
+        "name": admin.name,
+        "email": admin.email,
+        "avatar": admin.avatar,
+    }
+
+@app.put("/api/auth/update")
+def update_credentials(data: UpdateCredentialsRequest, db: Session = Depends(get_db)):
+    admin = db.query(models.AdminUser).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    if admin.password_hash != _hash(data.current_password):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    if data.new_email:
+        admin.email = data.new_email
+    if data.new_password:
+        if len(data.new_password) < 4:
+            raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+        admin.password_hash = _hash(data.new_password)
+    if data.new_name:
+        admin.name = data.new_name
+    if data.new_avatar is not None:
+        admin.avatar = data.new_avatar
+    db.commit()
+    db.refresh(admin)
+    return {"ok": True, "name": admin.name, "email": admin.email, "avatar": admin.avatar}
+
+@app.get("/api/auth/profile")
+def get_profile(db: Session = Depends(get_db)):
+    admin = db.query(models.AdminUser).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    return {"name": admin.name, "email": admin.email, "avatar": admin.avatar}
+
+@app.put("/api/auth/profile")
+def update_profile(data: ProfileUpdateRequest, db: Session = Depends(get_db)):
+    admin = db.query(models.AdminUser).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    if data.name:
+        admin.name = data.name
+    if data.avatar is not None:
+        admin.avatar = data.avatar
+    db.commit()
+    db.refresh(admin)
+    return {"ok": True, "name": admin.name, "email": admin.email, "avatar": admin.avatar}
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
 
 @app.get("/api/leads", response_model=List[LeadResponse])
 def get_leads(db: Session = Depends(get_db)):

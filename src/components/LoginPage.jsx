@@ -1,35 +1,57 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Mail, ArrowRight } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+
+const API_BASE = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isWaking, setIsWaking] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    setTimeout(() => {
-      // Check stored profile email (fallback to default)
-      const storedProfile = JSON.parse(localStorage.getItem('crm_profile') || '{}');
-      const validEmail = storedProfile.email || 'admin@fyintech.com';
+    setError('');
 
-      // Check stored password (fallback to 'admin')
-      const validPassword = JSON.parse(localStorage.getItem('crm_password') || '"admin"');
+    // Show "waking server" hint after 3s
+    const wakingTimer = setTimeout(() => setIsWaking(true), 3000);
 
-      if (email === validEmail && password === validPassword) {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      clearTimeout(wakingTimer);
+      setIsWaking(false);
+
+      if (res.ok) {
+        const data = await res.json();
+        // Store profile in sessionStorage (not used for auth validation — just display)
         sessionStorage.setItem('isAuthenticated', 'true');
+        sessionStorage.setItem('crm_profile', JSON.stringify({
+          name: data.name,
+          email: data.email,
+          avatar: data.avatar || null,
+        }));
         navigate('/dashboard', { replace: true });
       } else {
-        setError('Invalid credentials. Access denied.');
+        const err = await res.json();
+        setError(err.detail || 'Invalid credentials. Access denied.');
         setIsLoading(false);
       }
-    }, 800);
+    } catch (err) {
+      clearTimeout(wakingTimer);
+      setIsWaking(false);
+      setError('Cannot reach server. Please try again in a moment.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,9 +76,22 @@ export default function LoginPage() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-red-500/10 border border-red-500/50 text-red-400 text-sm p-3 rounded-xl mb-6 text-center"
+            className="bg-red-500/10 border border-red-500/50 text-red-400 text-sm p-3 rounded-xl mb-6 text-center flex items-center justify-center gap-2"
           >
+            <AlertCircle size={14} />
             {error}
+          </motion.div>
+        )}
+
+        {/* Server waking hint */}
+        {isWaking && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs p-3 rounded-xl mb-4 text-center leading-relaxed"
+          >
+            ⏳ Server is waking up from sleep… <br />
+            <span className="opacity-70">This may take up to 60 seconds on first access.</span>
           </motion.div>
         )}
 

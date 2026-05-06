@@ -1,28 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save } from 'lucide-react';
+import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
-const loadProfile = () => {
-  try {
-    return JSON.parse(localStorage.getItem('crm_profile')) || {
-      name: 'Admin User',
-      email: 'admin@fyintech.com',
-      avatar: null,
-    };
-  } catch { return { name: 'Admin User', email: 'admin@fyintech.com', avatar: null }; }
-};
+const API_BASE = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`;
 
+// ─── Helpers ───────────────────────────────────────────────────────────────
 const loadPrefs = () => {
   try {
     return JSON.parse(localStorage.getItem('crm_prefs')) || {
       darkMode: true,
       notifications: false,
       notifEmail: '',
-      notifSmtp: '',
-      notifPassword: '',
     };
-  } catch { return { darkMode: true, notifications: false, notifEmail: '', notifSmtp: '', notifPassword: '' }; }
+  } catch { return { darkMode: true, notifications: false, notifEmail: '' }; }
 };
 
 const SectionCard = ({ icon: Icon, iconColor, title, children }) => (
@@ -51,13 +41,14 @@ const Field = ({ label, children }) => (
   </div>
 );
 
-const Input = ({ type = 'text', value, onChange, placeholder, className = '' }) => (
+const Input = ({ type = 'text', value, onChange, placeholder, className = '', disabled = false }) => (
   <input
     type={type}
     value={value}
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
-    className={`w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all ${className}`}
+    disabled={disabled}
+    className={`w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
   />
 );
 
@@ -79,14 +70,24 @@ const Toast = ({ message, type, onClose }) => (
 );
 
 export default function SettingsTab({ onProfileChange }) {
-  const [profile, setProfile] = useState(loadProfile);
+  // Load initial profile from sessionStorage (set on login)
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('crm_profile')) || { name: 'Admin User', email: 'admin@fyintech.com', avatar: null };
+    } catch { return { name: 'Admin User', email: 'admin@fyintech.com', avatar: null }; }
+  });
   const [prefs, setPrefs] = useState(loadPrefs);
 
-  // Password state
+  // Password change state
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [showPwd, setShowPwd] = useState(false);
+
+  // Loading states
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -104,63 +105,159 @@ export default function SettingsTab({ onProfileChange }) {
     document.documentElement.setAttribute('data-theme', prefs.darkMode ? 'dark' : 'light');
   }, [prefs.darkMode]);
 
+  // ─── Avatar Upload (saves to backend) ────────────────────────────────────
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) { showToast('Image must be under 2MB', 'error'); return; }
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const newProfile = { ...profile, avatar: reader.result };
+    reader.onloadend = async () => {
+      const avatarData = reader.result;
+      const newProfile = { ...profile, avatar: avatarData };
       setProfile(newProfile);
-      localStorage.setItem('crm_profile', JSON.stringify(newProfile));
+      sessionStorage.setItem('crm_profile', JSON.stringify(newProfile));
       if (onProfileChange) onProfileChange(newProfile);
-      showToast('Profile picture updated!');
+      // Save to backend
+      try {
+        await fetch(`${API_BASE}/api/auth/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: profile.name, avatar: avatarData }),
+        });
+        showToast('Profile picture updated!');
+      } catch {
+        showToast('Avatar saved locally (backend unreachable).', 'error');
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  const saveProfile = () => {
-    localStorage.setItem('crm_profile', JSON.stringify(profile));
-    if (onProfileChange) onProfileChange(profile);
-    showToast('Profile saved successfully!');
+  // ─── Save Profile (name + email via /api/auth/update, requires password) ─
+  const saveProfile = async () => {
+    // If email changed, require password confirmation
+    const originalProfile = JSON.parse(sessionStorage.getItem('crm_profile') || '{}');
+    const emailChanged = profile.email !== originalProfile.email;
+
+    if (emailChanged) {
+      // We need to use the update credentials endpoint which requires current password
+      const pwd = prompt('Enter your current password to confirm email change:');
+      if (!pwd) return;
+      setSavingProfile(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/update`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            current_password: pwd,
+            new_email: profile.email,
+            new_name: profile.name,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const updated = { ...profile, name: data.name, email: data.email };
+          setProfile(updated);
+          sessionStorage.setItem('crm_profile', JSON.stringify(updated));
+          if (onProfileChange) onProfileChange(updated);
+          showToast('Profile saved successfully!');
+        } else {
+          const err = await res.json();
+          showToast(err.detail || 'Failed to save profile.', 'error');
+        }
+      } catch {
+        showToast('Cannot reach server.', 'error');
+      } finally {
+        setSavingProfile(false);
+      }
+    } else {
+      // Name-only change — use profile endpoint
+      setSavingProfile(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: profile.name }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const updated = { ...profile, name: data.name };
+          setProfile(updated);
+          sessionStorage.setItem('crm_profile', JSON.stringify(updated));
+          if (onProfileChange) onProfileChange(updated);
+          showToast('Profile saved successfully!');
+        } else {
+          showToast('Failed to save profile.', 'error');
+        }
+      } catch {
+        showToast('Cannot reach server.', 'error');
+      } finally {
+        setSavingProfile(false);
+      }
+    }
   };
 
-  const savePassword = () => {
-    const stored = JSON.parse(localStorage.getItem('crm_password') || '"admin"');
-    if (currentPwd !== stored) { showToast('Current password is incorrect.', 'error'); return; }
+  // ─── Change Password ──────────────────────────────────────────────────────
+  const savePassword = async () => {
     if (newPwd.length < 4) { showToast('New password must be at least 4 characters.', 'error'); return; }
     if (newPwd !== confirmPwd) { showToast('Passwords do not match.', 'error'); return; }
-    localStorage.setItem('crm_password', JSON.stringify(newPwd));
-    setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
-    showToast('Password updated successfully!');
+    setSavingPassword(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: currentPwd,
+          new_password: newPwd,
+        }),
+      });
+      if (res.ok) {
+        setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
+        showToast('Password updated successfully!');
+      } else {
+        const err = await res.json();
+        showToast(err.detail || 'Failed to update password.', 'error');
+      }
+    } catch {
+      showToast('Cannot reach server.', 'error');
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
+  // ─── Save Preferences ─────────────────────────────────────────────────────
   const savePrefs = () => {
     localStorage.setItem('crm_prefs', JSON.stringify(prefs));
     showToast('Preferences saved!');
   };
 
+  // ─── Test Notification (via Resend) ───────────────────────────────────────
   const testNotification = async () => {
-    if (!prefs.notifEmail || !prefs.notifSmtp || !prefs.notifPassword) {
-      showToast('Please fill in all email notification fields first.', 'error');
+    if (!prefs.notifEmail) {
+      showToast('Please enter a recipient email first.', 'error');
       return;
     }
+    setTestingEmail(true);
+    showToast('Sending test email…', 'success');
     try {
-      showToast('Waking up server & sending email... (this might take 1 minute)', 'success');
       const res = await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to_emails: prefs.notifEmail.split(',').map(e => e.trim()),
-          smtp_email: prefs.notifSmtp,
-          smtp_password: prefs.notifPassword,
           subject: 'FY Intech CRM — Test Notification',
-          body: 'This is a test notification from your FY Intech CRM. Email notifications are working correctly!'
-        })
+          body: 'This is a test notification from your FY Intech CRM. Email notifications are working correctly!',
+        }),
       });
-      if (res.ok) showToast('Test email sent successfully! Check your inbox.');
-      else showToast('Failed to send. Check your App Password.', 'error');
-    } catch { showToast('Could not reach backend.', 'error'); }
+      if (res.ok) showToast('Test email sent! Check your inbox.');
+      else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to send email.', 'error');
+      }
+    } catch {
+      showToast('Could not reach notification service.', 'error');
+    } finally {
+      setTestingEmail(false);
+    }
   };
 
   return (
@@ -182,7 +279,7 @@ export default function SettingsTab({ onProfileChange }) {
                 <img src={profile.avatar} alt="avatar" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-crm-border flex items-center justify-center text-2xl font-black text-white">
-                  {profile.name.charAt(0).toUpperCase()}
+                  {(profile.name || 'A').charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-full">
@@ -210,12 +307,17 @@ export default function SettingsTab({ onProfileChange }) {
             <Input type="email" value={profile.email} onChange={v => setProfile(p => ({ ...p, email: v }))} placeholder="you@company.com" />
           </Field>
         </div>
+        <p className="text-[11px] text-crm-textMuted mb-4 leading-relaxed">
+          💡 Changes are saved to the server — your new email and name will work on <strong className="text-white">all devices</strong>.
+          Changing your email requires your current password.
+        </p>
         <button
           onClick={saveProfile}
-          className="flex items-center space-x-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-bold transition-colors shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+          disabled={savingProfile}
+          className="flex items-center space-x-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-colors shadow-[0_0_15px_rgba(139,92,246,0.3)]"
         >
-          <Save size={15} />
-          <span>Save Profile</span>
+          {savingProfile ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+          <span>{savingProfile ? 'Saving…' : 'Save Profile'}</span>
         </button>
       </SectionCard>
 
@@ -238,12 +340,16 @@ export default function SettingsTab({ onProfileChange }) {
               <Input type={showPwd ? 'text' : 'password'} value={confirmPwd} onChange={setConfirmPwd} placeholder="Repeat new password" />
             </Field>
           </div>
+          <p className="text-[11px] text-crm-textMuted leading-relaxed">
+            🔒 Password is stored securely (hashed) on the server — it applies on <strong className="text-white">all devices</strong> instantly.
+          </p>
           <button
             onClick={savePassword}
-            className="flex items-center space-x-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-sm rounded-xl transition-colors"
+            disabled={savingPassword}
+            className="flex items-center space-x-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-black font-black text-sm rounded-xl transition-colors"
           >
-            <Shield size={15} />
-            <span>Update Password</span>
+            {savingPassword ? <Loader2 size={15} className="animate-spin" /> : <Shield size={15} />}
+            <span>{savingPassword ? 'Updating…' : 'Update Password'}</span>
           </button>
         </div>
       </SectionCard>
@@ -274,12 +380,12 @@ export default function SettingsTab({ onProfileChange }) {
       </SectionCard>
 
       {/* ─── Notifications ─── */}
-      <SectionCard icon={Bell} iconColor="text-emerald-400" title="Email Notifications (Gmail)">
+      <SectionCard icon={Bell} iconColor="text-emerald-400" title="Email Notifications">
         <div className="space-y-5">
           <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
             <div>
               <p className="text-white font-semibold text-sm">Enable Email Notifications</p>
-              <p className="text-crm-textMuted text-xs">Get notified via Gmail when project stages change</p>
+              <p className="text-crm-textMuted text-xs">Get notified when project stages change or leads are updated</p>
             </div>
             <Toggle checked={prefs.notifications} onChange={v => setPrefs(p => ({ ...p, notifications: v }))} />
           </div>
@@ -293,24 +399,27 @@ export default function SettingsTab({ onProfileChange }) {
                 className="overflow-hidden"
               >
                 <div className="space-y-4 pt-2">
-                  <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-                    <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-1">⚙️ Gmail Setup Required</p>
+                  {/* Info banner — no App Password needed */}
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
+                    <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">✅ Secure Setup — No Password Required</p>
                     <p className="text-crm-textMuted text-xs leading-relaxed">
-                      You must generate a Gmail <strong className="text-white">App Password</strong> (not your regular password).
-                      Go to: <strong className="text-amber-400">Google Account → Security → 2-Step Verification → App Passwords</strong>.
-                      Generate one for "Mail" and paste it below.
+                      Emails are sent via <strong className="text-white">Resend</strong> — a secure email API. 
+                      Your credentials are <strong className="text-white">never stored in the browser</strong>. 
+                      Just enter where you want notifications delivered below.
                     </p>
                   </div>
-                  <Field label="Notification Recipient Email">
-                    <Input type="email" value={prefs.notifEmail} onChange={v => setPrefs(p => ({ ...p, notifEmail: v }))} placeholder="Where to send notifications (e.g. you@gmail.com)" />
+
+                  <Field label="Notification Recipient Email(s)">
+                    <Input
+                      type="email"
+                      value={prefs.notifEmail}
+                      onChange={v => setPrefs(p => ({ ...p, notifEmail: v }))}
+                      placeholder="Where to send alerts (e.g. you@gmail.com)"
+                    />
+                    <p className="text-[11px] text-crm-textMuted mt-1.5">Separate multiple emails with a comma.</p>
                   </Field>
-                  <Field label="Gmail Sender Address">
-                    <Input type="email" value={prefs.notifSmtp} onChange={v => setPrefs(p => ({ ...p, notifSmtp: v }))} placeholder="Your Gmail address (e.g. sender@gmail.com)" />
-                  </Field>
-                  <Field label="Gmail App Password">
-                    <Input type="password" value={prefs.notifPassword} onChange={v => setPrefs(p => ({ ...p, notifPassword: v }))} placeholder="16-character App Password from Google" />
-                  </Field>
-                  <div className="flex space-x-3">
+
+                  <div className="flex flex-wrap gap-3">
                     <button
                       onClick={savePrefs}
                       className="flex items-center space-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl transition-colors"
@@ -320,10 +429,11 @@ export default function SettingsTab({ onProfileChange }) {
                     </button>
                     <button
                       onClick={testNotification}
-                      className="flex items-center space-x-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-xl transition-colors"
+                      disabled={testingEmail}
+                      className="flex items-center space-x-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50"
                     >
-                      <Mail size={14} />
-                      <span>Send Test Email</span>
+                      {testingEmail ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+                      <span>{testingEmail ? 'Sending…' : 'Send Test Email'}</span>
                     </button>
                   </div>
                 </div>

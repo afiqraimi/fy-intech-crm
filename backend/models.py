@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from database import Base
 
 class Lead(Base):
@@ -27,3 +27,12 @@ class Project(Base):
     last_update = Column(String)               # Most recent update date
     source_lead_id = Column(Integer, nullable=True)   # Link back to Lead Radar
     source_lead_name = Column(String, nullable=True)  # Snapshot of company name
+
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, default="Admin User")
+    email = Column(String, unique=True, index=True)
+    password_hash = Column(String)                    # SHA-256 hash
+    avatar = Column(String, nullable=True)            # base64 data URL

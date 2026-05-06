@@ -30,10 +30,12 @@ export default function ProjectsTab() {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
 
   const handleNewProject = (newProject) => {
     setProjects(prev => [...prev, newProject]);
     setSelectedProject(newProject);
+    setMobileDetailOpen(true);
   };
 
   const handleEditSave = (updatedProject) => {
@@ -111,11 +113,18 @@ export default function ProjectsTab() {
   const stageConf = selectedProject ? (STAGE_CONFIG[selectedProject.stage] || STAGE_CONFIG['POC Complete']) : null;
   const StageIcon = stageConf?.icon;
 
+  // Mobile: detail opens as full-screen overlay
+  const handleSelectProject = (project) => {
+    setSelectedProject(project);
+    setEditingStage(false);
+    setMobileDetailOpen(true);
+  };
+
   return (
-    <div className="animate-in fade-in duration-500 h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6">
+    <div className="animate-in fade-in duration-500 flex flex-col md:flex-row gap-6" style={{ height: 'calc(100dvh - 140px)', minHeight: 0 }}>
 
       {/* Left: Project List */}
-      <div className="w-full md:w-72 flex flex-col glass-panel rounded-2xl overflow-hidden border border-white/5 shrink-0">
+      <div className={`w-full md:w-72 flex flex-col glass-panel rounded-2xl overflow-hidden border border-white/5 shrink-0 ${mobileDetailOpen ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-5 border-b border-crm-border/50 bg-crm-darker/30 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-violet-500/20 rounded-lg">
@@ -142,7 +151,7 @@ export default function ProjectsTab() {
             return (
               <button
                 key={project.id}
-                onClick={() => { setSelectedProject(project); setEditingStage(false); }}
+                onClick={() => handleSelectProject(project)}
                 className={`w-full text-left p-4 rounded-xl transition-all duration-200 border group ${
                   selectedProject?.id === project.id
                     ? 'bg-white/10 border-white/20 shadow-lg'
@@ -177,8 +186,10 @@ export default function ProjectsTab() {
         </div>
       </div>
 
-      {/* Right: Project Detail */}
-      <div className="w-full flex-1 glass-panel-heavy rounded-2xl border border-white/5 flex flex-col shadow-2xl overflow-hidden">
+      {/* Right: Project Detail — full page on mobile, panel on desktop */}
+      <div className={`w-full flex-1 glass-panel-heavy rounded-2xl border border-white/5 flex flex-col shadow-2xl overflow-hidden ${
+        mobileDetailOpen ? 'flex' : 'hidden md:flex'
+      }`}>
         <AnimatePresence mode="wait">
           {selectedProject ? (
             <motion.div
@@ -191,6 +202,16 @@ export default function ProjectsTab() {
             >
               {/* Top accent bar matching stage color */}
               <div className={`h-1 w-full ${stageConf?.bar || 'bg-white/20'}`} />
+
+              {/* Mobile back button */}
+              <div className="md:hidden flex items-center px-5 pt-4">
+                <button
+                  onClick={() => setMobileDetailOpen(false)}
+                  className="flex items-center gap-2 text-crm-textMuted hover:text-white text-sm font-semibold transition-colors"
+                >
+                  <span>← Back to Projects</span>
+                </button>
+              </div>
 
               {/* Header */}
               <div className="p-8 border-b border-crm-border/50 bg-gradient-to-br from-crm-darker to-transparent">
@@ -233,7 +254,7 @@ export default function ProjectsTab() {
                             initial={{ opacity: 0, y: -5 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
-                            className="absolute right-0 top-10 z-30 bg-crm-dark border border-crm-border rounded-xl shadow-2xl overflow-hidden w-48"
+                            className="absolute right-0 top-10 z-50 bg-crm-dark border border-crm-border rounded-xl shadow-2xl overflow-hidden w-48"
                           >
                             <div className="p-2 border-b border-crm-border/50 flex justify-between items-center px-3">
                               <span className="text-[10px] text-crm-textMuted uppercase tracking-wider font-bold">Update Stage</span>
