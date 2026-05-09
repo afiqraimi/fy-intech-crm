@@ -73,7 +73,75 @@ def seed_admin():
     finally:
         db.close()
 
+def seed_leads():
+    db = SessionLocal()
+    try:
+        if db.query(models.Lead).count() > 0:
+            return
+        leads_data = [
+            {"company": "EcoWorld Development Group", "industry": "Property Developer", "location": "Kuala Lumpur, MY", "score": 95, "status": "In Progress"},
+            {"company": "SP Setia Bhd", "industry": "Property Developer", "location": "Selangor, MY", "score": 90, "status": "New"},
+            {"company": "Sunway Group", "industry": "Conglomerate", "location": "Selangor, MY", "score": 88, "status": "Closed"},
+            {"company": "Majlis Bandaraya Johor Bahru (MBJB)", "industry": "Local Council", "location": "Johor, MY", "score": 75, "status": "New"},
+            {"company": "Majlis Bandaraya Pulau Pinang (MBPP)", "industry": "Local Council", "location": "Penang, MY", "score": 82, "status": "In Progress"},
+            {"company": "Petronas", "industry": "Oil & Gas", "location": "Kuala Lumpur, MY", "score": 65, "status": "Closed"},
+            {"company": "Maxis Communications", "industry": "Telecommunications", "location": "Kuala Lumpur, MY", "score": 55, "status": "New"},
+            {"company": "UEM Sunrise", "industry": "Property Developer", "location": "Kuala Lumpur, MY", "score": 86, "status": "In Progress"},
+            {"company": "Gamuda Land", "industry": "Property Developer", "location": "Selangor, MY", "score": 89, "status": "Closed"},
+            {"company": "Tenaga Nasional Berhad (TNB)", "industry": "Energy", "location": "Kuala Lumpur, MY", "score": 60, "status": "New"},
+        ]
+        for data in leads_data:
+            db.add(models.Lead(**data))
+        db.commit()
+    finally:
+        db.close()
+
+def seed_projects():
+    db = SessionLocal()
+    try:
+        if db.query(models.Project).count() > 0:
+            return
+        projects_data = [
+            {
+                "client": "Majlis Bandaraya Johor Bahru (MBJB)",
+                "project_name": "VR City Planning Proof-of-Concept",
+                "service_type": "VR",
+                "stage": "Awaiting Feedback",
+                "description": "FY Intech developed and delivered a full Virtual Reality Proof-of-Concept simulation for MBJB. The POC demonstrated an immersive walkthrough of proposed urban development zones within Johor Bahru's central district, allowing council members to experience scale and spatial planning in a way 2D blueprints never could. The live presentation was delivered to senior council leadership and was received positively.",
+                "next_action": "Awaiting official written feedback and decision from MBJB council regarding potential full-scale project engagement. Follow up with primary contact if no response by end of month.",
+                "start_date": "2025-02-10",
+                "last_update": "2025-04-28",
+            },
+            {
+                "client": "Majlis Bandaraya Diraja Klang (MBDK)",
+                "project_name": "VR Heritage District Walkthrough POC",
+                "service_type": "VR",
+                "stage": "POC Complete",
+                "description": "FY Intech successfully completed the Virtual Reality POC showcasing the proposed redevelopment of Klang's heritage corridor. The simulation enabled stakeholders to virtually walk through the proposed pedestrian-friendly streetscape and visualize architectural heritage preservation overlaid with modern urban amenities. The deliverable was submitted and the POC phase is now officially closed.",
+                "next_action": "Present findings to MBDK decision-makers. Prepare a formal project proposal document outlining the scope and cost of a full deployment.",
+                "start_date": "2025-03-01",
+                "last_update": "2025-05-02",
+            },
+            {
+                "client": "Majlis Bandaraya Melaka Bersejarah (MBMB)",
+                "project_name": "VR Tourism & Heritage Experience POC",
+                "service_type": "VR",
+                "stage": "POC Complete",
+                "description": "FY Intech completed the VR Proof-of-Concept for Majlis Bandaraya Melaka Bersejarah, focused on creating an immersive virtual tourism experience for Melaka's UNESCO World Heritage zones. The simulation allows visitors and planners to virtually explore Jonker Street, A Famosa, and surrounding heritage sites in high fidelity VR, demonstrating the potential for heritage preservation education and digital tourism.",
+                "next_action": "Schedule a formal presentation session with MBMB council. Explore potential for Melaka Digital Tourism grant funding to support full deployment.",
+                "start_date": "2025-03-15",
+                "last_update": "2025-05-03",
+            },
+        ]
+        for data in projects_data:
+            db.add(models.Project(**data))
+        db.commit()
+    finally:
+        db.close()
+
 seed_admin()
+seed_leads()
+seed_projects()
 
 app = FastAPI(title="FY Intech CRM API")
 
