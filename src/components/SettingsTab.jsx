@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiJson } from '../utils/api';
-import { getStoredProfile, normalizeEmail, setAuthSession, setStoredProfile } from '../utils/auth';
+import { clearAuthSession, getStoredProfile, normalizeEmail, setAuthSession, setStoredProfile } from '../utils/auth';
 
 const DEFAULT_PREFS = {
   darkMode: true,
@@ -85,6 +86,7 @@ export default function SettingsTab({ onProfileChange }) {
   const [testingEmail, setTestingEmail] = useState(false);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
+  const navigate = useNavigate();
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -120,13 +122,18 @@ export default function SettingsTab({ onProfileChange }) {
           notifEmail: notificationPrefs.notifEmail || '',
         }));
       } catch (error) {
+        if (error.status === 401) {
+          clearAuthSession();
+          navigate('/login', { replace: true });
+          return;
+        }
         console.warn('Could not load server settings:', error);
       }
     };
 
     loadServerSettings();
     return () => { cancelled = true; };
-  }, [onProfileChange]);
+  }, [onProfileChange, navigate]);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];

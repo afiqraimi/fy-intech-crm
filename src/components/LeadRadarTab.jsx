@@ -314,7 +314,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus }) {
         </div>
       )}
 
-      {confirmDeleteId && (() => { const target = leads.find(l => l.id === confirmDeleteId); return target ? (
+      {confirmDeleteId && (() => { const target = (leads || []).find(l => l.id === confirmDeleteId); return target ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-crm-card border border-red-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
             <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">

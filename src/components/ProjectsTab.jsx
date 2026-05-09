@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Rocket, ChevronRight, Clock, CalendarDays, Activity, AlertTriangle, CheckCircle, Loader, RefreshCw, X, Edit3, Plus, ExternalLink, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectFormModal from './ProjectFormModal';
 import { apiFetch, apiJson } from '../utils/api';
+import { clearAuthSession } from '../utils/auth';
 import { sendCrmNotification } from '../utils/notify';
 
 const STAGE_CONFIG = {
@@ -32,6 +34,7 @@ export default function ProjectsTab() {
   const [editingProject, setEditingProject] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleNewProject = (newProject) => {
     setProjects(prev => [...prev, newProject]);
@@ -40,16 +43,16 @@ export default function ProjectsTab() {
   };
 
   const handleEditSave = (updatedProject) => {
-    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+    setProjects(prev => (prev || []).map(p => p.id === updatedProject.id ? updatedProject : p));
     setSelectedProject(updatedProject);
     setEditingProject(null);
   };
 
   const handleDelete = async (id) => {
-    const project = projects.find(p => p.id === id);
+    const project = (projects || []).find(p => p.id === id);
     try {
       await apiFetch(`/api/projects/${id}`, { method: 'DELETE' });
-      const remaining = projects.filter(p => p.id !== id);
+      const remaining = (projects || []).filter(p => p.id !== id);
       setProjects(remaining);
       setSelectedProject(remaining[0] || null);
       setConfirmDelete(false);
@@ -68,14 +71,20 @@ export default function ProjectsTab() {
   const fetchProjects = useCallback(async () => {
     try {
       const data = await apiJson('/api/projects');
-      setProjects(data);
-      if (data.length > 0) setSelectedProject(data[0]);
+      setProjects(Array.isArray(data) ? data : []);
+      if (data && data.length > 0) setSelectedProject(data[0]);
     } catch (error) {
       console.error("Error fetching projects:", error);
+      if (error.status === 401) {
+        clearAuthSession();
+        navigate('/login', { replace: true });
+        return;
+      }
+      setProjects([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,8 +96,8 @@ export default function ProjectsTab() {
 
   const updateStage = async (id, newStage) => {
     const today = new Date().toISOString().split('T')[0];
-    const project = projects.find(p => p.id === id);
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, stage: newStage, last_update: today } : p));
+    const project = (projects || []).find(p => p.id === id);
+    setProjects(prev => (prev || []).map(p => p.id === id ? { ...p, stage: newStage, last_update: today } : p));
     if (selectedProject?.id === id) setSelectedProject(prev => ({ ...prev, stage: newStage, last_update: today }));
     setEditingStage(false);
 
@@ -148,7 +157,7 @@ export default function ProjectsTab() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
-          {projects.map(project => {
+          {(projects || []).map(project => {
             const conf = STAGE_CONFIG[project.stage] || STAGE_CONFIG['POC Complete'];
             const Icon = conf.icon;
             return (

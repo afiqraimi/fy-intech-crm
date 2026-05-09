@@ -113,7 +113,7 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden" style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}>
         {columns.map(column => {
-          const columnLeads = leads.filter(l => l.status === column.id);
+          const columnLeads = (leads || []).filter(l => l.status === column.id);
           const limit = getLimit(column.id);
           const displayLeads = columnLeads.slice(0, limit);
           

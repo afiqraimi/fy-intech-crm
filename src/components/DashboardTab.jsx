@@ -107,7 +107,7 @@ export default function DashboardTab({ metrics, setActiveTab, projects = [] }) {
         {/* HUD Edge Metrics — 4 columns */}
       <div className="w-full max-w-6xl px-4 md:px-12 z-10 mt-16 md:mt-24 mb-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {metrics.map((metric, index) => (
+          {(metrics || []).map((metric, index) => (
             <motion.div 
               key={metric.id}
               initial={{ opacity: 0, y: 50 }}
@@ -137,7 +137,7 @@ export default function DashboardTab({ metrics, setActiveTab, projects = [] }) {
       </div>
 
       {/* Active Projects Spotlight */}
-      {projects.length > 0 && (
+      {(projects || []).length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

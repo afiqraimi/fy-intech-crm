@@ -111,9 +111,9 @@ export default function DashboardShell() {
             apiJson('/api/projects', {}, { timeoutMs: 30000 }),
           ]);
 
-          setLeads(leadsData);
-          setMetrics(metricsData.map(m => ({ ...m, ...METRIC_STYLES[m.id] })));
-          setProjects(projectsData);
+          setLeads(Array.isArray(leadsData) ? leadsData : []);
+          setMetrics((Array.isArray(metricsData) ? metricsData : []).map(m => ({ ...m, ...METRIC_STYLES[m.id] })));
+          setProjects(Array.isArray(projectsData) ? projectsData : []);
           setLoadError(false);
           return;
         } catch (error) {
@@ -137,7 +137,7 @@ export default function DashboardShell() {
       setLoading(false);
       setLoadingMsg('Loading...');
     }
-  }, []);
+  }, [navigate]);
 
   React.useEffect(() => {
     let cancelled = false;
