@@ -6,6 +6,7 @@ from database import engine, SessionLocal
 from pydantic import BaseModel
 from typing import List, Optional
 import base64
+import csv
 import hashlib
 import html
 import hmac
@@ -549,3 +550,39 @@ def delete_project(
         f"The project \"{project_name}\" for {client} has been removed from Active Projects.",
     )
     return {"ok": True}
+
+@app.post("/api/admin/import-leads")
+def import_leads_csv(
+    db: Session = Depends(get_db),
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    csv_path = os.path.join(os.path.dirname(__file__), "..", "leads_database_export.csv")
+    if not os.path.isfile(csv_path):
+        raise HTTPException(status_code=404, detail="CSV file not found on server")
+
+    imported = 0
+    skipped = 0
+    try:
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                company = (row.get("Company Name") or "").strip()
+                if not company:
+                    continue
+                exists = db.query(models.Lead).filter(models.Lead.company == company).first()
+                if exists:
+                    skipped += 1
+                    continue
+                db.add(models.Lead(
+                    company=company,
+                    industry=(row.get("Industry") or "Unknown").strip()[:50],
+                    location=(row.get("Location") or "Unknown").strip()[:50],
+                    score=int(row.get("VR Potential Score (%)") or 50),
+                    status=(row.get("Status") or "New").strip(),
+                ))
+                imported += 1
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {"ok": True, "imported": imported, "skipped": skipped}
