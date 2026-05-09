@@ -118,6 +118,11 @@ export default function DashboardShell() {
           return;
         } catch (error) {
           console.error('Error fetching data:', error);
+          if (error.status === 401) {
+            clearAuthSession();
+            navigate('/login', { replace: true });
+            return;
+          }
           if (attempt === 2) throw error;
           setLoadingMsg(`Connection failed - retrying in 8 seconds (attempt ${attempt + 1}/3)`);
           await sleep(8000);
@@ -272,7 +277,7 @@ export default function DashboardShell() {
             <>
               {activeTab === 'Dashboard' && <DashboardTab metrics={metrics} leads={leads} setActiveTab={setActiveTab} projects={projects} />}
               {activeTab === 'Active Projects' && <ProjectsTab />}
-              {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} />}
+              {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} updateLeadStatus={updateLeadStatus} />}
               {activeTab === 'Pipeline' && <PipelineTab leads={leads} updateLeadStatus={updateLeadStatus} />}
               {activeTab === 'Settings' && <SettingsTab onProfileChange={handleProfileChange} />}
             </>

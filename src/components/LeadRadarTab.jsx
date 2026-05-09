@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle } from 'lucide-react';
 import ProjectFormModal from './ProjectFormModal';
+import { apiJson } from '../utils/api';
 
 const ScoreBadge = ({ score }) => {
   const colorClass = score >= 80
@@ -16,17 +17,66 @@ const ScoreBadge = ({ score }) => {
   );
 };
 
-export default function LeadRadarTab({ leads }) {
+export default function LeadRadarTab({ leads, updateLeadStatus }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [selectedLeadDetails, setSelectedLeadDetails] = useState(null);
   const [promoteTarget, setPromoteTarget] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({ problem: '', solution: '' });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [removedIds, setRemovedIds] = useState(new Set());
+  const [leadEdits, setLeadEdits] = useState({});
   const itemsPerPage = 50;
 
+  const filteredLeads = leads.filter(l => !removedIds.has(l.id)).map(l => ({
+    ...l,
+    ...(leadEdits[l.id] || {}),
+  }));
+
+  const openEditDetails = useCallback((lead) => {
+    setSelectedLeadDetails(lead);
+    setEditForm({ problem: lead.problem || '', solution: lead.solution || '' });
+    setEditMode(true);
+    setActiveDropdown(null);
+  }, []);
+
+  const saveEdit = useCallback(async () => {
+    setSavingEdit(true);
+    try {
+      await apiJson(`/api/leads/${selectedLeadDetails.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          status: selectedLeadDetails.status,
+          problem: editForm.problem,
+          solution: editForm.solution,
+        }),
+      });
+    } catch {
+      // Save locally even if API fails
+    }
+    setLeadEdits(prev => ({ ...prev, [selectedLeadDetails.id]: { problem: editForm.problem, solution: editForm.solution } }));
+    setSelectedLeadDetails(prev => ({ ...prev, problem: editForm.problem, solution: editForm.solution }));
+    setEditMode(false);
+    setSavingEdit(false);
+  }, [selectedLeadDetails, editForm]);
+
+  const handleRemoveLead = useCallback(async (id) => {
+    try {
+      await updateLeadStatus(id, 'Closed');
+    } catch {
+      // Status update failed - still remove from view
+    }
+    setRemovedIds(prev => new Set([...prev, id]));
+    setSelectedLeadDetails(null);
+    setConfirmDeleteId(null);
+  }, [updateLeadStatus]);
+
   // Calculate pagination
-  const totalPages = Math.ceil(leads.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentLeads = leads.slice(startIndex, startIndex + itemsPerPage);
+  const currentLeads = filteredLeads.slice(startIndex, startIndex + itemsPerPage);
 
   const toggleDropdown = (id) => {
     if (activeDropdown === id) setActiveDropdown(null);
@@ -44,7 +94,7 @@ export default function LeadRadarTab({ leads }) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-white shadow-sm">Target Directory</h3>
-            <p className="text-xs text-crm-textMuted/80">{leads.length} Total Targets Identified</p>
+            <p className="text-xs text-crm-textMuted/80">{filteredLeads.length} Total Targets Identified</p>
           </div>
         </div>
       </div>
@@ -106,7 +156,7 @@ export default function LeadRadarTab({ leads }) {
                   {activeDropdown === lead.id && (
                     <div className="absolute right-8 top-8 w-48 bg-crm-dark border border-crm-border rounded-xl shadow-xl shadow-black/50 overflow-hidden z-20">
                       <button 
-                        onClick={() => { setSelectedLeadDetails(lead); setActiveDropdown(null); }}
+                        onClick={() => { setSelectedLeadDetails(lead); setEditMode(false); setActiveDropdown(null); }}
                         className="w-full text-left px-4 py-2.5 text-sm text-crm-textMuted hover:text-white hover:bg-crm-border transition-colors flex items-center border-b border-crm-border/30"
                       >
                         <Info size={14} className="mr-2" /> More Details
@@ -117,10 +167,16 @@ export default function LeadRadarTab({ leads }) {
                       >
                         <Rocket size={14} className="mr-2" /> Promote to Project
                       </button>
-                      <button className="w-full text-left px-4 py-2.5 text-sm text-crm-textMuted hover:text-white hover:bg-crm-border transition-colors flex items-center">
+                      <button
+                        onClick={() => openEditDetails(lead)}
+                        className="w-full text-left px-4 py-2.5 text-sm text-crm-textMuted hover:text-white hover:bg-crm-border transition-colors flex items-center border-b border-crm-border/30"
+                      >
                         <Edit2 size={14} className="mr-2" /> Edit Details
                       </button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex items-center">
+                      <button
+                        onClick={() => { setConfirmDeleteId(lead.id); setActiveDropdown(null); }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex items-center"
+                      >
                         <Trash2 size={14} className="mr-2" /> Remove Lead
                       </button>
                     </div>
@@ -135,7 +191,7 @@ export default function LeadRadarTab({ leads }) {
       {/* Pagination Footer */}
       <div className="px-6 py-4 border-t border-crm-border flex items-center justify-between shrink-0 bg-crm-card rounded-b-2xl">
         <p className="text-sm text-crm-textMuted">
-          Showing <span className="font-medium text-white">{startIndex + 1}</span> to <span className="font-medium text-white">{Math.min(startIndex + itemsPerPage, leads.length)}</span> of <span className="font-medium text-white">{leads.length}</span> leads
+          Showing <span className="font-medium text-white">{startIndex + 1}</span> to <span className="font-medium text-white">{Math.min(startIndex + itemsPerPage, filteredLeads.length)}</span> of <span className="font-medium text-white">{filteredLeads.length}</span> leads
         </p>
         <div className="flex items-center space-x-2">
           <button 
@@ -181,34 +237,109 @@ export default function LeadRadarTab({ leads }) {
               <div>
                 <h3 className="text-red-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Flame size={16} className="mr-2"/> Core Problem Identified</h3>
                 <div className="bg-red-500/5 border border-red-500/20 p-5 rounded-xl shadow-inner">
-                  <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">
-                    {selectedLeadDetails.problem || "No problem statement generated yet."}
-                  </p>
+                  {editMode ? (
+                    <textarea
+                      rows={4}
+                      value={editForm.problem}
+                      onChange={e => setEditForm(f => ({ ...f, problem: e.target.value }))}
+                      className="w-full bg-crm-darker border border-red-500/20 rounded-xl px-4 py-3 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-red-500/50 text-sm resize-none"
+                      placeholder="Describe the core problem..."
+                    />
+                  ) : (
+                    <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">
+                      {selectedLeadDetails.problem || "No problem statement generated yet."}
+                    </p>
+                  )}
                 </div>
               </div>
               
               <div>
                 <h3 className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Target size={16} className="mr-2"/> FY Intech Proposed Solution</h3>
                 <div className="bg-blue-500/5 border border-blue-500/20 p-5 rounded-xl shadow-inner">
-                  <p className="text-white leading-relaxed text-sm font-medium whitespace-pre-wrap">
-                    {selectedLeadDetails.solution || "No proposed solution generated yet."}
-                  </p>
+                  {editMode ? (
+                    <textarea
+                      rows={4}
+                      value={editForm.solution}
+                      onChange={e => setEditForm(f => ({ ...f, solution: e.target.value }))}
+                      className="w-full bg-crm-darker border border-blue-500/20 rounded-xl px-4 py-3 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-blue-500/50 text-sm resize-none"
+                      placeholder="Describe the proposed solution..."
+                    />
+                  ) : (
+                    <p className="text-white leading-relaxed text-sm font-medium whitespace-pre-wrap">
+                      {selectedLeadDetails.solution || "No proposed solution generated yet."}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
             
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-crm-border/50 bg-crm-darker/50 flex justify-end">
-              <button 
-                onClick={() => setSelectedLeadDetails(null)}
-                className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm"
-              >
-                Close Insights
-              </button>
+            <div className="px-6 py-4 border-t border-crm-border/50 bg-crm-darker/50 flex justify-end gap-3">
+              {editMode ? (
+                <>
+                  <button
+                    onClick={() => { setEditMode(false); }}
+                    className="px-5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    disabled={savingEdit}
+                    className="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  >
+                    {savingEdit ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                    <span>{savingEdit ? 'Saving...' : 'Save Changes'}</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => openEditDetails(selectedLeadDetails)}
+                    className="px-5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <Edit2 size={14} />
+                    <span>Edit Details</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedLeadDetails(null)}
+                    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+                  >
+                    Close Insights
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
       )}
+
+      {confirmDeleteId && (() => { const target = leads.find(l => l.id === confirmDeleteId); return target ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-crm-card border border-red-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={26} className="text-red-400" />
+            </div>
+            <h3 className="text-xl font-black text-white mb-2">Remove Lead?</h3>
+            <p className="text-crm-textMuted text-sm mb-1 font-medium">{target.company}</p>
+            <p className="text-crm-textMuted text-xs mb-6">This will mark the lead as Closed and remove it from the directory.</p>
+            <div className="flex space-x-3 justify-center">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="px-6 py-2.5 rounded-xl border border-crm-border text-crm-textMuted hover:text-white transition-colors text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRemoveLead(confirmDeleteId)}
+                className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-sm transition-colors"
+              >
+                Confirm Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null; })()}
 
       {promoteTarget && (
         <ProjectFormModal

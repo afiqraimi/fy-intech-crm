@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { KanbanSquare, Plus, GripVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { KanbanSquare, Plus, GripVertical, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
-const COLUMNS = [
+const DEFAULT_COLUMNS = [
   { id: 'To Approach', title: 'To Approach', color: 'border-slate-500/30 bg-slate-500/5', headerColor: 'text-slate-400' },
   { id: 'Approached', title: 'Approached', color: 'border-blue-500/30 bg-blue-500/5', headerColor: 'text-blue-400' },
   { id: 'Proposal Sent', title: 'Proposal Sent', color: 'border-violet-500/30 bg-violet-500/5', headerColor: 'text-violet-400' }
@@ -10,9 +10,21 @@ const COLUMNS = [
 export default function PipelineTab({ leads, updateLeadStatus }) {
   const [draggedLead, setDraggedLead] = useState(null);
   const [limits, setLimits] = useState({});
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+  const [addingStage, setAddingStage] = useState(false);
+  const [newStageName, setNewStageName] = useState('');
 
   const getLimit = (colId) => limits[colId] || 50;
   const loadMore = (colId) => setLimits(prev => ({ ...prev, [colId]: getLimit(colId) + 50 }));
+
+  const handleAddStage = () => {
+    const name = newStageName.trim();
+    if (!name) return;
+    const id = name;
+    setColumns(prev => [...prev, { id, title: name, color: 'border-emerald-500/30 bg-emerald-500/5', headerColor: 'text-emerald-400' }]);
+    setNewStageName('');
+    setAddingStage(false);
+  };
 
   const handleDragStart = (e, lead) => {
     setDraggedLead(lead);
@@ -42,14 +54,14 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
   };
 
   const handleMoveMobile = async (lead, direction) => {
-    const currentIndex = COLUMNS.findIndex(c => c.id === lead.status);
+    const currentIndex = columns.findIndex(c => c.id === lead.status);
     let targetIndex = currentIndex;
     
     if (direction === 'prev' && currentIndex > 0) targetIndex--;
-    if (direction === 'next' && currentIndex < COLUMNS.length - 1) targetIndex++;
+    if (direction === 'next' && currentIndex < columns.length - 1) targetIndex++;
     
     if (targetIndex !== currentIndex) {
-      await updateLeadStatus(lead.id, COLUMNS[targetIndex].id);
+      await updateLeadStatus(lead.id, columns[targetIndex].id);
     }
   };
 
@@ -65,14 +77,42 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
             <p className="text-sm text-crm-textMuted">Track your outbound approach — drag leads from targeting to proposal stage.</p>
           </div>
         </div>
-        <button className="flex items-center space-x-2 bg-crm-card border border-crm-border text-white px-4 py-2 rounded-lg hover:bg-crm-border transition-colors">
+        <button
+          onClick={() => setAddingStage(v => !v)}
+          className="flex items-center space-x-2 bg-crm-card border border-crm-border text-white px-4 py-2 rounded-lg hover:bg-crm-border transition-colors"
+        >
           <Plus size={16} />
           <span className="text-sm font-medium">Add Stage</span>
         </button>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden">
-        {COLUMNS.map(column => {
+      {addingStage && (
+        <div className="flex items-center gap-3 mb-6 p-4 bg-crm-card border border-crm-border rounded-2xl">
+          <input
+            type="text"
+            value={newStageName}
+            onChange={e => setNewStageName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAddStage()}
+            placeholder="Stage name (e.g. Negotiation)"
+            className="flex-1 bg-crm-darker border border-crm-border rounded-xl px-4 py-2.5 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-emerald-500/50 text-sm"
+          />
+          <button
+            onClick={handleAddStage}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold transition-colors"
+          >
+            Add
+          </button>
+          <button
+            onClick={() => { setAddingStage(false); setNewStageName(''); }}
+            className="p-2.5 text-crm-textMuted hover:text-white transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden" style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}>
+        {columns.map(column => {
           const columnLeads = leads.filter(l => l.status === column.id);
           const limit = getLimit(column.id);
           const displayLeads = columnLeads.slice(0, limit);
@@ -117,7 +157,7 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
                     <div className="flex md:hidden justify-between mt-3 pt-3 border-t border-crm-border/50">
                       <button 
                         onClick={() => handleMoveMobile(lead, 'prev')}
-                        disabled={column.id === 'New'}
+                        disabled={columns.findIndex(c => c.id === column.id) === 0}
                         className="p-1.5 rounded bg-white/5 text-crm-textMuted disabled:opacity-30 hover:text-white"
                       >
                         <ChevronLeft size={16} />
@@ -125,7 +165,7 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
                       <span className="text-[10px] uppercase tracking-wider text-crm-textMuted flex items-center">Move Stage</span>
                       <button 
                         onClick={() => handleMoveMobile(lead, 'next')}
-                        disabled={column.id === 'Closed'}
+                        disabled={columns.findIndex(c => c.id === column.id) === columns.length - 1}
                         className="p-1.5 rounded bg-white/5 text-crm-textMuted disabled:opacity-30 hover:text-white"
                       >
                         <ChevronRight size={16} />
