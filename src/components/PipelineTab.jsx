@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { KanbanSquare, Plus, GripVertical, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const DEFAULT_COLUMNS = [
-  { id: 'To Approach', title: 'To Approach', color: 'border-slate-500/30 bg-slate-500/5', headerColor: 'text-slate-400' },
-  { id: 'Approached', title: 'Approached', color: 'border-blue-500/30 bg-blue-500/5', headerColor: 'text-blue-400' },
-  { id: 'Proposal Sent', title: 'Proposal Sent', color: 'border-violet-500/30 bg-violet-500/5', headerColor: 'text-violet-400' }
+  { id: 'New', title: 'Fresh Leads', color: 'border-slate-500/30 bg-slate-500/5', headerColor: 'text-slate-400' },
+  { id: 'To Approach', title: 'To Approach', color: 'border-blue-500/30 bg-blue-500/5', headerColor: 'text-blue-400' },
+  { id: 'Approached', title: 'Approached', color: 'border-violet-500/30 bg-violet-500/5', headerColor: 'text-violet-400' },
+  { id: 'Proposal Sent', title: 'Proposal Sent', color: 'border-emerald-500/30 bg-emerald-500/5', headerColor: 'text-emerald-400' }
 ];
 
 export default function PipelineTab({ leads, updateLeadStatus }) {
