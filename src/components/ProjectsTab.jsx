@@ -6,6 +6,7 @@ import ProjectFormModal from './ProjectFormModal';
 import { apiFetch, apiJson } from '../utils/api';
 import { clearAuthSession } from '../utils/auth';
 import { sendCrmNotification } from '../utils/notify';
+import toast from 'react-hot-toast';
 
 const STAGE_CONFIG = {
   'POC Complete':       { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',     icon: CheckCircle,   bar: 'bg-blue-500',    pct: 40 },
@@ -56,15 +57,16 @@ export default function ProjectsTab() {
       setProjects(remaining);
       setSelectedProject(remaining[0] || null);
       setConfirmDelete(false);
-      // 🔔 Notify
       if (project) {
         sendCrmNotification(
           `Project Removed`,
           `The project "${project.project_name}" for ${project.client} has been removed from Active Projects.\n\nIf this was a mistake, please log in and re-add the project manually.`
         );
+        toast.success('Project deleted');
       }
     } catch (e) {
       console.error('Delete failed', e);
+      toast.error('Failed to delete project');
     }
   };
 
@@ -106,15 +108,16 @@ export default function ProjectsTab() {
         method: 'PUT',
         body: JSON.stringify({ stage: newStage, last_update: today })
       });
-      // 🔔 Notify
       if (project) {
         sendCrmNotification(
           `Project Stage Updated`,
           `The project "${project.project_name}" for ${project.client} has been moved to a new stage.\n\nNew Stage: ${newStage}\nUpdated: ${today}\n\nLog in to your FY Intech CRM to view the full details.`
         );
       }
+      toast.success(`Stage updated to ${newStage}`);
     } catch (error) {
       console.error("Error updating project stage:", error);
+      toast.error('Failed to update stage');
     }
   };
 

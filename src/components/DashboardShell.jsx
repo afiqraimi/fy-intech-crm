@@ -15,6 +15,7 @@ import {
   Rocket,
   ServerCrash,
   RefreshCw,
+  Download,
 } from 'lucide-react';
 
 import DashboardTab from './DashboardTab';
@@ -24,6 +25,7 @@ import SettingsTab from './SettingsTab';
 import ProjectsTab from './ProjectsTab';
 import { apiJson } from '../utils/api';
 import { clearAuthSession, getStoredProfile, setStoredProfile } from '../utils/auth';
+import toast from 'react-hot-toast';
 
 const METRIC_STYLES = {
   1: { icon: TrendingUp, color: 'text-white', bg: 'bg-white/10' },
@@ -74,7 +76,25 @@ export default function DashboardShell() {
   const [loadingMsg, setLoadingMsg] = React.useState('Loading...');
   const [loadError, setLoadError] = React.useState(false);
   const [profile, setProfile] = React.useState(() => getStoredProfile() || FALLBACK_PROFILE);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [deferredPrompt, setDeferredPrompt] = React.useState(null);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') setDeferredPrompt(null);
+  };
 
   const refreshProfile = React.useCallback(async () => {
     try {
@@ -152,6 +172,7 @@ export default function DashboardShell() {
 
   const updateLeadStatus = async (leadId, newStatus) => {
     const previousLeads = leads;
+    const lead = leads.find(l => l.id === leadId);
     setLeads(currentLeads =>
       currentLeads.map(l => l.id === leadId ? { ...l, status: newStatus } : l)
     );
@@ -163,9 +184,13 @@ export default function DashboardShell() {
       });
       const metricsData = await apiJson('/api/metrics');
       setMetrics(metricsData.map(m => ({ ...m, ...METRIC_STYLES[m.id] })));
+      if (lead) {
+        toast.success(`${lead.company} moved to ${newStatus}`);
+      }
     } catch (error) {
       console.error('Error updating lead status:', error);
       setLeads(previousLeads);
+      toast.error('Failed to update lead status');
     }
   };
 
@@ -233,6 +258,8 @@ export default function DashboardShell() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-crm-textMuted" size={18} />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search targets..."
                 className="w-64 bg-black/40 border border-crm-border/50 text-sm rounded-full py-2 pl-10 pr-4 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-white/30 transition-all backdrop-blur-md"
               />
@@ -242,6 +269,17 @@ export default function DashboardShell() {
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-white rounded-full shadow-[0_0_5px_rgba(255,255,255,0.8)]"></span>
             </button>
+
+            {deferredPrompt && (
+              <button
+                onClick={handleInstall}
+                className="p-2 text-crm-textMuted hover:text-white transition-colors rounded-full hover:bg-white/10 flex items-center gap-1.5 text-xs font-semibold"
+                title="Install app"
+              >
+                <Download size={18} />
+                <span className="hidden sm:inline">Install</span>
+              </button>
+            )}
           </div>
         </header>
 
@@ -264,7 +302,17 @@ export default function DashboardShell() {
                 <p className="text-crm-textMuted text-sm mb-4">
                   Could not connect after 3 attempts.<br />The backend may be restarting.
                 </p>
-                <button
+            {deferredPrompt && (
+              <button
+                onClick={handleInstall}
+                className="w-full flex items-center justify-center space-x-2 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-all border border-white/10 text-sm font-semibold"
+              >
+                <Download size={16} />
+                <span>Install App</span>
+              </button>
+            )}
+
+            <button
                   onClick={fetchData}
                   className="flex items-center gap-2 mx-auto px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-sm font-bold transition-colors"
                 >
@@ -277,7 +325,7 @@ export default function DashboardShell() {
             <>
               {activeTab === 'Dashboard' && <DashboardTab metrics={metrics} leads={leads} setActiveTab={setActiveTab} projects={projects} />}
               {activeTab === 'Active Projects' && <ProjectsTab />}
-              {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} updateLeadStatus={updateLeadStatus} />}
+              {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} updateLeadStatus={updateLeadStatus} searchQuery={searchQuery} onSearchChange={setSearchQuery} />}
               {activeTab === 'Pipeline' && <PipelineTab leads={leads} updateLeadStatus={updateLeadStatus} />}
               {activeTab === 'Settings' && <SettingsTab onProfileChange={handleProfileChange} />}
             </>

@@ -2,9 +2,9 @@ export const AUTH_TOKEN_KEY = 'crm_auth_token';
 
 const trimTrailingSlash = (value) => value.replace(/\/+$/, '');
 
-export const API_BASE = trimTrailingSlash(
-  import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`
-);
+export const API_BASE = import.meta.env.VITE_API_URL
+  ? trimTrailingSlash(import.meta.env.VITE_API_URL)
+  : '';
 
 export function getAuthToken() {
   return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY) || '';

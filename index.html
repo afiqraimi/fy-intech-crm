@@ -3,8 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a0a0a" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fy-intech-crm</title>
+    <meta name="description" content="FY Intech CRM - Global Enterprise Customer Relationship Management" />
+    <title>FY Intech CRM</title>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
