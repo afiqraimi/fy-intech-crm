@@ -16,6 +16,8 @@ import {
   ServerCrash,
   RefreshCw,
   Download,
+  Share2,
+  X,
 } from 'lucide-react';
 
 import DashboardTab from './DashboardTab';
@@ -78,16 +80,24 @@ export default function DashboardShell() {
   const [profile, setProfile] = React.useState(() => getStoredProfile() || FALLBACK_PROFILE);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [deferredPrompt, setDeferredPrompt] = React.useState(null);
+  const [showIosTip, setShowIosTip] = React.useState(false);
   const navigate = useNavigate();
 
+  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
   React.useEffect(() => {
+    if (isIos && !isStandalone) {
+      const dismissed = localStorage.getItem('crm_ios_tip_dismissed');
+      if (!dismissed) setShowIosTip(true);
+    }
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isIos, isStandalone]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -247,6 +257,23 @@ export default function DashboardShell() {
       </aside>
 
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+        {showIosTip && (
+          <div className="mx-3 md:mx-4 mt-3 md:mt-4 px-4 py-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <Share2 size={18} className="text-blue-400 shrink-0" />
+              <p className="text-xs text-blue-200 leading-relaxed">
+                <span className="font-bold">Install this app:</span> Tap <span className="font-bold text-white">Share</span> {' '}
+                <span className="inline-block align-middle"><Share2 size={10} /></span> then {`"Add to Home Screen"`}
+              </p>
+            </div>
+            <button
+              onClick={() => { setShowIosTip(false); localStorage.setItem('crm_ios_tip_dismissed', '1'); }}
+              className="p-1.5 text-blue-400 hover:text-white transition-colors shrink-0"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
         <header className="h-16 md:h-20 glass-panel-heavy m-3 md:m-4 md:ml-0 rounded-2xl md:rounded-3xl flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 shrink-0 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
           <div className="flex items-center gap-3 min-w-0">
             <img src="/logo.png" alt="FY INTECH" className="h-7 w-auto md:hidden drop-shadow-md shrink-0" />
