@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search } from 'lucide-react';
+import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag } from 'lucide-react';
 import ProjectFormModal from './ProjectFormModal';
 import { apiJson } from '../utils/api';
 
@@ -73,7 +73,10 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
       result = result.filter(l =>
         (l.company || '').toLowerCase().includes(q) ||
         (l.industry || '').toLowerCase().includes(q) ||
-        (l.location || '').toLowerCase().includes(q)
+        (l.location || '').toLowerCase().includes(q) ||
+        (l.website || '').toLowerCase().includes(q) ||
+        (l.email_primary || '').toLowerCase().includes(q) ||
+        (l.phone || '').toLowerCase().includes(q)
       );
     }
 
@@ -210,6 +213,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                         {lead.company.charAt(0)}
                       </div>
                       <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{lead.company}</span>
+                      {lead.email_primary && <Mail size={11} className="text-emerald-500/60 shrink-0" title={lead.email_primary} />}
                     </div>
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap">
@@ -324,6 +328,44 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
             </div>
 
             <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
+              <div className="flex flex-wrap gap-4 text-sm">
+                {selectedLeadDetails.website && (
+                  <a href={selectedLeadDetails.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-colors">
+                    <Globe size={14} /> {selectedLeadDetails.website.replace(/^https?:\/\//, '')}
+                  </a>
+                )}
+                {selectedLeadDetails.email_primary && (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
+                    <Mail size={14} /> {selectedLeadDetails.email_primary}
+                  </span>
+                )}
+                {selectedLeadDetails.phone && (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
+                    <Phone size={14} /> {selectedLeadDetails.phone}
+                  </span>
+                )}
+                {selectedLeadDetails.priority && (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400">
+                    <Flag size={14} /> {selectedLeadDetails.priority}
+                  </span>
+                )}
+              </div>
+              {selectedLeadDetails.address && (
+                <div className="flex items-start gap-2 px-3 py-2 bg-white/5 border border-crm-border rounded-lg">
+                  <MapPin size={14} className="text-crm-textMuted shrink-0 mt-0.5" />
+                  <span className="text-sm text-crm-textMuted">{selectedLeadDetails.address}</span>
+                </div>
+              )}
+              {selectedLeadDetails.personnel_data && (
+                <div>
+                  <h3 className="text-violet-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Users size={16} className="mr-2"/> Key Personnel</h3>
+                  <div className="bg-violet-500/5 border border-violet-500/20 p-5 rounded-xl shadow-inner">
+                    <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">
+                      {selectedLeadDetails.personnel_data}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div>
                 <h3 className="text-red-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Flame size={16} className="mr-2"/> Core Problem Identified</h3>
                 <div className="bg-red-500/5 border border-red-500/20 p-5 rounded-xl shadow-inner">

@@ -14,6 +14,9 @@ import json
 import os
 import requests
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -526,6 +529,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+def on_startup():
+    try:
+        from scheduler import start_scheduler
+        start_scheduler()
+    except Exception:
+        logging.getLogger("main").warning("Scheduler not started (missing deps or config)")
+
+@app.on_event("shutdown")
+def on_shutdown():
+    try:
+        from scheduler import shutdown_scheduler
+        shutdown_scheduler()
+    except Exception:
+        pass
+
 def get_db():
     db = SessionLocal()
     try:
@@ -554,6 +573,14 @@ class LeadResponse(BaseModel):
     status: str
     problem: str | None = None
     solution: str | None = None
+    website: str | None = None
+    email_primary: str | None = None
+    email_additional: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    personnel_data: str | None = None
+    priority: str | None = None
+    lead_source: str | None = None
 
     class Config:
         from_attributes = True
@@ -830,6 +857,30 @@ class LeadStatusUpdate(BaseModel):
     status: str
     problem: Optional[str] = None
     solution: Optional[str] = None
+    website: Optional[str] = None
+    email_primary: Optional[str] = None
+    email_additional: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    personnel_data: Optional[str] = None
+    priority: Optional[str] = None
+
+class LeadCreate(BaseModel):
+    company: str
+    industry: str
+    location: str = ""
+    score: int = 50
+    status: str = "To Approach"
+    problem: Optional[str] = None
+    solution: Optional[str] = None
+    website: Optional[str] = None
+    email_primary: Optional[str] = None
+    email_additional: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    personnel_data: Optional[str] = None
+    priority: Optional[str] = None
+    lead_source: Optional[str] = "manual"
 
 @app.put("/api/leads/{lead_id}")
 def update_lead_status(
@@ -847,6 +898,20 @@ def update_lead_status(
         lead.problem = update_data.problem
     if update_data.solution is not None:
         lead.solution = update_data.solution
+    if update_data.website is not None:
+        lead.website = update_data.website
+    if update_data.email_primary is not None:
+        lead.email_primary = update_data.email_primary
+    if update_data.email_additional is not None:
+        lead.email_additional = update_data.email_additional
+    if update_data.phone is not None:
+        lead.phone = update_data.phone
+    if update_data.address is not None:
+        lead.address = update_data.address
+    if update_data.personnel_data is not None:
+        lead.personnel_data = update_data.personnel_data
+    if update_data.priority is not None:
+        lead.priority = update_data.priority
     db.commit()
     db.refresh(lead)
     if previous_status != lead.status:
@@ -856,6 +921,42 @@ def update_lead_status(
             f"{lead.company} has moved from {previous_status} to {lead.status}.\n\nIndustry: {lead.industry}\nLocation: {lead.location}",
         )
     return lead
+
+@app.post("/api/leads", response_model=LeadResponse)
+def create_lead(
+    data: LeadCreate,
+    db: Session = Depends(get_db),
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    existing = db.query(models.Lead).filter(models.Lead.company == data.company).first()
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Lead '{data.company}' already exists")
+    lead = models.Lead(**data.model_dump())
+    db.add(lead)
+    db.commit()
+    db.refresh(lead)
+    return lead
+
+@app.post("/api/leads/batch", response_model=List[LeadResponse])
+def create_leads_batch(
+    data: List[LeadCreate],
+    db: Session = Depends(get_db),
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    created = []
+    skipped = 0
+    for item in data:
+        existing = db.query(models.Lead).filter(models.Lead.company == item.company).first()
+        if existing:
+            skipped += 1
+            continue
+        lead = models.Lead(**item.model_dump())
+        db.add(lead)
+        created.append(lead)
+    db.commit()
+    for lead in created:
+        db.refresh(lead)
+    return created
 
 @app.get("/api/projects", response_model=List[ProjectResponse])
 def get_projects(
@@ -964,3 +1065,29 @@ def import_leads_csv(
         raise HTTPException(status_code=500, detail=str(e))
 
     return {"ok": True, "imported": imported, "skipped": skipped}
+
+class LeadEngineTrigger(BaseModel):
+    industry: str = "Oil & Gas"
+    revenue_range: str = "RM10M-50M"
+
+@app.post("/api/admin/lead-engine/trigger")
+def trigger_lead_engine(
+    data: LeadEngineTrigger,
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    try:
+        from lead_engine import run_pipeline
+        result = run_pipeline(data.industry, data.revenue_range)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/lead-engine/schedule")
+def get_lead_schedule(
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    try:
+        from lead_schedule import load_schedule
+        return load_schedule()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

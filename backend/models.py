@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Text
 from database import Base
 
 class Lead(Base):
@@ -12,6 +12,14 @@ class Lead(Base):
     status = Column(String)
     problem = Column(String, nullable=True)
     solution = Column(String, nullable=True)
+    website = Column(String, nullable=True)
+    email_primary = Column(String, nullable=True)
+    email_additional = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    address = Column(Text, nullable=True)
+    personnel_data = Column(Text, nullable=True)
+    priority = Column(String, nullable=True)
+    lead_source = Column(String, nullable=True, default="manual")
 
 class Project(Base):
     __tablename__ = "projects"
