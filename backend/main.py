@@ -27,24 +27,29 @@ def _migrate_lead_columns():
         if "leads" not in inspector.get_table_names():
             return
         existing = {c["name"] for c in inspector.get_columns("leads")}
+
+        is_postgres = "postgres" in str(engine.url)
+
         new_columns = [
-            ("website", "TEXT"),
-            ("email_primary", "TEXT"),
-            ("email_additional", "TEXT"),
-            ("phone", "TEXT"),
-            ("address", "TEXT"),
-            ("personnel_data", "TEXT"),
-            ("priority", "TEXT"),
-            ("lead_source", "TEXT DEFAULT 'manual'"),
-            ("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"),
+            ("website", "TEXT", None),
+            ("email_primary", "TEXT", None),
+            ("email_additional", "TEXT", None),
+            ("phone", "TEXT", None),
+            ("address", "TEXT", None),
+            ("personnel_data", "TEXT", None),
+            ("priority", "TEXT", None),
+            ("lead_source", "TEXT DEFAULT 'manual'", None),
+            ("created_at", "TEXT DEFAULT CURRENT_TIMESTAMP", "TEXT DEFAULT CURRENT_TIMESTAMP"),
         ]
         with engine.begin() as conn:
-            for col_name, col_type in new_columns:
+            for col_name, col_type, pg_type in new_columns:
                 if col_name not in existing:
-                    conn.execute(text(f"ALTER TABLE leads ADD COLUMN {col_name} {col_type}"))
-                    logging.getLogger("main").info("Migrated column: %s", col_name)
-    except Exception:
-        pass
+                    sql_type = pg_type if is_postgres and pg_type else col_type
+                    sql = f"ALTER TABLE leads ADD COLUMN {col_name} {sql_type}"
+                    conn.execute(text(sql))
+                    logging.getLogger("main").info("Migrated column: %s (%s)", col_name, sql_type)
+    except Exception as e:
+        logging.getLogger("main").error("Migration error: %s", e)
 
 _migrate_lead_columns()
 
