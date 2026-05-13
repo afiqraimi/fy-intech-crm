@@ -17,7 +17,7 @@ const ScoreBadge = ({ score }) => {
   );
 };
 
-const SORT_FIELDS = ['company', 'industry', 'location', 'status', 'score', 'created_at'];
+const SORT_FIELDS = ['company', 'industry', 'location', 'status', 'score', 'id'];
 
 const SortHeader = ({ label, field, sortField, sortDirection, onClick, className = '' }) => (
   <th
@@ -216,7 +216,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                         </td>
                         <td className="px-6 py-3 text-center hidden md:table-cell">
                           <span className="text-xs text-crm-textMuted">
-                            {lead.created_at ? lead.created_at.slice(0, 10) : '—'}
+                            #{lead.id}
                           </span>
                         </td>
                         <td className="px-6 py-3 text-right">
@@ -247,7 +247,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                     <SortHeader label="Location" field="location" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
                     <SortHeader label="Status" field="status" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
                     <SortHeader label="VR Potential" field="score" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} className="text-center" />
-                    <SortHeader label="Date Added" field="created_at" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} className="text-center hidden md:table-cell" />
+                    <SortHeader label="Lead #" field="id" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} className="text-center hidden md:table-cell" />
                     <th className="px-6 py-4 text-xs font-semibold text-crm-textMuted uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
@@ -287,7 +287,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap text-center hidden md:table-cell">
                     <span className="text-xs text-crm-textMuted">
-                      {lead.created_at ? lead.created_at.slice(0, 10) : '—'}
+                      #{lead.id}
                     </span>
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap text-right relative">
@@ -460,11 +460,6 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                   )}
                   {selectedLeadDetails.lead_source && (
                     <span className="px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted capitalize">via {selectedLeadDetails.lead_source}</span>
-                  )}
-                  {selectedLeadDetails.created_at && (
-                    <span className="px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted text-xs">
-                      Added {selectedLeadDetails.created_at.slice(0, 10)}
-                    </span>
                   )}
                 </div>
               </div>

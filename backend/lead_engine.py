@@ -4,7 +4,6 @@ import re
 import time
 import random
 import logging
-from datetime import datetime
 from typing import Optional
 
 import requests
@@ -421,7 +420,6 @@ def save_to_crm(leads: list[dict]) -> dict:
                 email_body=(lead.get("email_body") or "")[:5000],
                 personalization_notes=(lead.get("personalization_notes") or lead.get("notes") or "")[:2000],
                 social_media=json.dumps(lead.get("social_media") or {}, ensure_ascii=False)[:2000],
-                created_at=datetime.utcnow().isoformat(),
             ))
             created += 1
 

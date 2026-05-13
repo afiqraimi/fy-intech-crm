@@ -46,7 +46,6 @@ def _migrate_lead_columns():
             ("fax", "TEXT", None),
             ("contact_page", "TEXT", None),
             ("personalization_notes", "TEXT", None),
-            ("created_at", "TEXT", "TEXT"),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -634,7 +633,6 @@ class LeadResponse(BaseModel):
     fax: str | None = None
     contact_page: str | None = None
     personalization_notes: str | None = None
-    created_at: str | None = None
 
     class Config:
         from_attributes = True
