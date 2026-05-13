@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2 } from 'lucide-react';
+import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2, Rocket, Radar, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiJson } from '../utils/api';
 import { clearAuthSession, getStoredProfile, normalizeEmail, setAuthSession, setStoredProfile } from '../utils/auth';
@@ -84,6 +84,10 @@ export default function SettingsTab({ onProfileChange }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
+  const [engineIndustry, setEngineIndustry] = useState('Oil & Gas');
+  const [engineRevenue, setEngineRevenue] = useState('RM10M-50M');
+  const [engineRunning, setEngineRunning] = useState(false);
+  const [engineResult, setEngineResult] = useState(null);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
   const navigate = useNavigate();
@@ -276,6 +280,27 @@ export default function SettingsTab({ onProfileChange }) {
     }
   };
 
+  const runLeadEngine = async () => {
+    setEngineRunning(true);
+    setEngineResult(null);
+    try {
+      const result = await apiJson('/api/admin/lead-engine/trigger', {
+        method: 'POST',
+        body: JSON.stringify({ industry: engineIndustry, revenue_range: engineRevenue }),
+      });
+      setEngineResult(result);
+      if (result.error) {
+        showToast(result.error, 'error');
+      } else {
+        showToast(`${result.created || 0} leads created, ${result.skipped || 0} skipped`);
+      }
+    } catch (error) {
+      showToast(error.message || 'Failed to run lead engine', 'error');
+    } finally {
+      setEngineRunning(false);
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-500 w-full max-w-3xl mx-auto space-y-6 pb-12">
       <div>
@@ -391,6 +416,61 @@ export default function SettingsTab({ onProfileChange }) {
             <Save size={14} />
             <span>Save Appearance</span>
           </button>
+        </div>
+      </SectionCard>
+
+      <SectionCard icon={Rocket} iconColor="text-amber-400" title="Lead Engine">
+        <div className="space-y-4">
+          <p className="text-xs text-crm-textMuted leading-relaxed">
+            Run the automated lead generation pipeline. Searches for companies via Firecrawl, scrapes contact info,
+            drafts outreach emails with DeepSeek AI, and saves everything to the CRM.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Industry">
+              <Input value={engineIndustry} onChange={setEngineIndustry} placeholder="e.g. Oil & Gas" />
+            </Field>
+            <Field label="Revenue Range">
+              <select
+                value={engineRevenue}
+                onChange={e => setEngineRevenue(e.target.value)}
+                className="w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all"
+              >
+                <option value="RM10M-50M">RM10M-50M (Mid Market)</option>
+                <option value="RM50M+">RM50M+ (Enterprise)</option>
+                <option value="RM1M-10M">RM1M-10M (SME)</option>
+              </select>
+            </Field>
+          </div>
+          <button
+            type="button"
+            onClick={runLeadEngine}
+            disabled={engineRunning}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-black font-black text-sm rounded-xl transition-colors"
+          >
+            {engineRunning ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+            <span>{engineRunning ? 'Running Pipeline...' : 'Run Lead Engine'}</span>
+          </button>
+          {engineResult && !engineResult.error && (
+            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 space-y-2">
+              <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Pipeline Complete</p>
+              <div className="flex gap-4 text-sm">
+                <span className="text-white">{engineResult.created || 0} <span className="text-crm-textMuted">created</span></span>
+                <span className="text-white">{engineResult.skipped || 0} <span className="text-crm-textMuted">skipped</span></span>
+              </div>
+              {engineResult.log && (
+                <details className="text-xs text-crm-textMuted">
+                  <summary className="cursor-pointer hover:text-white">View log</summary>
+                  <pre className="mt-2 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-40 whitespace-pre-wrap">{engineResult.log.join('\n')}</pre>
+                </details>
+              )}
+            </div>
+          )}
+          {engineResult && engineResult.error && (
+            <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
+              <p className="text-red-400 text-xs font-bold uppercase tracking-widest mb-1">Pipeline Failed</p>
+              <p className="text-red-300 text-sm">{engineResult.error}</p>
+            </div>
+          )}
         </div>
       </SectionCard>
 
