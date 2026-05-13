@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2, Rocket, Radar, Play } from 'lucide-react';
+import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2, Rocket, Radar, Play, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiJson } from '../utils/api';
 import { clearAuthSession, getStoredProfile, normalizeEmail, setAuthSession, setStoredProfile } from '../utils/auth';
@@ -88,6 +88,7 @@ export default function SettingsTab({ onProfileChange }) {
   const [engineRevenue, setEngineRevenue] = useState('RM10M-50M');
   const [engineRunning, setEngineRunning] = useState(false);
   const [engineResult, setEngineResult] = useState(null);
+  const [clearingDemo, setClearingDemo] = useState(false);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
   const navigate = useNavigate();
@@ -301,6 +302,19 @@ export default function SettingsTab({ onProfileChange }) {
     }
   };
 
+  const clearDemoLeads = async () => {
+    if (!confirm('This will permanently delete ALL demo/manual leads. Only n8n-scraped leads will remain. Continue?')) return;
+    setClearingDemo(true);
+    try {
+      const result = await apiJson('/api/admin/leads/clear-demo', { method: 'DELETE' });
+      showToast(`${result.deleted} demo leads deleted`);
+    } catch (error) {
+      showToast(error.message || 'Failed to clear demo leads', 'error');
+    } finally {
+      setClearingDemo(false);
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-500 w-full max-w-3xl mx-auto space-y-6 pb-12">
       <div>
@@ -441,15 +455,26 @@ export default function SettingsTab({ onProfileChange }) {
               </select>
             </Field>
           </div>
-          <button
-            type="button"
-            onClick={runLeadEngine}
-            disabled={engineRunning}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-black font-black text-sm rounded-xl transition-colors"
-          >
-            {engineRunning ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
-            <span>{engineRunning ? 'Running Pipeline...' : 'Run Lead Engine'}</span>
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={runLeadEngine}
+              disabled={engineRunning}
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-black font-black text-sm rounded-xl transition-colors"
+            >
+              {engineRunning ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+              <span>{engineRunning ? 'Running Pipeline...' : 'Run Lead Engine'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={clearDemoLeads}
+              disabled={clearingDemo}
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-xl transition-colors"
+            >
+              {clearingDemo ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+              <span>{clearingDemo ? 'Clearing...' : 'Clear Demo Data'}</span>
+            </button>
+          </div>
           {engineResult && !engineResult.error && (
             <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 space-y-2">
               <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Pipeline Complete</p>

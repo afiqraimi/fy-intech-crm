@@ -1138,3 +1138,18 @@ def test_firecrawl(
         return {"status": resp.status_code, "response": resp.json()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/admin/leads/clear-demo")
+def clear_demo_leads(
+    admin: models.AdminUser = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    try:
+        deleted = db.query(models.Lead).filter(
+            (models.Lead.lead_source == None) | (models.Lead.lead_source == "manual")
+        ).delete(synchronize_session=False)
+        db.commit()
+        return {"deleted": deleted}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
