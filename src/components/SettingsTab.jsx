@@ -306,7 +306,7 @@ export default function SettingsTab({ onProfileChange }) {
     if (!confirm('This will permanently delete ALL demo/manual leads. Only n8n-scraped leads will remain. Continue?')) return;
     setClearingDemo(true);
     try {
-      const result = await apiJson('/api/admin/leads/clear-demo', { method: 'DELETE' });
+      const result = await apiJson('/api/admin/leads/clear-demo', { method: 'POST' });
       showToast(`${result.deleted} demo leads deleted`);
     } catch (error) {
       showToast(error.message || 'Failed to clear demo leads', 'error');

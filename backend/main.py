@@ -1139,7 +1139,7 @@ def test_firecrawl(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/admin/leads/clear-demo")
+@app.post("/api/admin/leads/clear-demo")
 def clear_demo_leads(
     admin: models.AdminUser = Depends(get_current_admin),
     db: Session = Depends(get_db),
