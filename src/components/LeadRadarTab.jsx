@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag, Sparkles } from 'lucide-react';
+import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag } from 'lucide-react';
 import ProjectFormModal from './ProjectFormModal';
 import { apiJson } from '../utils/api';
 
@@ -96,60 +96,9 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
     return result;
   }, [leads, removedIds, leadEdits, query, sortField, sortDirection]);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-
-  const { todayLeads, normalLeads } = useMemo(() => {
-    const today = [];
-    const normal = [];
-    for (const l of filteredAndSortedLeads) {
-      if (l.created_at && l.created_at.slice(0, 10) === todayStr) {
-        today.push(l);
-      } else {
-        normal.push(l);
-      }
-    }
-    return { todayLeads: today, normalLeads: normal };
-  }, [filteredAndSortedLeads, todayStr]);
-
-  const openEditDetails = useCallback((lead) => {
-    setSelectedLeadDetails(lead);
-    setEditForm({ problem: lead.problem || '', solution: lead.solution || '' });
-    setEditMode(true);
-    setActiveDropdown(null);
-  }, []);
-
-  const saveEdit = useCallback(async () => {
-    setSavingEdit(true);
-    try {
-      await apiJson(`/api/leads/${selectedLeadDetails.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          status: selectedLeadDetails.status,
-          problem: editForm.problem,
-          solution: editForm.solution,
-        }),
-      });
-    } catch {
-    }
-    setLeadEdits(prev => ({ ...prev, [selectedLeadDetails.id]: { problem: editForm.problem, solution: editForm.solution } }));
-    setSelectedLeadDetails(prev => ({ ...prev, problem: editForm.problem, solution: editForm.solution }));
-    setEditMode(false);
-    setSavingEdit(false);
-  }, [selectedLeadDetails, editForm]);
-
-  const handleRemoveLead = useCallback(async (id) => {
-    try {
-      await updateLeadStatus(id, 'Closed');
-    } catch {
-    }
-    setRemovedIds(prev => new Set([...prev, id]));
-    setSelectedLeadDetails(null);
-    setConfirmDeleteId(null);
-  }, [updateLeadStatus]);
-
-  const totalPages = Math.ceil(normalLeads.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredAndSortedLeads.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentLeads = normalLeads.slice(startIndex, startIndex + itemsPerPage);
+  const currentLeads = filteredAndSortedLeads.slice(startIndex, startIndex + itemsPerPage);
 
   const toggleDropdown = (id) => {
     if (activeDropdown === id) setActiveDropdown(null);
@@ -167,7 +116,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
           </div>
           <div>
             <h3 className="text-lg font-bold text-white shadow-sm">Target Directory</h3>
-            <p className="text-xs text-crm-textMuted/80">{filteredAndSortedLeads.length} Total Targets | {todayLeads.length} New Today</p>
+            <p className="text-xs text-crm-textMuted/80">{filteredAndSortedLeads.length} Total Targets Identified</p>
           </div>
         </div>
 
@@ -208,97 +157,17 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
             </button>
           </div>
         ) : (
-          <>
-            {/* New Today Section */}
-            {todayLeads.length > 0 && (
-              <div className="mb-2">
-                <div className="px-6 py-3 bg-amber-500/5 border-b border-amber-500/20 flex items-center gap-2">
-                  <Sparkles size={16} className="text-amber-400" />
-                  <span className="text-sm font-bold text-amber-400 uppercase tracking-wider">
-                    New Today ({todayLeads.length})
-                  </span>
-                </div>
-                <table className="w-full text-left border-collapse">
-                  <tbody className="divide-y divide-crm-border/30">
-                    {todayLeads.map((lead) => (
-                      <tr key={lead.id} className="hover:bg-amber-500/5 transition-colors group">
-                        <td className="px-6 py-3 whitespace-nowrap">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-xs font-bold text-amber-400">
-                              {lead.company.charAt(0)}
-                            </div>
-                            <span className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors">{lead.company}</span>
-                            {lead.email_primary && <Mail size={11} className="text-emerald-500/60 shrink-0" title={lead.email_primary} />}
-                          </div>
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-crm-border/40 text-crm-textMuted uppercase">{lead.industry}</span>
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap">
-                          <span className="text-sm text-crm-textMuted">{lead.location}</span>
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                            {lead.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-3 text-center">
-                          <ScoreBadge score={lead.score} />
-                        </td>
-                        <td className="px-6 py-3 text-right">
-                          <div className="relative">
-                            <button
-                              onClick={() => toggleDropdown(lead.id)}
-                              className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-crm-textMuted hover:text-white"
-                            >
-                              <MoreVertical size={16} />
-                            </button>
-                            {activeDropdown === lead.id && (
-                              <div
-                                className="fixed z-50 min-w-[180px] bg-crm-card border border-crm-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in"
-                                style={{ position: 'fixed' }}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <button onClick={() => { setSelectedLeadDetails(lead); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 text-sm text-crm-textMuted hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors">
-                                  <Info size={14} /> More Details
-                                </button>
-                                <button onClick={() => { setPromoteTarget(lead); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 text-sm text-crm-textMuted hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors">
-                                  <Rocket size={14} /> Promote to Project
-                                </button>
-                                <button onClick={() => { setSelectedLeadDetails(lead); setEditMode(true); setEditForm({ problem: lead.problem || '', solution: lead.solution || '' }); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 text-sm text-crm-textMuted hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors">
-                                  <Edit2 size={14} /> Edit Details
-                                </button>
-                                <button onClick={() => { setConfirmDeleteId(lead.id); setActiveDropdown(null); }} className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 flex items-center gap-2 transition-colors border-t border-crm-border/50">
-                                  <Trash2 size={14} /> Remove Lead
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Normal Leads Table */}
-            {normalLeads.length === 0 && todayLeads.length > 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-crm-textMuted gap-1">
-                <p className="text-sm">No older leads to show</p>
-              </div>
-            ) : (
-              <table className="w-full text-left border-collapse relative">
-                <thead className="sticky top-0 z-10 bg-crm-darker/60 backdrop-blur-md border-b border-crm-border/50 shadow-sm">
-                  <tr>
-                    <SortHeader label="Company Name" field="company" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
-                    <SortHeader label="Industry" field="industry" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
-                    <SortHeader label="Location" field="location" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
-                    <SortHeader label="Status" field="status" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
-                    <SortHeader label="VR Potential" field="score" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} className="text-center" />
-                    <th className="px-6 py-4 text-xs font-semibold text-crm-textMuted uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
+          <table className="w-full text-left border-collapse relative">
+            <thead className="sticky top-0 z-10 bg-crm-darker/60 backdrop-blur-md border-b border-crm-border/50 shadow-sm">
+              <tr>
+                <SortHeader label="Company Name" field="company" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
+                <SortHeader label="Industry" field="industry" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
+                <SortHeader label="Location" field="location" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
+                <SortHeader label="Status" field="status" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} />
+                <SortHeader label="VR Potential" field="score" sortField={sortField} sortDirection={sortDirection} onClick={handleSort} className="text-center" />
+                <th className="px-6 py-4 text-xs font-semibold text-crm-textMuted uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
             <tbody className="divide-y divide-crm-border/30">
               {currentLeads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-crm-border/30 transition-colors group">
@@ -374,16 +243,14 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
               ))}
             </tbody>
           </table>
-            )}
-          </>
         )}
       </div>
 
       {/* Pagination Footer */}
-      {normalLeads.length > 0 && (
+      {filteredAndSortedLeads.length > 0 && (
         <div className="px-6 py-4 border-t border-crm-border flex items-center justify-between shrink-0 bg-crm-card rounded-b-2xl">
           <p className="text-sm text-crm-textMuted">
-            Showing <span className="font-medium text-white">{Math.min(startIndex + 1, normalLeads.length)}</span> to <span className="font-medium text-white">{Math.min(startIndex + itemsPerPage, normalLeads.length)}</span> of <span className="font-medium text-white">{normalLeads.length}</span> leads
+            Showing <span className="font-medium text-white">{Math.min(startIndex + 1, filteredAndSortedLeads.length)}</span> to <span className="font-medium text-white">{Math.min(startIndex + itemsPerPage, filteredAndSortedLeads.length)}</span> of <span className="font-medium text-white">{filteredAndSortedLeads.length}</span> leads
           </p>
           <div className="flex items-center space-x-2">
             <button
