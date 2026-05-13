@@ -1119,56 +1119,105 @@ class LeadEngineTrigger(BaseModel):
     industry: str = "Oil & Gas"
     revenue_range: str = "RM10M-50M"
 
+import threading
+
+_sweep_status = {
+    "running": False,
+    "total": 0,
+    "current": 0,
+    "current_desc": "",
+    "total_created": 0,
+    "total_skipped": 0,
+    "errors": 0,
+    "results": [],
+    "finished": False,
+}
+_sweep_lock = threading.Lock()
+
 @app.post("/api/admin/lead-engine/sweep")
 def sweep_all_industries(
     admin: models.AdminUser = Depends(get_current_admin),
 ):
-    try:
-        from lead_schedule import load_schedule
-        from lead_engine import run_pipeline
+    global _sweep_status
+    with _sweep_lock:
+        if _sweep_status["running"]:
+            raise HTTPException(status_code=409, detail="A sweep is already running")
+        _sweep_status = {
+            "running": True,
+            "total": 0,
+            "current": 0,
+            "current_desc": "Starting...",
+            "total_created": 0,
+            "total_skipped": 0,
+            "errors": 0,
+            "results": [],
+            "finished": False,
+        }
 
-        entries = [e for e in load_schedule() if e.get("enabled", True)]
-        total = len(entries)
-        results = []
-        total_created = 0
-        total_skipped = 0
-        errors = []
+    def _run():
+        global _sweep_status
+        try:
+            from lead_schedule import load_schedule
+            from lead_engine import run_pipeline
+            entries = [e for e in load_schedule() if e.get("enabled", True)]
+            with _sweep_lock:
+                _sweep_status["total"] = len(entries)
 
-        for i, entry in enumerate(entries):
-            industry = entry["industry"]
-            revenue_range = entry["revenue_range"]
-            desc = entry.get("description", f"{industry} | {revenue_range}")
+            for i, entry in enumerate(entries):
+                industry = entry["industry"]
+                revenue_range = entry["revenue_range"]
+                desc = entry.get("description", f"{industry} | {revenue_range}")
+                with _sweep_lock:
+                    _sweep_status["current"] = i + 1
+                    _sweep_status["current_desc"] = desc
 
-            try:
-                result = run_pipeline(industry, revenue_range)
-                created = result.get("created", 0)
-                skipped = result.get("skipped", 0)
-                total_created += created
-                total_skipped += skipped
-                results.append({
-                    "description": desc,
-                    "created": created,
-                    "skipped": skipped,
-                    "error": result.get("error"),
-                })
-            except Exception as e:
-                errors.append({"description": desc, "error": str(e)})
-                results.append({
-                    "description": desc,
+                try:
+                    result = run_pipeline(industry, revenue_range)
+                    created = result.get("created", 0)
+                    skipped = result.get("skipped", 0)
+                    with _sweep_lock:
+                        _sweep_status["total_created"] += created
+                        _sweep_status["total_skipped"] += skipped
+                        _sweep_status["results"].append({
+                            "description": desc,
+                            "created": created,
+                            "skipped": skipped,
+                            "error": result.get("error"),
+                        })
+                except Exception as e:
+                    with _sweep_lock:
+                        _sweep_status["errors"] += 1
+                        _sweep_status["results"].append({
+                            "description": desc,
+                            "created": 0,
+                            "skipped": 0,
+                            "error": str(e),
+                        })
+            with _sweep_lock:
+                _sweep_status["finished"] = True
+        except Exception as e:
+            with _sweep_lock:
+                _sweep_status["errors"] += 1
+                _sweep_status["results"].append({
+                    "description": "FATAL",
                     "created": 0,
                     "skipped": 0,
                     "error": str(e),
                 })
+                _sweep_status["finished"] = True
+        finally:
+            with _sweep_lock:
+                _sweep_status["running"] = False
 
-        return {
-            "total": total,
-            "total_created": total_created,
-            "total_skipped": total_skipped,
-            "errors": len(errors),
-            "results": results,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    threading.Thread(target=_run, daemon=True).start()
+    return {"started": True}
+
+@app.get("/api/admin/lead-engine/sweep-status")
+def sweep_status(
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    with _sweep_lock:
+        return dict(_sweep_status)
 
 @app.post("/api/admin/lead-engine/trigger")
 def trigger_lead_engine(

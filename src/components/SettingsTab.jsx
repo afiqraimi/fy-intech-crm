@@ -321,16 +321,25 @@ export default function SettingsTab({ onProfileChange }) {
     setSweeping(true);
     setSweepResult(null);
     try {
-      const result = await apiJson('/api/admin/lead-engine/sweep', { method: 'POST' });
-      setSweepResult(result);
-      if (result.errors > 0) {
-        showToast(`${result.total_created} leads across ${result.total} industries (${result.errors} failed)`, 'error');
-      } else {
-        showToast(`${result.total_created} leads found across ${result.total} industries`);
+      const start = await apiJson('/api/admin/lead-engine/sweep', { method: 'POST' });
+      if (!start.started) {
+        showToast('Sweep failed to start', 'error');
+        setSweeping(false);
+        return;
       }
+      const poll = async () => {
+        const status = await apiJson('/api/admin/lead-engine/sweep-status');
+        setSweepResult(status);
+        if (!status.running && status.finished) {
+          setSweeping(false);
+          showToast(`${status.total_created} leads found across ${status.total} industries`);
+        } else {
+          setTimeout(poll, 2000);
+        }
+      };
+      poll();
     } catch (error) {
       showToast(error.message || 'Sweep failed', 'error');
-    } finally {
       setSweeping(false);
     }
   };
@@ -506,13 +515,15 @@ export default function SettingsTab({ onProfileChange }) {
           </div>
           {sweepResult && (
             <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-4 space-y-2">
-              <p className="text-violet-400 text-xs font-bold uppercase tracking-widest">Sweep Complete</p>
+              <p className="text-violet-400 text-xs font-bold uppercase tracking-widest">
+                {sweepResult.running ? `Sweeping\u2026 ${sweepResult.current}/${sweepResult.total} \u2014 ${sweepResult.current_desc}` : 'Sweep Complete'}
+              </p>
               <div className="flex gap-4 text-sm">
                 <span className="text-white">{sweepResult.total_created || 0} <span className="text-crm-textMuted">created</span></span>
                 <span className="text-white">{sweepResult.total_skipped || 0} <span className="text-crm-textMuted">skipped</span></span>
                 <span className="text-white">{sweepResult.total || 0} <span className="text-crm-textMuted">industries</span></span>
               </div>
-              {sweepResult.results && (
+              {sweepResult.results && sweepResult.results.length > 0 && (
                 <details className="text-xs text-crm-textMuted">
                   <summary className="cursor-pointer hover:text-white mt-1">View per-industry breakdown</summary>
                   <div className="mt-2 space-y-1">
