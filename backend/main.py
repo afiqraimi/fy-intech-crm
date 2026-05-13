@@ -39,7 +39,7 @@ def _migrate_lead_columns():
             ("personnel_data", "TEXT", None),
             ("priority", "TEXT", None),
             ("lead_source", "TEXT DEFAULT 'manual'", None),
-            ("created_at", "TEXT DEFAULT CURRENT_TIMESTAMP", "TEXT DEFAULT CURRENT_TIMESTAMP"),
+            ("created_at", "TEXT", "TEXT"),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -547,10 +547,16 @@ def seed_problem_solution():
     finally:
         db.close()
 
-seed_admin()
-seed_leads()
-seed_projects()
-seed_problem_solution()
+def _safe_call(fn, name):
+    try:
+        fn()
+    except Exception as e:
+        logging.getLogger("main").error("Startup seed '%s' failed: %s", name, e)
+
+_safe_call(seed_admin, "seed_admin")
+_safe_call(seed_leads, "seed_leads")
+_safe_call(seed_projects, "seed_projects")
+_safe_call(seed_problem_solution, "seed_problem_solution")
 
 app = FastAPI(title="FY Intech CRM API")
 
@@ -868,17 +874,28 @@ def get_leads(
     db: Session = Depends(get_db),
     admin: models.AdminUser = Depends(get_current_admin),
 ):
-    return db.query(models.Lead).all()
+    try:
+        return db.query(models.Lead).all()
+    except Exception as e:
+        logging.getLogger("main").error("get_leads failed: %s", e)
+        return []
 
 @app.get("/api/metrics")
 def get_metrics(
     db: Session = Depends(get_db),
     admin: models.AdminUser = Depends(get_current_admin),
 ):
-    total_leads = db.query(models.Lead).count()
-    hot_prospects = db.query(models.Lead).filter(models.Lead.score >= 80).count()
-    deals_closed = db.query(models.Lead).filter(models.Lead.status == "Proposal Sent").count()
-    active_projects = db.query(models.Project).count()
+    try:
+        total_leads = db.query(models.Lead).count()
+        hot_prospects = db.query(models.Lead).filter(models.Lead.score >= 80).count()
+        deals_closed = db.query(models.Lead).filter(models.Lead.status == "Proposal Sent").count()
+        active_projects = db.query(models.Project).count()
+    except Exception as e:
+        logging.getLogger("main").error("get_metrics failed: %s", e)
+        total_leads = 0
+        hot_prospects = 0
+        deals_closed = 0
+        active_projects = 0
     
     return [
         { "id": 1, "title": "Total Leads", "value": str(total_leads), "change": "+5.2%", "isPositive": True },

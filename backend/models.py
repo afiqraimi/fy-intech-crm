@@ -21,7 +21,7 @@ class Lead(Base):
     personnel_data = Column(Text, nullable=True)
     priority = Column(String, nullable=True)
     lead_source = Column(String, nullable=True, default="manual")
-    created_at = Column(String(30), default=lambda: datetime.utcnow().isoformat())
+    created_at = Column(String(30), nullable=True, default=lambda: datetime.utcnow().isoformat())
 
 class Project(Base):
     __tablename__ = "projects"
