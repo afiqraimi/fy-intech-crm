@@ -92,6 +92,7 @@ export default function SettingsTab({ onProfileChange }) {
   const [sweeping, setSweeping] = useState(false);
   const [sweepResult, setSweepResult] = useState(null);
   const [enriching, setEnriching] = useState(false);
+  const [enrichResult, setEnrichResult] = useState(null);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
   const navigate = useNavigate();
@@ -120,6 +121,18 @@ export default function SettingsTab({ onProfileChange }) {
             timer = setTimeout(() => checkAndPoll(), 2000);
           } else {
             setSweeping(false);
+          }
+        }
+
+        const enrichStatus = await apiJson('/api/admin/lead-engine/enrich-status');
+        if (cancelled) return;
+        if (enrichStatus.running || (enrichStatus.finished && enrichStatus.total > 0)) {
+          setEnrichResult(enrichStatus);
+          if (!enrichStatus.finished) {
+            setEnriching(true);
+            timer = setTimeout(() => checkAndPoll(), 2000);
+          } else {
+            setEnriching(false);
           }
         }
       } catch {
@@ -377,12 +390,31 @@ export default function SettingsTab({ onProfileChange }) {
 
   const enrichExisting = async () => {
     setEnriching(true);
+    setEnrichResult(null);
     try {
-      const result = await apiJson('/api/admin/lead-engine/enrich-existing', { method: 'POST' });
-      showToast(`${result.enriched} of ${result.total} existing leads enriched`);
+      const start = await apiJson('/api/admin/lead-engine/enrich-existing', { method: 'POST' });
+      if (!start.started) {
+        showToast('Enrichment failed to start', 'error');
+        setEnriching(false);
+        return;
+      }
+      const poll = async () => {
+        try {
+          const status = await apiJson('/api/admin/lead-engine/enrich-status');
+          setEnrichResult(status);
+          if (!status.running && status.finished) {
+            setEnriching(false);
+            showToast(`${status.enriched} of ${status.total} leads enriched`);
+          } else {
+            setTimeout(poll, 2000);
+          }
+        } catch {
+          setTimeout(poll, 3000);
+        }
+      };
+      poll();
     } catch (error) {
       showToast(error.message || 'Enrichment failed', 'error');
-    } finally {
       setEnriching(false);
     }
   };
@@ -555,6 +587,14 @@ export default function SettingsTab({ onProfileChange }) {
               {enriching ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
               <span>{enriching ? 'Enriching...' : 'Enrich Existing Leads'}</span>
             </button>
+            {enrichResult && (
+              <div className="w-full bg-teal-500/5 border border-teal-500/20 rounded-xl p-3 text-xs text-crm-textMuted space-y-1">
+                <p className="text-teal-400 font-bold uppercase tracking-wider">
+                  {enrichResult.running ? `Enriching\u2026 ${enrichResult.current}/${enrichResult.total} \u2014 ${enrichResult.current_company}` : 'Enrichment Complete'}
+                </p>
+                <p>{enrichResult.enriched || 0} enriched of {enrichResult.total || 0} leads</p>
+              </div>
+            )}
             <button
               type="button"
               onClick={sweepAllIndustries}
