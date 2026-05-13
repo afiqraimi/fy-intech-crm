@@ -106,6 +106,36 @@ export default function SettingsTab({ onProfileChange }) {
 
   useEffect(() => {
     let cancelled = false;
+    let timer = null;
+
+    const checkAndPoll = async () => {
+      try {
+        const status = await apiJson('/api/admin/lead-engine/sweep-status');
+        if (cancelled) return;
+        if (status.running || (status.finished && status.total > 0)) {
+          setSweepResult(status);
+          if (!status.finished) {
+            setSweeping(true);
+            timer = setTimeout(() => checkAndPoll(), 2000);
+          } else {
+            setSweeping(false);
+          }
+        }
+      } catch {
+        // sweep-status endpoint might not exist yet on old deploy
+      }
+    };
+
+    checkAndPoll();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
 
     const loadServerSettings = async () => {
       try {

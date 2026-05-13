@@ -1,6 +1,8 @@
 import os
 import json
+import re
 import time
+import random
 import logging
 from typing import Optional
 
@@ -291,7 +293,7 @@ def draft_outreach_with_ai(companies: list[dict], industry: str) -> list[dict]:
         '[{"name": "", "industry": "", "website": "", "email_primary": "", '
         '"email_additional": "", "phone": "", "address": "", '
         '"personnel_data": "", "priority": "Hot|Warm|Cold", '
-        '"pain_points": "", "email_subject": "", "email_body": "", '
+        '"pain_points": "", "proposed_solution": "", "email_subject": "", "email_body": "", '
         '"notes": ""}]'
     )
 
@@ -305,6 +307,8 @@ def draft_outreach_with_ai(companies: list[dict], industry: str) -> list[dict]:
         f"- Assign priority (Hot/Warm/Cold) based on company size, industry fit, "
         f"and likelihood of needing VR training\n"
         f"- PAIN POINTS must be specific to each company (2-3 sentences)\n"
+        f"- PROPOSED SOLUTION must describe how FY Intech VR training/simulation "
+        f"can address that specific company's pain points (2-3 sentences)\n"
         f"- NOTES should include key talking points for the sales team\n"
         f"- Return ONLY the JSON array, no other text"
     )
@@ -335,6 +339,13 @@ def draft_outreach_with_ai(companies: list[dict], industry: str) -> list[dict]:
         return companies
 
 
+def _normalize_company(name: str) -> str:
+    n = name.strip().lower()
+    n = re.sub(r"[,.]", "", n)
+    n = re.sub(r"\b(sdn\.?\s*bhd\.?|bhd\.?|berhad|limited|ltd\.?|plc|pte\.?\s*ltd\.?|inc\.?|corp\.?|corporation|llc|llp|gmbh|co\.?|company)\b", "", n)
+    n = re.sub(r"\s+", " ", n).strip()
+    return n
+
 def save_to_crm(leads: list[dict]) -> dict:
     db = SessionLocal()
     created = 0
@@ -346,20 +357,46 @@ def save_to_crm(leads: list[dict]) -> dict:
             if not company_name:
                 continue
 
-            exists = db.query(models.Lead).filter(
-                models.Lead.company == company_name
-            ).first()
-            if exists:
+            normalised = _normalize_company(company_name)
+            # Check all existing leads for duplicate by normalised name
+            all_existing = db.query(models.Lead.company, models.Lead.website).all()
+            is_dup = False
+            for existing_company, existing_website in all_existing:
+                if _normalize_company(existing_company or "") == normalised:
+                    is_dup = True
+                    break
+                lead_website = (lead.get("website") or "").strip().lower()
+                if lead_website and existing_website and lead_website == existing_website.strip().lower():
+                    is_dup = True
+                    break
+            if is_dup:
                 skipped += 1
                 continue
 
+            revenue = lead.get("revenue_range") or ""
+            if "50M+" in revenue or "50m+" in revenue.lower():
+                score = random.randint(70, 90)
+            elif "10M" in revenue or "10m" in revenue.lower():
+                score = random.randint(55, 75)
+            else:
+                score = random.randint(40, 60)
+
+            # Prefer industry-specific VR-adopting industries for slight boost
+            industry_str = (lead.get("industry") or "").lower()
+            vr_industries = ["oil", "gas", "manufacturing", "aerospace", "aviation", "construction", "energy", "engineering"]
+            if any(kw in industry_str for kw in vr_industries):
+                score = min(99, score + 5)
+
+            problem = lead.get("pain_points") or lead.get("problem") or ""
+            solution = lead.get("proposed_solution") or lead.get("solution") or ""
             db.add(models.Lead(
                 company=company_name,
                 industry=(lead.get("industry") or "Unknown")[:100],
                 location=(lead.get("address") or lead.get("location") or "Malaysia")[:200],
-                score=60,
+                score=score,
                 status="To Approach",
-                problem=lead.get("pain_points") or lead.get("problem"),
+                problem=problem[:1000] if problem else None,
+                solution=solution[:1000] if solution else None,
                 website=(lead.get("website") or "")[:500],
                 email_primary=(lead.get("email_primary") or "")[:255],
                 email_additional=(lead.get("email_additional") or "")[:500],
