@@ -27,6 +27,7 @@ class Lead(Base):
     fax = Column(String(100), nullable=True)
     contact_page = Column(String(500), nullable=True)
     personalization_notes = Column(Text, nullable=True)
+    created_at = Column(String(30), nullable=True)
 
 class Project(Base):
     __tablename__ = "projects"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2, Rocket, Radar, Play, Trash2 } from 'lucide-react';
+import { User, Shield, Bell, Moon, Sun, Lock, Camera, Check, X, Eye, EyeOff, Mail, Save, Loader2, Rocket, Radar, Play, Trash2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiJson } from '../utils/api';
 import { clearAuthSession, getStoredProfile, normalizeEmail, setAuthSession, setStoredProfile } from '../utils/auth';
@@ -91,6 +91,7 @@ export default function SettingsTab({ onProfileChange }) {
   const [clearingDemo, setClearingDemo] = useState(false);
   const [sweeping, setSweeping] = useState(false);
   const [sweepResult, setSweepResult] = useState(null);
+  const [enriching, setEnriching] = useState(false);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
   const navigate = useNavigate();
@@ -374,6 +375,18 @@ export default function SettingsTab({ onProfileChange }) {
     }
   };
 
+  const enrichExisting = async () => {
+    setEnriching(true);
+    try {
+      const result = await apiJson('/api/admin/lead-engine/enrich-existing', { method: 'POST' });
+      showToast(`${result.enriched} of ${result.total} existing leads enriched`);
+    } catch (error) {
+      showToast(error.message || 'Enrichment failed', 'error');
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-500 w-full max-w-3xl mx-auto space-y-6 pb-12">
       <div>
@@ -532,6 +545,15 @@ export default function SettingsTab({ onProfileChange }) {
             >
               {clearingDemo ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
               <span>{clearingDemo ? 'Clearing...' : 'Clear Demo Data'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={enrichExisting}
+              disabled={enriching}
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-teal-600/80 hover:bg-teal-500 disabled:opacity-50 text-white text-sm rounded-xl transition-colors"
+            >
+              {enriching ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+              <span>{enriching ? 'Enriching...' : 'Enrich Existing Leads'}</span>
             </button>
             <button
               type="button"

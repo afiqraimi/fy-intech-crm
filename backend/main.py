@@ -46,6 +46,7 @@ def _migrate_lead_columns():
             ("fax", "TEXT", None),
             ("contact_page", "TEXT", None),
             ("personalization_notes", "TEXT", None),
+            ("created_at", "TEXT", "TEXT"),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -633,6 +634,7 @@ class LeadResponse(BaseModel):
     fax: str | None = None
     contact_page: str | None = None
     personalization_notes: str | None = None
+    created_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -1233,6 +1235,61 @@ def sweep_status(
     with _sweep_lock:
         return dict(_sweep_status)
 
+@app.post("/api/admin/lead-engine/enrich-existing")
+def enrich_existing_leads(
+    admin: models.AdminUser = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    try:
+        from lead_engine import draft_outreach_with_ai, deepseek_client
+
+        if not deepseek_client:
+            raise HTTPException(status_code=400, detail="DEEPSEEK_API_KEY not configured")
+
+        # Find leads missing any of the new fields
+        leads = db.query(models.Lead).filter(
+            (models.Lead.email_subject == None)
+            | (models.Lead.email_body == None)
+            | (models.Lead.tier == None)
+            | (models.Lead.personalization_notes == None)
+        ).all()
+
+        if not leads:
+            return {"enriched": 0, "message": "All leads already have complete data"}
+
+        enriched_count = 0
+        for lead in leads:
+            try:
+                company_data = [{
+                    "name": lead.company,
+                    "website": lead.website or "",
+                    "industry": lead.industry or "Unknown",
+                }]
+                result = draft_outreach_with_ai(company_data, lead.industry or "Unknown")
+                if result and len(result) > 0:
+                    r = result[0]
+                    lead.email_subject = (r.get("email_subject") or "")[:500]
+                    lead.email_body = (r.get("email_body") or "")[:5000]
+                    lead.tier = (r.get("tier") or "")[:20]
+                    lead.personalization_notes = (r.get("personalization_notes") or r.get("notes") or "")[:2000]
+                    lead.fax = (r.get("fax") or "")[:100]
+                    lead.contact_page = (r.get("contact_page") or "")[:500]
+                    lead.social_media = json.dumps(r.get("social_media") or {}, ensure_ascii=False)[:2000]
+                    if not lead.problem:
+                        lead.problem = (r.get("pain_points") or "")[:1000]
+                    if not lead.solution:
+                        lead.solution = (r.get("proposed_solution") or "")[:1000]
+                    if not lead.priority:
+                        lead.priority = (r.get("priority") or "Warm")[:50]
+                    enriched_count += 1
+                    db.commit()
+                    time.sleep(2)
+            except Exception as e:
+                logging.getLogger("main").warning("Enrich failed for %s: %s", lead.company, e)
+
+        return {"enriched": enriched_count, "total": len(leads)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 @app.post("/api/admin/lead-engine/trigger")
 def trigger_lead_engine(
     data: LeadEngineTrigger,
