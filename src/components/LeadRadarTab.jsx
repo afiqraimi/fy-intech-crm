@@ -99,10 +99,25 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
   const todayStr = new Date().toISOString().slice(0, 10);
 
   const { todayLeads, normalLeads } = useMemo(() => {
+    const lastSeenKey = 'crm_last_seen_max_id';
+    const lastSeenDateKey = 'crm_last_seen_date';
+    const storedDate = localStorage.getItem(lastSeenDateKey);
+    const storedId = parseInt(localStorage.getItem(lastSeenKey) || '0', 10);
+
+    const isNewSession = storedDate !== todayStr;
+    if (isNewSession) {
+      localStorage.setItem(lastSeenDateKey, todayStr);
+    }
+
+    const maxId = filteredAndSortedLeads.reduce((m, l) => Math.max(m, l.id || 0), 0);
+    if (maxId > storedId) {
+      localStorage.setItem(lastSeenKey, String(maxId));
+    }
+
     const today = [];
     const normal = [];
     for (const l of filteredAndSortedLeads) {
-      if (l.created_at && l.created_at.slice(0, 10) === todayStr) {
+      if (isNewSession && l.id > storedId) {
         today.push(l);
       } else {
         normal.push(l);

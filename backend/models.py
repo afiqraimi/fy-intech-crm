@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text
-from datetime import datetime
 from database import Base
 
 class Lead(Base):
@@ -21,7 +20,6 @@ class Lead(Base):
     personnel_data = Column(Text, nullable=True)
     priority = Column(String, nullable=True)
     lead_source = Column(String, nullable=True, default="manual")
-    created_at = Column(String(30), nullable=True, default=lambda: datetime.utcnow().isoformat())
 
 class Project(Base):
     __tablename__ = "projects"

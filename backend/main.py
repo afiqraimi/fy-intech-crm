@@ -39,7 +39,6 @@ def _migrate_lead_columns():
             ("personnel_data", "TEXT", None),
             ("priority", "TEXT", None),
             ("lead_source", "TEXT DEFAULT 'manual'", None),
-            ("created_at", "TEXT", "TEXT"),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -620,7 +619,6 @@ class LeadResponse(BaseModel):
     personnel_data: str | None = None
     priority: str | None = None
     lead_source: str | None = None
-    created_at: str | None = None
 
     class Config:
         from_attributes = True
