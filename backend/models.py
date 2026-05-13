@@ -20,6 +20,13 @@ class Lead(Base):
     personnel_data = Column(Text, nullable=True)
     priority = Column(String, nullable=True)
     lead_source = Column(String, nullable=True, default="manual")
+    email_subject = Column(Text, nullable=True)
+    email_body = Column(Text, nullable=True)
+    social_media = Column(Text, nullable=True)
+    tier = Column(String(20), nullable=True)
+    fax = Column(String(100), nullable=True)
+    contact_page = Column(String(500), nullable=True)
+    personalization_notes = Column(Text, nullable=True)
 
 class Project(Base):
     __tablename__ = "projects"

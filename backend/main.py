@@ -39,6 +39,13 @@ def _migrate_lead_columns():
             ("personnel_data", "TEXT", None),
             ("priority", "TEXT", None),
             ("lead_source", "TEXT DEFAULT 'manual'", None),
+            ("email_subject", "TEXT", None),
+            ("email_body", "TEXT", None),
+            ("social_media", "TEXT", None),
+            ("tier", "TEXT", None),
+            ("fax", "TEXT", None),
+            ("contact_page", "TEXT", None),
+            ("personalization_notes", "TEXT", None),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -619,6 +626,13 @@ class LeadResponse(BaseModel):
     personnel_data: str | None = None
     priority: str | None = None
     lead_source: str | None = None
+    email_subject: str | None = None
+    email_body: str | None = None
+    social_media: str | None = None
+    tier: str | None = None
+    fax: str | None = None
+    contact_page: str | None = None
+    personalization_notes: str | None = None
 
     class Config:
         from_attributes = True

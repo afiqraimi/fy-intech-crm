@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag, Sparkles } from 'lucide-react';
+import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag, Sparkles, ExternalLink, MessageSquare, FileText, Printer, Layers } from 'lucide-react';
 import ProjectFormModal from './ProjectFormModal';
 import { apiJson } from '../utils/api';
 
@@ -96,35 +96,27 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
     return result;
   }, [leads, removedIds, leadEdits, query, sortField, sortDirection]);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-
   const { todayLeads, normalLeads } = useMemo(() => {
     const lastSeenKey = 'crm_last_seen_max_id';
-    const lastSeenDateKey = 'crm_last_seen_date';
-    const storedDate = localStorage.getItem(lastSeenDateKey);
     const storedId = parseInt(localStorage.getItem(lastSeenKey) || '0', 10);
-
-    const isNewSession = storedDate !== todayStr;
-    if (isNewSession) {
-      localStorage.setItem(lastSeenDateKey, todayStr);
-    }
-
     const maxId = filteredAndSortedLeads.reduce((m, l) => Math.max(m, l.id || 0), 0);
-    if (maxId > storedId) {
-      localStorage.setItem(lastSeenKey, String(maxId));
-    }
 
     const today = [];
     const normal = [];
     for (const l of filteredAndSortedLeads) {
-      if (isNewSession && l.id > storedId) {
+      if (l.id > storedId) {
         today.push(l);
       } else {
         normal.push(l);
       }
     }
+
+    if (maxId > storedId) {
+      localStorage.setItem(lastSeenKey, String(maxId));
+    }
+
     return { todayLeads: today, normalLeads: normal };
-  }, [filteredAndSortedLeads, todayStr]);
+  }, [filteredAndSortedLeads]);
 
   const totalPages = Math.ceil(normalLeads.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -378,82 +370,149 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
               </button>
             </div>
 
-            <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
-              <div className="flex flex-wrap gap-4 text-sm">
-                {selectedLeadDetails.website && (
-                  <a href={selectedLeadDetails.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-colors">
-                    <Globe size={14} /> {selectedLeadDetails.website.replace(/^https?:\/\//, '')}
-                  </a>
-                )}
-                {selectedLeadDetails.email_primary && (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
-                    <Mail size={14} /> {selectedLeadDetails.email_primary}
-                  </span>
-                )}
-                {selectedLeadDetails.phone && (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
-                    <Phone size={14} /> {selectedLeadDetails.phone}
-                  </span>
-                )}
-                {selectedLeadDetails.priority && (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400">
-                    <Flag size={14} /> {selectedLeadDetails.priority}
-                  </span>
+            <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
+              {/* Contact Info */}
+              <div>
+                <h3 className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><Globe size={14} /> Contact Info</h3>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  {selectedLeadDetails.website && (
+                    <a href={selectedLeadDetails.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 hover:text-blue-300 transition-colors">
+                      <Globe size={13} /> Website
+                    </a>
+                  )}
+                  {selectedLeadDetails.email_primary && (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400">
+                      <Mail size={13} /> {selectedLeadDetails.email_primary}
+                    </span>
+                  )}
+                  {selectedLeadDetails.email_additional && (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
+                      <Mail size={13} /> {selectedLeadDetails.email_additional}
+                    </span>
+                  )}
+                  {selectedLeadDetails.phone && (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
+                      <Phone size={13} /> {selectedLeadDetails.phone}
+                    </span>
+                  )}
+                  {selectedLeadDetails.fax && (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
+                      <Printer size={13} /> Fax: {selectedLeadDetails.fax}
+                    </span>
+                  )}
+                  {selectedLeadDetails.contact_page && (
+                    <a href={selectedLeadDetails.contact_page} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted hover:text-white transition-colors">
+                      <ExternalLink size={13} /> Contact Page
+                    </a>
+                  )}
+                </div>
+                {selectedLeadDetails.address && (
+                  <div className="flex items-start gap-2 mt-2 px-3 py-2 bg-white/5 border border-crm-border rounded-lg">
+                    <MapPin size={13} className="text-crm-textMuted shrink-0 mt-0.5" />
+                    <span className="text-sm text-crm-textMuted">{selectedLeadDetails.address}</span>
+                  </div>
                 )}
               </div>
-              {selectedLeadDetails.address && (
-                <div className="flex items-start gap-2 px-3 py-2 bg-white/5 border border-crm-border rounded-lg">
-                  <MapPin size={14} className="text-crm-textMuted shrink-0 mt-0.5" />
-                  <span className="text-sm text-crm-textMuted">{selectedLeadDetails.address}</span>
-                </div>
-              )}
-              {selectedLeadDetails.personnel_data && (
-                <div>
-                  <h3 className="text-violet-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Users size={16} className="mr-2"/> Key Personnel</h3>
-                  <div className="bg-violet-500/5 border border-violet-500/20 p-5 rounded-xl shadow-inner">
-                    <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">
-                      {selectedLeadDetails.personnel_data}
-                    </p>
+
+              {/* Social Media */}
+              {(() => {
+                let sm = {};
+                try { sm = JSON.parse(selectedLeadDetails.social_media || '{}'); } catch {}
+                const links = Object.entries(sm).filter(([,v]) => v);
+                if (!links.length) return null;
+                return (
+                  <div>
+                    <h3 className="text-pink-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><ExternalLink size={14} /> Social Media</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {links.map(([platform, url]) => (
+                        <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500/10 border border-pink-500/20 rounded-lg text-pink-400 hover:text-pink-300 text-sm capitalize transition-colors">
+                          {platform}
+                        </a>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
+
+              {/* Company Profile */}
               <div>
-                <h3 className="text-red-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Flame size={16} className="mr-2"/> Core Problem Identified</h3>
-                <div className="bg-red-500/5 border border-red-500/20 p-5 rounded-xl shadow-inner">
-                  {editMode ? (
-                    <textarea
-                      rows={4}
-                      value={editForm.problem}
-                      onChange={e => setEditForm(f => ({ ...f, problem: e.target.value }))}
-                      className="w-full bg-crm-darker border border-red-500/20 rounded-xl px-4 py-3 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-red-500/50 text-sm resize-none"
-                      placeholder="Describe the core problem..."
-                    />
-                  ) : (
-                    <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">
-                      {selectedLeadDetails.problem || "No problem statement generated yet."}
-                    </p>
+                <h3 className="text-violet-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><Layers size={14} /> Company Profile</h3>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <span className="px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">{selectedLeadDetails.industry || '—'}</span>
+                  {selectedLeadDetails.tier && (
+                    <span className="px-3 py-1.5 bg-violet-500/10 border border-violet-500/20 rounded-lg text-violet-400 capitalize">{selectedLeadDetails.tier}</span>
+                  )}
+                  {selectedLeadDetails.priority && (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400">
+                      <Flag size={13} /> {selectedLeadDetails.priority}
+                    </span>
+                  )}
+                  {selectedLeadDetails.lead_source && (
+                    <span className="px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted capitalize">via {selectedLeadDetails.lead_source}</span>
                   )}
                 </div>
               </div>
 
+              {/* Key Personnel */}
+              {selectedLeadDetails.personnel_data && (
+                <div>
+                  <h3 className="text-violet-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><Users size={14} /> Key Personnel</h3>
+                  <div className="bg-violet-500/5 border border-violet-500/20 p-4 rounded-xl">
+                    <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">{selectedLeadDetails.personnel_data}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Pain Points */}
               <div>
-                <h3 className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-3 flex items-center"><Target size={16} className="mr-2"/> FY Intech Proposed Solution</h3>
-                <div className="bg-blue-500/5 border border-blue-500/20 p-5 rounded-xl shadow-inner">
+                <h3 className="text-red-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><Flame size={14} /> Core Problem</h3>
+                <div className="bg-red-500/5 border border-red-500/20 p-4 rounded-xl">
                   {editMode ? (
-                    <textarea
-                      rows={4}
-                      value={editForm.solution}
-                      onChange={e => setEditForm(f => ({ ...f, solution: e.target.value }))}
-                      className="w-full bg-crm-darker border border-blue-500/20 rounded-xl px-4 py-3 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-blue-500/50 text-sm resize-none"
-                      placeholder="Describe the proposed solution..."
-                    />
+                    <textarea rows={4} value={editForm.problem} onChange={e => setEditForm(f => ({ ...f, problem: e.target.value }))} className="w-full bg-crm-darker border border-red-500/20 rounded-xl px-4 py-3 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-red-500/50 text-sm resize-none" placeholder="Describe the core problem..." />
                   ) : (
-                    <p className="text-white leading-relaxed text-sm font-medium whitespace-pre-wrap">
-                      {selectedLeadDetails.solution || "No proposed solution generated yet."}
-                    </p>
+                    <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">{selectedLeadDetails.problem || 'No problem statement generated yet.'}</p>
                   )}
                 </div>
               </div>
+
+              {/* Proposed Solution */}
+              <div>
+                <h3 className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><Target size={14} /> Proposed Solution</h3>
+                <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-xl">
+                  {editMode ? (
+                    <textarea rows={4} value={editForm.solution} onChange={e => setEditForm(f => ({ ...f, solution: e.target.value }))} className="w-full bg-crm-darker border border-emerald-500/20 rounded-xl px-4 py-3 text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-emerald-500/50 text-sm resize-none" placeholder="Describe the proposed solution..." />
+                  ) : (
+                    <p className="text-white leading-relaxed text-sm font-medium whitespace-pre-wrap">{selectedLeadDetails.solution || 'No proposed solution generated yet.'}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Outreach Content */}
+              {(selectedLeadDetails.email_subject || selectedLeadDetails.email_body || selectedLeadDetails.personalization_notes) && (
+                <div>
+                  <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><MessageSquare size={14} /> Outreach Email</h3>
+                  <div className="space-y-3">
+                    {selectedLeadDetails.email_subject && (
+                      <div className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-lg">
+                        <p className="text-amber-400 text-xs font-semibold mb-1">Subject</p>
+                        <p className="text-white text-sm">{selectedLeadDetails.email_subject}</p>
+                      </div>
+                    )}
+                    {selectedLeadDetails.email_body && (
+                      <div className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-lg max-h-48 overflow-y-auto">
+                        <p className="text-amber-400 text-xs font-semibold mb-1">Body</p>
+                        <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">{selectedLeadDetails.email_body}</p>
+                      </div>
+                    )}
+                    {selectedLeadDetails.personalization_notes && (
+                      <div className="bg-white/5 border border-crm-border p-3 rounded-lg">
+                        <p className="text-crm-textMuted text-xs font-semibold mb-1 flex items-center gap-1"><FileText size={12} /> Talking Points</p>
+                        <p className="text-crm-textMuted text-sm whitespace-pre-wrap">{selectedLeadDetails.personalization_notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="px-6 py-4 border-t border-crm-border/50 bg-crm-darker/50 flex justify-end gap-3">

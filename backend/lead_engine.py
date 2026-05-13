@@ -293,8 +293,12 @@ def draft_outreach_with_ai(companies: list[dict], industry: str) -> list[dict]:
         '[{"name": "", "industry": "", "website": "", "email_primary": "", '
         '"email_additional": "", "phone": "", "address": "", '
         '"personnel_data": "", "priority": "Hot|Warm|Cold", '
-        '"pain_points": "", "proposed_solution": "", "email_subject": "", "email_body": "", '
-        '"notes": ""}]'
+        '"tier": "tier1|tier2|tier3", '
+        '"pain_points": "", "proposed_solution": "", '
+        '"email_subject": "", "email_body": "", '
+        '"social_media": {"linkedin":"","facebook":"","twitter":"","instagram":"","youtube":""}, '
+        '"fax": "", "contact_page": "", '
+        '"personalization_notes": "", "notes": ""}]'
     )
 
     user_prompt = (
@@ -309,6 +313,10 @@ def draft_outreach_with_ai(companies: list[dict], industry: str) -> list[dict]:
         f"- PAIN POINTS must be specific to each company (2-3 sentences)\n"
         f"- PROPOSED SOLUTION must describe how FY Intech VR training/simulation "
         f"can address that specific company's pain points (2-3 sentences)\n"
+        f"- PERSONALIZATION NOTES should include key talking points for the sales team\n"
+        f"- TIER classification: tier1 (large enterprise/listed), tier2 (mid-size), tier3 (smaller)\n"
+        f"- SOCIAL MEDIA: infer likely URLs based on company name (leave empty string if unsure)\n"
+        f"- FAX and CONTACT PAGE: leave empty if not found in scraped data\n"
         f"- NOTES should include key talking points for the sales team\n"
         f"- Return ONLY the JSON array, no other text"
     )
@@ -405,6 +413,13 @@ def save_to_crm(leads: list[dict]) -> dict:
                 personnel_data=(lead.get("personnel_data") or "")[:2000],
                 priority=(lead.get("priority") or "Warm")[:50],
                 lead_source="n8n",
+                tier=(lead.get("tier") or "")[:20],
+                fax=(lead.get("fax") or "")[:100],
+                contact_page=(lead.get("contact_page") or "")[:500],
+                email_subject=(lead.get("email_subject") or "")[:500],
+                email_body=(lead.get("email_body") or "")[:5000],
+                personalization_notes=(lead.get("personalization_notes") or lead.get("notes") or "")[:2000],
+                social_media=json.dumps(lead.get("social_media") or {}, ensure_ascii=False)[:2000],
             ))
             created += 1
 
