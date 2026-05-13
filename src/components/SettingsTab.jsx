@@ -89,6 +89,8 @@ export default function SettingsTab({ onProfileChange }) {
   const [engineRunning, setEngineRunning] = useState(false);
   const [engineResult, setEngineResult] = useState(null);
   const [clearingDemo, setClearingDemo] = useState(false);
+  const [sweeping, setSweeping] = useState(false);
+  const [sweepResult, setSweepResult] = useState(null);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
   const navigate = useNavigate();
@@ -315,6 +317,24 @@ export default function SettingsTab({ onProfileChange }) {
     }
   };
 
+  const sweepAllIndustries = async () => {
+    setSweeping(true);
+    setSweepResult(null);
+    try {
+      const result = await apiJson('/api/admin/lead-engine/sweep', { method: 'POST' });
+      setSweepResult(result);
+      if (result.errors > 0) {
+        showToast(`${result.total_created} leads across ${result.total} industries (${result.errors} failed)`, 'error');
+      } else {
+        showToast(`${result.total_created} leads found across ${result.total} industries`);
+      }
+    } catch (error) {
+      showToast(error.message || 'Sweep failed', 'error');
+    } finally {
+      setSweeping(false);
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-500 w-full max-w-3xl mx-auto space-y-6 pb-12">
       <div>
@@ -474,7 +494,41 @@ export default function SettingsTab({ onProfileChange }) {
               {clearingDemo ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
               <span>{clearingDemo ? 'Clearing...' : 'Clear Demo Data'}</span>
             </button>
+            <button
+              type="button"
+              onClick={sweepAllIndustries}
+              disabled={sweeping}
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm rounded-xl transition-colors"
+            >
+              {sweeping ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />}
+              <span>{sweeping ? 'Sweeping...' : 'Sweep All Industries'}</span>
+            </button>
           </div>
+          {sweepResult && (
+            <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-4 space-y-2">
+              <p className="text-violet-400 text-xs font-bold uppercase tracking-widest">Sweep Complete</p>
+              <div className="flex gap-4 text-sm">
+                <span className="text-white">{sweepResult.total_created || 0} <span className="text-crm-textMuted">created</span></span>
+                <span className="text-white">{sweepResult.total_skipped || 0} <span className="text-crm-textMuted">skipped</span></span>
+                <span className="text-white">{sweepResult.total || 0} <span className="text-crm-textMuted">industries</span></span>
+              </div>
+              {sweepResult.results && (
+                <details className="text-xs text-crm-textMuted">
+                  <summary className="cursor-pointer hover:text-white mt-1">View per-industry breakdown</summary>
+                  <div className="mt-2 space-y-1">
+                    {sweepResult.results.map((r, i) => (
+                      <div key={i} className="flex justify-between py-1 px-2 bg-black/20 rounded">
+                        <span>{r.description}</span>
+                        <span className={r.error ? 'text-red-400' : 'text-emerald-400'}>
+                          {r.error ? 'Failed' : `+${r.created} / ${r.skipped} skip`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          )}
           {engineResult && !engineResult.error && (
             <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 space-y-2">
               <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Pipeline Complete</p>

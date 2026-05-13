@@ -36,6 +36,7 @@ def _migrate_lead_columns():
             ("personnel_data", "TEXT"),
             ("priority", "TEXT"),
             ("lead_source", "TEXT DEFAULT 'manual'"),
+            ("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"),
         ]
         with engine.begin() as conn:
             for col_name, col_type in new_columns:
@@ -608,6 +609,7 @@ class LeadResponse(BaseModel):
     personnel_data: str | None = None
     priority: str | None = None
     lead_source: str | None = None
+    created_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -1096,6 +1098,57 @@ def import_leads_csv(
 class LeadEngineTrigger(BaseModel):
     industry: str = "Oil & Gas"
     revenue_range: str = "RM10M-50M"
+
+@app.post("/api/admin/lead-engine/sweep")
+def sweep_all_industries(
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    try:
+        from lead_schedule import load_schedule
+        from lead_engine import run_pipeline
+
+        entries = [e for e in load_schedule() if e.get("enabled", True)]
+        total = len(entries)
+        results = []
+        total_created = 0
+        total_skipped = 0
+        errors = []
+
+        for i, entry in enumerate(entries):
+            industry = entry["industry"]
+            revenue_range = entry["revenue_range"]
+            desc = entry.get("description", f"{industry} | {revenue_range}")
+
+            try:
+                result = run_pipeline(industry, revenue_range)
+                created = result.get("created", 0)
+                skipped = result.get("skipped", 0)
+                total_created += created
+                total_skipped += skipped
+                results.append({
+                    "description": desc,
+                    "created": created,
+                    "skipped": skipped,
+                    "error": result.get("error"),
+                })
+            except Exception as e:
+                errors.append({"description": desc, "error": str(e)})
+                results.append({
+                    "description": desc,
+                    "created": 0,
+                    "skipped": 0,
+                    "error": str(e),
+                })
+
+        return {
+            "total": total,
+            "total_created": total_created,
+            "total_skipped": total_skipped,
+            "errors": len(errors),
+            "results": results,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/admin/lead-engine/trigger")
 def trigger_lead_engine(
