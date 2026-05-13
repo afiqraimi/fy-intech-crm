@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text, inspect
 import models
 from database import engine, SessionLocal
 from pydantic import BaseModel
@@ -19,6 +20,32 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
 models.Base.metadata.create_all(bind=engine)
+
+def _migrate_lead_columns():
+    try:
+        inspector = inspect(engine)
+        if "leads" not in inspector.get_table_names():
+            return
+        existing = {c["name"] for c in inspector.get_columns("leads")}
+        new_columns = [
+            ("website", "TEXT"),
+            ("email_primary", "TEXT"),
+            ("email_additional", "TEXT"),
+            ("phone", "TEXT"),
+            ("address", "TEXT"),
+            ("personnel_data", "TEXT"),
+            ("priority", "TEXT"),
+            ("lead_source", "TEXT DEFAULT 'manual'"),
+        ]
+        with engine.begin() as conn:
+            for col_name, col_type in new_columns:
+                if col_name not in existing:
+                    conn.execute(text(f"ALTER TABLE leads ADD COLUMN {col_name} {col_type}"))
+                    logging.getLogger("main").info("Migrated column: %s", col_name)
+    except Exception:
+        pass
+
+_migrate_lead_columns()
 
 # ─── Seed default admin on first startup ──────────────────────────────────────
 def _hash(pw: str) -> str:
