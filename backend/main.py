@@ -1118,3 +1118,23 @@ def get_lead_schedule(
         return load_schedule()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class FirecrawlTestRequest(BaseModel):
+    query: str = "Oil & Gas company Malaysia"
+
+@app.post("/api/admin/lead-engine/test-firecrawl")
+def test_firecrawl(
+    data: FirecrawlTestRequest,
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    try:
+        key = os.environ.get("FIRECRAWL_API_KEY", "")
+        resp = requests.post(
+            "https://api.firecrawl.dev/v1/search",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"query": data.query, "limit": 5},
+            timeout=60,
+        )
+        return {"status": resp.status_code, "response": resp.json()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

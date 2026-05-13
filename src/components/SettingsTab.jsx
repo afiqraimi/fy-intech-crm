@@ -458,7 +458,7 @@ export default function SettingsTab({ onProfileChange }) {
                 <span className="text-white">{engineResult.skipped || 0} <span className="text-crm-textMuted">skipped</span></span>
               </div>
               {engineResult.log && (
-                <details className="text-xs text-crm-textMuted">
+                <details open={!!engineResult?.error} className="text-xs text-crm-textMuted">
                   <summary className="cursor-pointer hover:text-white">View log</summary>
                   <pre className="mt-2 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-40 whitespace-pre-wrap">{engineResult.log.join('\n')}</pre>
                 </details>

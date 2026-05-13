@@ -31,42 +31,128 @@ def _firecrawl_headers():
     }
 
 
+
+def _generate_search_queries(industry: str, revenue_range: str) -> list[str]:
+    if not deepseek_client:
+        return [f"{industry} company Malaysia {revenue_range}"]
+
+    try:
+        response = deepseek_client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "You are a search query generator. Output only a JSON array of strings. No other text."},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Generate 5 short keyword search queries (3-7 words each) "
+                        f"to find companies in the {industry} industry with revenue {revenue_range} "
+                        f"in Malaysia and Singapore. Prioritize Berhad, GLC, and large private companies. "
+                        f"Return as JSON array. Example: [\"Oil & Gas company Malaysia Berhad\", \"petroleum services firm Kuala Lumpur\"]"
+                    ),
+                },
+            ],
+            temperature=0.4,
+            max_tokens=512,
+        )
+        raw = response.choices[0].message.content or ""
+        start = raw.find("[")
+        end = raw.rfind("]") + 1
+        if start != -1 and end > start:
+            queries = json.loads(raw[start:end])
+            if isinstance(queries, list) and queries:
+                return queries[:5]
+    except Exception as e:
+        logger.warning("Query generation failed: %s", e)
+
+    return [f"{industry} company Malaysia {revenue_range}"]
+
+
+def _fallback_known_companies(industry: str, revenue_range: str, limit: int = 15) -> list[dict]:
+    if not deepseek_client:
+        return []
+
+    try:
+        response = deepseek_client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "You are a business directory. Return only valid JSON. No other text."},
+                {
+                    "role": "user",
+                    "content": (
+                        f"List {limit} REAL companies in the {industry} industry with revenue around {revenue_range} "
+                        f"operating in Malaysia or Singapore. Include publicly listed (Berhad), GLC, and large private companies. "
+                        f"Return as JSON array with objects: "
+                        f'{{"name": "Full Company Name", "website": "https://official-website.com"}}. '
+                        f"Include only REAL companies you are confident exist."
+                    ),
+                },
+            ],
+            temperature=0.3,
+            max_tokens=4096,
+        )
+        raw = response.choices[0].message.content or ""
+        start = raw.find("[")
+        end = raw.rfind("]") + 1
+        if start != -1 and end > start:
+            companies = json.loads(raw[start:end])
+            if isinstance(companies, list):
+                return companies[:limit]
+    except Exception as e:
+        logger.warning("Fallback company listing failed: %s", e)
+
+    return []
+
+
 def search_companies(industry: str, revenue_range: str, limit: int = 15) -> list[dict]:
     if not FIRECRAWL_API_KEY:
         raise RuntimeError("FIRECRAWL_API_KEY not configured")
 
-    query = (
-        f"Find {limit} companies in {industry} "
-        f"with revenue {revenue_range} "
-        f"in Malaysia Singapore Southeast Asia "
-        f"that would benefit from VR training simulation digital twin "
-        f"or enterprise learning management systems. "
-        f"Prioritize publicly listed Berhad companies and GLCs. "
-        f"Return each company name and its official website URL."
-    )
+    queries = _generate_search_queries(industry, revenue_range)
+    logger.info("Searching with %d queries for: %s | %s", len(queries), industry, revenue_range)
 
-    logger.info("Searching companies: industry=%s range=%s", industry, revenue_range)
-    resp = requests.post(
-        f"{FIRECRAWL_BASE}/search",
-        headers=_firecrawl_headers(),
-        json={"query": query, "limit": limit},
-        timeout=FIRECRAWL_TIMEOUT,
-    )
-    resp.raise_for_status()
-    data = resp.json()
+    for i, query in enumerate(queries):
+        logger.info("  Query %d/%d: %s", i + 1, len(queries), query)
+        try:
+            resp = requests.post(
+                f"{FIRECRAWL_BASE}/search",
+                headers=_firecrawl_headers(),
+                json={"query": query, "limit": limit},
+                timeout=FIRECRAWL_TIMEOUT,
+            )
+            logger.info("  Firecrawl response: status=%d", resp.status_code)
 
-    results = []
-    if data.get("success") and data.get("data"):
-        for item in data["data"]:
-            name = item.get("title") or item.get("name") or ""
-            website = item.get("url") or ""
-            if name and website:
-                results.append({"name": name.strip(), "website": website.strip()})
+            try:
+                body_text = resp.text[:300]
+            except Exception:
+                body_text = "(cannot read)"
 
-    logger.info("Found %d companies via search", len(results))
-    return results
+            data = resp.json()
 
+            if data.get("success") and data.get("data"):
+                results = []
+                for item in data["data"]:
+                    name = item.get("title") or item.get("name") or ""
+                    website = item.get("url") or ""
+                    if name and website:
+                        results.append({"name": name.strip(), "website": website.strip()})
+                if results:
+                    logger.info("Found %d companies via query: %s", len(results), query)
+                    return results
+                logger.info("  Query returned 0 usable results. Body: %s", body_text)
+            else:
+                logger.info("  Query returned no success. Body: %s", body_text)
 
+        except Exception as e:
+            logger.warning("  Search query '%s' failed: %s", query, e)
+
+    logger.info("All %d search queries returned 0 results. Trying DeepSeek fallback...", len(queries))
+    fallback = _fallback_known_companies(industry, revenue_range, limit)
+    if fallback:
+        logger.info("DeepSeek fallback returned %d companies", len(fallback))
+        return fallback
+
+    logger.warning("No companies found after search + fallback")
+    return []
 def scrape_contacts(companies: list[dict]) -> list[dict]:
     if not FIRECRAWL_API_KEY:
         raise RuntimeError("FIRECRAWL_API_KEY not configured")
@@ -337,3 +423,4 @@ def run_pipeline(industry: str, revenue_range: str) -> dict:
         "revenue_range": revenue_range,
         "log": log_lines,
     }
+
