@@ -139,7 +139,12 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
                     draggable
                     onDragStart={(e) => handleDragStart(e, lead)}
                     onDragEnd={handleDragEnd}
-                    className="bg-crm-card border border-crm-border p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-colors group"
+                    className={`bg-crm-card border border-crm-border p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-colors group ${
+                      lead.priority === 'Hot' ? 'border-l-2 border-l-red-500/60' :
+                      lead.priority === 'Warm' ? 'border-l-2 border-l-yellow-500/60' :
+                      lead.priority === 'Cold' ? 'border-l-2 border-l-blue-500/60' :
+                      ''
+                    }`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{lead.company}</h4>
@@ -149,9 +154,20 @@ export default function PipelineTab({ leads, updateLeadStatus }) {
                       <span className="text-xs font-medium text-crm-textMuted bg-crm-dark px-2 py-1 rounded-md border border-crm-border">
                         {lead.industry}
                       </span>
-                      <span className={`text-xs font-bold ${lead.score >= 80 ? 'text-emerald-400' : lead.score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
-                        {lead.score}% VR
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {lead.priority && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            lead.priority === 'Hot' ? 'bg-red-500/20 text-red-400' :
+                            lead.priority === 'Warm' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-blue-500/20 text-blue-400'
+                          }`}>
+                            {lead.priority}
+                          </span>
+                        )}
+                        <span className={`text-xs font-bold ${lead.score >= 80 ? 'text-emerald-400' : lead.score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {lead.score}% VR
+                        </span>
+                      </div>
                     </div>
 
                     {/* Mobile Move Controls (Hidden on Desktop) */}
