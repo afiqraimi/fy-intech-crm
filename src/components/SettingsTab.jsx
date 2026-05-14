@@ -103,11 +103,10 @@ const [engineIndustry, setEngineIndustry] = useState(LEAD_ENGINE_INDUSTRIES[0].i
 const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndustry)?.revenue || 'RM10M-50M';
   const [engineRunning, setEngineRunning] = useState(false);
   const [engineResult, setEngineResult] = useState(null);
-  const [clearingDemo, setClearingDemo] = useState(false);
-  const [sweeping, setSweeping] = useState(false);
-  const [sweepResult, setSweepResult] = useState(null);
   const [enriching, setEnriching] = useState(false);
+  const [sweepResult, setSweepResult] = useState(null);
   const [enrichResult, setEnrichResult] = useState(null);
+  const [sweeping, setSweeping] = useState(false);
   const [toast, setToast] = useState(null);
   const avatarInputRef = useRef();
   const navigate = useNavigate();
@@ -376,19 +375,6 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
     }
   };
 
-  const clearDemoLeads = async () => {
-    if (!confirm('This will permanently delete ALL demo/manual leads. Only n8n-scraped leads will remain. Continue?')) return;
-    setClearingDemo(true);
-    try {
-      const result = await apiJson('/api/admin/leads/clear-demo', { method: 'POST' });
-      showToast(`${result.deleted} demo leads deleted`);
-    } catch (error) {
-      showToast(error.message || 'Failed to clear demo leads', 'error');
-    } finally {
-      setClearingDemo(false);
-    }
-  };
-
   const sweepAllIndustries = async () => {
     setSweeping(true);
     setSweepResult(null);
@@ -620,15 +606,6 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
                 )}
               </div>
             )}
-            <button
-              type="button"
-              onClick={clearDemoLeads}
-              disabled={clearingDemo}
-              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-xl transition-colors"
-            >
-              {clearingDemo ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-              <span>{clearingDemo ? 'Clearing...' : 'Clear Demo Data'}</span>
-            </button>
             <button
               type="button"
               onClick={enrichExisting}
