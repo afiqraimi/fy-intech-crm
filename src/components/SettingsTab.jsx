@@ -84,8 +84,23 @@ export default function SettingsTab({ onProfileChange }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
-  const [engineIndustry, setEngineIndustry] = useState('Oil & Gas');
-  const [engineRevenue, setEngineRevenue] = useState('RM10M-50M');
+const LEAD_ENGINE_INDUSTRIES = [
+  { industry: 'Oil & Gas', revenue: 'RM10M-50M' },
+  { industry: 'Manufacturing & Engineering', revenue: 'RM50M+' },
+  { industry: 'Healthcare & Medical', revenue: 'RM10M-50M' },
+  { industry: 'Construction & Infrastructure', revenue: 'RM50M+' },
+  { industry: 'Telecommunications', revenue: 'RM50M+' },
+  { industry: 'Aerospace & Aviation', revenue: 'RM10M-50M' },
+  { industry: 'Logistics & Transportation', revenue: 'RM10M-50M' },
+  { industry: 'Banking & Finance', revenue: 'RM50M+' },
+  { industry: 'Education & Training', revenue: 'RM10M-50M' },
+  { industry: 'Property Developer & Real Estate', revenue: 'RM50M+' },
+  { industry: 'Energy & Utilities', revenue: 'RM50M+' },
+  { industry: 'Government & GLC', revenue: 'RM50M+' },
+];
+
+const [engineIndustry, setEngineIndustry] = useState(LEAD_ENGINE_INDUSTRIES[0].industry);
+const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndustry)?.revenue || 'RM10M-50M';
   const [engineRunning, setEngineRunning] = useState(false);
   const [engineResult, setEngineResult] = useState(null);
   const [clearingDemo, setClearingDemo] = useState(false);
@@ -545,18 +560,23 @@ export default function SettingsTab({ onProfileChange }) {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Industry">
-              <Input value={engineIndustry} onChange={setEngineIndustry} placeholder="e.g. Oil & Gas" />
-            </Field>
-            <Field label="Revenue Range">
               <select
-                value={engineRevenue}
-                onChange={e => setEngineRevenue(e.target.value)}
+                value={engineIndustry}
+                onChange={e => setEngineIndustry(e.target.value)}
                 className="w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all"
               >
-                <option value="RM10M-50M">RM10M-50M (Mid Market)</option>
-                <option value="RM50M+">RM50M+ (Enterprise)</option>
-                <option value="RM1M-10M">RM1M-10M (SME)</option>
+                {LEAD_ENGINE_INDUSTRIES.map(({ industry }) => (
+                  <option key={industry} value={industry}>{industry}</option>
+                ))}
               </select>
+            </Field>
+            <Field label="Revenue Range">
+              <div className="w-full bg-crm-darker border border-crm-border/50 rounded-xl px-4 py-3 text-sm text-crm-textMuted cursor-not-allowed select-none flex items-center gap-2">
+                <span>{engineRevenue}</span>
+                <span className="text-[10px] uppercase tracking-wider text-crm-border">
+                  {engineRevenue === 'RM50M+' ? 'Enterprise' : 'Mid Market'}
+                </span>
+              </div>
             </Field>
           </div>
           <div className="flex flex-wrap gap-3">
