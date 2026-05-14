@@ -279,6 +279,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                             </div>
                             <span className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors">{lead.company}</span>
                             {lead.email_primary && <Mail size={11} className="text-emerald-500/60 shrink-0" />}
+                            {lead.phone && <Phone size={11} className="text-blue-400/60 shrink-0" />}
                           </div>
                         </td>
                         <td className="px-6 py-3 whitespace-nowrap">
@@ -340,6 +341,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                       </div>
                       <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{lead.company}</span>
                       {lead.email_primary && <Mail size={11} className="text-emerald-500/60 shrink-0" title={lead.email_primary} />}
+                      {lead.phone && <Phone size={11} className="text-blue-400/60 shrink-0" title={lead.phone} />}
                     </div>
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap">
