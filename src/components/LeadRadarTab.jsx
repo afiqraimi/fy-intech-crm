@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag, Sparkles, ExternalLink, MessageSquare, FileText, Printer, Layers } from 'lucide-react';
 import ProjectFormModal from './ProjectFormModal';
 import { apiJson } from '../utils/api';
+import toast from 'react-hot-toast';
 
 const ScoreBadge = ({ score }) => {
   const colorClass = score >= 80
@@ -125,6 +126,42 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
   const toggleDropdown = (id) => {
     if (activeDropdown === id) setActiveDropdown(null);
     else setActiveDropdown(id);
+  };
+
+  const openEditDetails = (lead) => {
+    setSelectedLeadDetails(lead);
+    setEditForm({ problem: lead.problem || '', solution: lead.solution || '' });
+    setEditMode(true);
+  };
+
+  const saveEdit = async () => {
+    if (!selectedLeadDetails) return;
+    setSavingEdit(true);
+    try {
+      const updated = await apiJson(`/api/leads/${selectedLeadDetails.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ problem: editForm.problem, solution: editForm.solution }),
+      });
+      setLeadEdits(prev => ({ ...prev, [updated.id]: { problem: updated.problem, solution: updated.solution } }));
+      setSelectedLeadDetails(prev => prev ? { ...prev, problem: updated.problem, solution: updated.solution } : prev);
+      setEditMode(false);
+      toast.success('Lead details updated');
+    } catch (error) {
+      toast.error(error.message || 'Failed to save changes');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleRemoveLead = async (id) => {
+    try {
+      await updateLeadStatus(id, 'Closed');
+      setRemovedIds(prev => new Set([...prev, id]));
+      setConfirmDeleteId(null);
+      toast.success('Lead removed');
+    } catch (error) {
+      toast.error(error.message || 'Failed to remove lead');
+    }
   };
 
   return (
