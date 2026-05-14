@@ -917,7 +917,7 @@ def get_metrics(
     ]
 
 class LeadStatusUpdate(BaseModel):
-    status: str
+    status: Optional[str] = None
     problem: Optional[str] = None
     solution: Optional[str] = None
     website: Optional[str] = None
@@ -927,6 +927,13 @@ class LeadStatusUpdate(BaseModel):
     address: Optional[str] = None
     personnel_data: Optional[str] = None
     priority: Optional[str] = None
+    email_subject: Optional[str] = None
+    email_body: Optional[str] = None
+    tier: Optional[str] = None
+    personalization_notes: Optional[str] = None
+    fax: Optional[str] = None
+    contact_page: Optional[str] = None
+    social_media: Optional[str] = None
 
 class LeadCreate(BaseModel):
     company: str
@@ -956,7 +963,8 @@ def update_lead_status(
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     previous_status = lead.status
-    lead.status = update_data.status
+    if update_data.status is not None:
+        lead.status = update_data.status
     if update_data.problem is not None:
         lead.problem = update_data.problem
     if update_data.solution is not None:
@@ -975,6 +983,20 @@ def update_lead_status(
         lead.personnel_data = update_data.personnel_data
     if update_data.priority is not None:
         lead.priority = update_data.priority
+    if update_data.email_subject is not None:
+        lead.email_subject = update_data.email_subject
+    if update_data.email_body is not None:
+        lead.email_body = update_data.email_body
+    if update_data.tier is not None:
+        lead.tier = update_data.tier
+    if update_data.personalization_notes is not None:
+        lead.personalization_notes = update_data.personalization_notes
+    if update_data.fax is not None:
+        lead.fax = update_data.fax
+    if update_data.contact_page is not None:
+        lead.contact_page = update_data.contact_page
+    if update_data.social_media is not None:
+        lead.social_media = update_data.social_media
     db.commit()
     db.refresh(lead)
     if previous_status != lead.status:
