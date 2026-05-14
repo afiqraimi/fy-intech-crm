@@ -346,19 +346,32 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
     setEngineRunning(true);
     setEngineResult(null);
     try {
-      const result = await apiJson('/api/admin/lead-engine/trigger', {
+      const start = await apiJson('/api/admin/lead-engine/trigger', {
         method: 'POST',
         body: JSON.stringify({ industry: engineIndustry, revenue_range: engineRevenue }),
       });
-      setEngineResult(result);
-      if (result.error) {
-        showToast(result.error, 'error');
-      } else {
-        showToast(`${result.created || 0} leads created, ${result.skipped || 0} skipped`);
+      if (!start.started) {
+        showToast('Pipeline failed to start', 'error');
+        setEngineRunning(false);
+        return;
       }
+      const poll = async () => {
+        const status = await apiJson('/api/admin/lead-engine/trigger-status');
+        setEngineResult(status);
+        if (!status.running && status.finished) {
+          setEngineRunning(false);
+          if (status.error) {
+            showToast(status.error, 'error');
+          } else {
+            showToast(`${status.created} leads created, ${status.skipped} skipped`);
+          }
+        } else {
+          setTimeout(poll, 2000);
+        }
+      };
+      poll();
     } catch (error) {
       showToast(error.message || 'Failed to run lead engine', 'error');
-    } finally {
       setEngineRunning(false);
     }
   };
@@ -589,6 +602,24 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
               {engineRunning ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
               <span>{engineRunning ? 'Running Pipeline...' : 'Run Lead Engine'}</span>
             </button>
+            {engineResult && (
+              <div className="w-full bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 text-xs text-crm-textMuted space-y-1">
+                <p className="text-amber-400 font-bold uppercase tracking-wider">
+                  {engineResult.running
+                    ? `${engineResult.step || 'Running\u2026'}`
+                    : engineResult.error
+                      ? 'Pipeline Failed'
+                      : 'Pipeline Complete'}
+                </p>
+                {engineResult.running ? (
+                  <p>{engineResult.industry} &bull; {engineResult.revenue_range}</p>
+                ) : engineResult.error ? (
+                  <p className="text-red-400">{engineResult.error}</p>
+                ) : (
+                  <p>{engineResult.created || 0} created &bull; {engineResult.skipped || 0} skipped</p>
+                )}
+              </div>
+            )}
             <button
               type="button"
               onClick={clearDemoLeads}

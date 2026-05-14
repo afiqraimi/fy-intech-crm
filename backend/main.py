@@ -1323,17 +1323,62 @@ def enrich_status(
 ):
     with _enrich_lock:
         return dict(_enrich_status)
+
+_trigger_status = {"running": False, "step": "", "created": 0, "skipped": 0, "industry": "", "revenue_range": "", "error": None, "finished": False}
+_trigger_lock = threading.Lock()
+
 @app.post("/api/admin/lead-engine/trigger")
 def trigger_lead_engine(
     data: LeadEngineTrigger,
     admin: models.AdminUser = Depends(get_current_admin),
 ):
-    try:
-        from lead_engine import run_pipeline
-        result = run_pipeline(data.industry, data.revenue_range)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    global _trigger_status
+    with _trigger_lock:
+        if _trigger_status["running"]:
+            raise HTTPException(status_code=409, detail="A trigger is already running")
+        _trigger_status = {
+            "running": True,
+            "step": "Searching for companies\u2026",
+            "created": 0,
+            "skipped": 0,
+            "industry": data.industry,
+            "revenue_range": data.revenue_range,
+            "error": None,
+            "finished": False,
+        }
+
+    def _run():
+        global _trigger_status
+        try:
+            from lead_engine import run_pipeline
+            with _trigger_lock:
+                _trigger_status["step"] = "Searching companies via Firecrawl\u2026"
+            result = run_pipeline(data.industry, data.revenue_range)
+            if result.get("error"):
+                with _trigger_lock:
+                    _trigger_status["error"] = result["error"]
+            else:
+                with _trigger_lock:
+                    _trigger_status["created"] = result.get("created", 0)
+                    _trigger_status["skipped"] = result.get("skipped", 0)
+        except Exception as e:
+            with _trigger_lock:
+                _trigger_status["error"] = str(e)
+        finally:
+            with _trigger_lock:
+                _trigger_status["finished"] = True
+                _trigger_status["running"] = False
+                _trigger_status["step"] = "Complete"
+
+    threading.Thread(target=_run, daemon=True).start()
+    return {"started": True}
+
+@app.get("/api/admin/lead-engine/trigger-status")
+def trigger_status(
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    with _trigger_lock:
+        return dict(_trigger_status)
 
 @app.get("/api/admin/lead-engine/schedule")
 def get_lead_schedule(
