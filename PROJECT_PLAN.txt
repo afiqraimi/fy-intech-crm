@@ -1,0 +1,118 @@
+============================================================
+FY INTECH CRM - PROJECT PLAN & SESSION HISTORY
+============================================================
+
+WHAT IS THIS PROJECT:
+- CRM for FY Intech Solution Sdn Bhd (Malaysian VR/AR/MR/XR company)
+- Frontend: React 19 + Vite, hosted on Vercel (auto-deploy from GitHub)
+- Backend: FastAPI + SQLAlchemy, hosted on Render (manual or auto-deploy)
+- Database: SQLite local / PostgreSQL production
+- AI: DeepSeek API for lead generation & outreach drafting
+- Web Search: Firecrawl API for company discovery & contact scraping
+- Email: Resend API for notifications
+- N8N: Original automation workflow (now replaced by CRM's lead_engine.py)
+
+ROUTES:
+  /             -> Intro3D splash (4 second 3D animation)
+  /login        -> Admin login (default: admin@fyintech.com / admin)
+  /dashboard    -> Protected dashboard with 5 tabs:
+                    - Dashboard (KPIs + charts)
+                    - Active Projects (CRUD for VR/AR projects)
+                    - Lead Radar (table of leads, detail modal, edit)
+                    - Pipeline (Kanban board, drag & drop)
+                    - Settings (profile, notifications, Lead Engine)
+
+LEAD ENGINE (AI-Powered Lead Generation):
+  - 12 industries on hourly schedule (2 AM - 1 PM MYT)
+  - Pipeline: Firecrawl search -> scrape contacts -> DeepSeek AI extract -> draft outreach -> save to CRM
+  - Manual controls in Settings:
+    * Run Lead Engine (single industry, dropdown picker)
+    * Sweep All Industries (all 12 immediately, async with live progress)
+    * Enrich Existing Leads (backfill missing AI data on existing leads)
+  - Deduplication by company name & website URL
+  - "skipped" = duplicate found, "created" = new lead added
+
+12 INDUSTRIES & FIXED REVENUE RANGES:
+  1. Oil & Gas                    -> RM10M-50M (Mid Market)
+  2. Manufacturing & Engineering  -> RM50M+ (Enterprise)
+  3. Healthcare & Medical         -> RM10M-50M (Mid Market)
+  4. Construction & Infrastructure-> RM50M+ (Enterprise)
+  5. Telecommunications           -> RM50M+ (Enterprise)
+  6. Aerospace & Aviation         -> RM10M-50M (Mid Market)
+  7. Logistics & Transportation   -> RM10M-50M (Mid Market)
+  8. Banking & Finance            -> RM50M+ (Enterprise)
+  9. Education & Training         -> RM10M-50M (Mid Market)
+  10. Property Developer & Real Estate -> RM50M+ (Enterprise)
+  11. Energy & Utilities          -> RM50M+ (Enterprise)
+  12. Government & GLC            -> RM50M+ (Enterprise)
+
+============================================================
+COMPLETED (Session: May 2026):
+============================================================
+
+1. Industry Dropdown for Single Trigger
+   - Replaced free-text industry input with dropdown of 12 industries
+   - Revenue range auto-locked based on industry (read-only)
+   - Removed unused RM1M-10M (SME) option
+
+2. Async Single Trigger with Live Progress
+   - Backend: trigger now runs in background thread, returns immediately
+   - Backend: added /api/admin/lead-engine/trigger-status endpoint
+   - Frontend: polls every 2 seconds, shows live progress card
+   - Fixed timeout/abort issue on single trigger
+
+3. Priority 1 - Wrote 3 Missing Functions (LeadRadarTab.jsx)
+   - openEditDetails(lead) -> opens detail modal in edit mode
+   - saveEdit() -> calls PUT /api/leads/{id} to save changes
+   - handleRemoveLead(id) -> moves lead to "Closed" status
+   - Added toast import for notifications
+
+4. Priority 2 - Expanded Edit Form
+   - Backend LeadStatusUpdate: 16 fields (was 9), status now optional
+   - Backend update_lead_status: handles all new fields
+   - Frontend edit mode: full form with all sections
+     * Contact Info: website, emails, phone, fax, contact_page, address
+     * Social Media: JSON editor
+     * Company Profile: tier (dropdown), priority (Hot/Warm/Cold dropdown)
+     * Key Personnel: textarea
+     * Core Problem: textarea
+     * Proposed Solution: textarea
+     * Outreach Email: subject, body, talking points
+
+5. Priority 3 - Separated Notes for Team
+   - Database: added notes_internal column to Lead model
+   - Migration: auto-adds notes_internal column on startup
+   - API: LeadResponse, LeadStatusUpdate include notes_internal
+   - lead_engine.py: save_to_crm stores notes -> notes_internal separately
+   - Enrichment: stores notes_internal separately from personalization_notes
+   - Frontend: detail view shows "Internal Notes" (teal) section
+   - Frontend: edit form has separate Internal Notes field
+
+6. Priority 4 - Richer Pipeline Kanban Cards
+   - Added priority badge (Hot/Warm/Cold) with color coding
+   - Added colored left border based on priority
+   - Cards now show: company, industry tag, priority badge, score %
+
+7. Priority 5 - Phone Indicator in Table Rows
+   - Phone icon appears next to email icon in lead table
+   - Applied to both "New Today" and "All Leads" sections
+
+8. Removed Clear Demo Data Button
+   - Button was dead (no manual leads left)
+   - Removed function, state variable, and button JSX
+   - Kept Enrich Existing Leads (still useful as repair tool)
+
+============================================================
+DEPLOYMENT NOTES:
+============================================================
+- Vercel: Auto-deploys from GitHub (master branch)
+- Render: May need manual redeploy for backend changes
+- Commit history contains all changes with descriptive messages
+- GitHub: https://github.com/afiqraimi/fy-intech-crm
+
+============================================================
+NEXT TIME - HOW TO CONTINUE:
+============================================================
+Tell the AI:
+"We're building FY Intech CRM. Read the file PROJECT_PLAN.txt 
+for everything we've done so far. I want to continue polishing."
