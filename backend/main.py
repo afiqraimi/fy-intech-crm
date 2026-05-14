@@ -46,6 +46,7 @@ def _migrate_lead_columns():
             ("fax", "TEXT", None),
             ("contact_page", "TEXT", None),
             ("personalization_notes", "TEXT", None),
+            ("notes_internal", "TEXT", None),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -633,6 +634,7 @@ class LeadResponse(BaseModel):
     fax: str | None = None
     contact_page: str | None = None
     personalization_notes: str | None = None
+    notes_internal: str | None = None
 
     class Config:
         from_attributes = True
@@ -934,6 +936,7 @@ class LeadStatusUpdate(BaseModel):
     fax: Optional[str] = None
     contact_page: Optional[str] = None
     social_media: Optional[str] = None
+    notes_internal: Optional[str] = None
 
 class LeadCreate(BaseModel):
     company: str
@@ -997,6 +1000,8 @@ def update_lead_status(
         lead.contact_page = update_data.contact_page
     if update_data.social_media is not None:
         lead.social_media = update_data.social_media
+    if update_data.notes_internal is not None:
+        lead.notes_internal = update_data.notes_internal
     db.commit()
     db.refresh(lead)
     if previous_status != lead.status:
@@ -1306,7 +1311,8 @@ def enrich_existing_leads(
                             lead.email_subject = (r.get("email_subject") or "")[:500]
                             lead.email_body = (r.get("email_body") or "")[:5000]
                             lead.tier = (r.get("tier") or "")[:20]
-                            lead.personalization_notes = (r.get("personalization_notes") or r.get("notes") or "")[:2000]
+                            lead.personalization_notes = (r.get("personalization_notes") or "")[:2000]
+                            lead.notes_internal = (r.get("notes") or "")[:2000]
                             lead.fax = (r.get("fax") or "")[:100]
                             lead.contact_page = (r.get("contact_page") or "")[:500]
                             lead.social_media = json.dumps(r.get("social_media") or {}, ensure_ascii=False)[:2000]

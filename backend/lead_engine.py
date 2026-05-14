@@ -418,7 +418,8 @@ def save_to_crm(leads: list[dict]) -> dict:
                 contact_page=(lead.get("contact_page") or "")[:500],
                 email_subject=(lead.get("email_subject") or "")[:500],
                 email_body=(lead.get("email_body") or "")[:5000],
-                personalization_notes=(lead.get("personalization_notes") or lead.get("notes") or "")[:2000],
+                personalization_notes=(lead.get("personalization_notes") or "")[:2000],
+                notes_internal=(lead.get("notes") or "")[:2000],
                 social_media=json.dumps(lead.get("social_media") or {}, ensure_ascii=False)[:2000],
             ))
             created += 1

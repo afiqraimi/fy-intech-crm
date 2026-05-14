@@ -46,6 +46,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
     problem: '', solution: '', website: '', email_primary: '', email_additional: '',
     phone: '', address: '', personnel_data: '', priority: '', email_subject: '',
     email_body: '', tier: '', personalization_notes: '', fax: '', contact_page: '', social_media: '',
+    notes_internal: '',
   });
   const [savingEdit, setSavingEdit] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -151,6 +152,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
       fax: lead.fax || '',
       contact_page: lead.contact_page || '',
       social_media: lead.social_media || '',
+      notes_internal: lead.notes_internal || '',
     });
     setEditMode(true);
   };
@@ -176,6 +178,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
         fax: editForm.fax,
         contact_page: editForm.contact_page,
         social_media: editForm.social_media,
+        notes_internal: editForm.notes_internal,
       };
       const updated = await apiJson(`/api/leads/${selectedLeadDetails.id}`, {
         method: 'PUT',
@@ -527,6 +530,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                       <input value={editForm.email_subject} onChange={e => setEditForm(f => ({ ...f, email_subject: e.target.value }))} placeholder="Email Subject" className="w-full bg-crm-darker border border-amber-500/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-amber-500/50" />
                       <textarea rows={6} value={editForm.email_body} onChange={e => setEditForm(f => ({ ...f, email_body: e.target.value }))} placeholder="Email Body" className="w-full bg-crm-darker border border-amber-500/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none" />
                       <textarea rows={3} value={editForm.personalization_notes} onChange={e => setEditForm(f => ({ ...f, personalization_notes: e.target.value }))} placeholder="Talking Points / Personalization Notes" className="w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-2.5 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none" />
+                      <textarea rows={3} value={editForm.notes_internal} onChange={e => setEditForm(f => ({ ...f, notes_internal: e.target.value }))} placeholder="Internal Notes (only visible to team)" className="w-full bg-crm-darker border border-teal-500/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-teal-500/50 resize-none" />
                     </div>
                   </div>
                 </>
@@ -663,6 +667,16 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                             <p className="text-crm-textMuted text-sm whitespace-pre-wrap">{selectedLeadDetails.personalization_notes}</p>
                           </div>
                         )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Internal Notes */}
+                  {selectedLeadDetails.notes_internal && (
+                    <div>
+                      <h3 className="text-teal-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><FileText size={14} /> Internal Notes</h3>
+                      <div className="bg-teal-500/5 border border-teal-500/20 p-4 rounded-xl">
+                        <p className="text-crm-text leading-relaxed text-sm whitespace-pre-wrap">{selectedLeadDetails.notes_internal}</p>
                       </div>
                     </div>
                   )}
