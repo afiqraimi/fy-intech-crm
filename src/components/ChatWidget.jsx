@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, User, Bot } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://fy-intech-crm.onrender.com';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 function ChatWidget() {
   const [open, setOpen] = useState(false);
