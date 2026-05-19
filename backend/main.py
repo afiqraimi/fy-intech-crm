@@ -1452,3 +1452,20 @@ def clear_demo_leads(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+# ─── AI Avatar Chat Endpoint ──────────────────────────────────────────────────
+
+from chatbot import chat as chatbot_chat
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str | None = "default"
+
+class ChatResponse(BaseModel):
+    reply: str
+
+@app.post("/api/public/chat", response_model=ChatResponse)
+def public_chat(data: ChatRequest):
+    """Public chatbot endpoint for the website AI avatar. No auth required."""
+    reply = chatbot_chat(data.message, data.session_id or "default")
+    return ChatResponse(reply=reply)
