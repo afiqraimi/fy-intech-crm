@@ -1455,11 +1455,9 @@ def clear_demo_leads(
 
 # ─── AI Avatar Chat Endpoint ──────────────────────────────────────────────────
 
-from chatbot import chat as chatbot_chat
-
 class ChatRequest(BaseModel):
     message: str
-    session_id: str | None = "default"
+    session_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     reply: str
@@ -1467,5 +1465,9 @@ class ChatResponse(BaseModel):
 @app.post("/api/public/chat", response_model=ChatResponse)
 def public_chat(data: ChatRequest):
     """Public chatbot endpoint for the website AI avatar. No auth required."""
+    try:
+        from chatbot import chat as chatbot_chat
+    except Exception as e:
+        return ChatResponse(reply="I'm still warming up! Please try again in a moment.")
     reply = chatbot_chat(data.message, data.session_id or "default")
     return ChatResponse(reply=reply)
