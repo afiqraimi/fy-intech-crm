@@ -102,6 +102,16 @@ COMPLETED (Session: May 2026):
    - Removed function, state variable, and button JSX
    - Kept Enrich Existing Leads (still useful as repair tool)
 
+9. AI Avatar Chatbot (Public Website) — NEW SESSION May 19
+   - Created backend/chatbot.py — AI brain with DeepSeek + FY Intech knowledge base
+   - Chatbot fetches LIVE CRM data (projects, lead stats) for dynamic answers
+   - Added /api/public/chat endpoint (no auth, public access)
+   - Created src/components/ChatWidget.jsx — floating chat bubble widget
+   - Added ChatWidget to App.jsx — appears on all public pages (Intro3D, LoginPage)
+   - Deployed: Render backend (manual deploy), Vercel frontend (auto)
+   - User has LiveAvatar API key ready
+   - NEXT: Integrate LiveAvatar realistic human avatar for voice + face
+
 ============================================================
 DEPLOYMENT NOTES:
 ============================================================
