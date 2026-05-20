@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { MessageCircle, X, Loader2, AlertTriangle } from 'lucide-react';
-import { LiveAvatarSession } from '@heygen/liveavatar-web-sdk';
+import { LiveAvatarSession, SessionEvent } from '@heygen/liveavatar-web-sdk';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -32,17 +32,22 @@ function LiveAvatarWidget() {
         voiceChat: true,
       });
 
-      session.on('ready', () => {
-        console.log('[LiveAvatar] Session ready');
+      session.on(SessionEvent.SESSION_STREAM_READY, () => {
+        console.log('[LiveAvatar] Stream ready, attaching to container');
+        // Attach video to the container div once stream is ready
+        if (containerRef.current) {
+          session.attach(containerRef.current);
+          setMode('avatar');
+        }
       });
 
-      session.on('error', (err) => {
+      session.on('session.error', (err) => {
         console.error('[LiveAvatar] Error:', err);
         setError('Avatar connection lost. Please try again.');
         setMode('error');
       });
 
-      session.on('disconnected', () => {
+      session.on(SessionEvent.SESSION_DISCONNECTED, () => {
         console.log('[LiveAvatar] Session ended');
         sessionRef.current = null;
         setMode('closed');
@@ -50,7 +55,6 @@ function LiveAvatarWidget() {
 
       await session.start();
       sessionRef.current = session;
-      setMode('avatar');
 
       // Sandbox sessions auto-end after ~1 minute
       setTimeout(() => {
@@ -168,11 +172,10 @@ function LiveAvatarWidget() {
             )}
 
             {mode === 'avatar' && (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                {/* The LiveAvatar SDK renders the avatar video into the DOM */}
-                {/* We need a container div for it */}
-                <div id="liveavatar-container" className="w-full h-full" />
-                <p className="text-gray-500 text-[10px] mt-2">
+              <div className="w-full h-full flex flex-col items-center justify-center bg-black rounded-xl overflow-hidden">
+                {/* The SDK attaches the avatar video stream into this container */}
+                <div ref={containerRef} className="w-full h-full" />
+                <p className="text-gray-500 text-[10px] mt-1 shrink-0 pb-1">
                   Sandbox mode — sessions last ~1 minute
                 </p>
               </div>
