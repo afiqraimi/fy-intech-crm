@@ -103,8 +103,14 @@ function LiveAvatarWidget() {
         sessionRef.current = null;
         cleanupVideo();
         setSubtitle('');
-        // Don't close the widget — show Start Talking again
-        setMode('closed');
+        // If we disconnected during loading, show an error
+        setMode(prev => {
+          if (prev === 'loading') {
+            setError('Session ended before it could start. Please try again.');
+            return 'error';
+          }
+          return 'closed';
+        });
       });
 
       // Also listen for generic error events
@@ -114,10 +120,10 @@ function LiveAvatarWidget() {
         setMode('error');
       });
 
-      // Start session with a timeout
+      // Start session with a timeout (shorter timeout for retries)
       const startPromise = session.start();
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Session start timed out. Try again.')), 25000)
+        setTimeout(() => reject(new Error('Connection timed out. Please check your internet and try again.')), 15000)
       );
       await Promise.race([startPromise, timeoutPromise]);
       sessionRef.current = session;
