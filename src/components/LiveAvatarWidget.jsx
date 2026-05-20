@@ -13,7 +13,7 @@ function LiveAvatarWidget() {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
 
-  // Cleanup video element from container
+  // Cleanup video element from container and stop old session
   const cleanupVideo = useCallback(() => {
     if (containerRef.current) {
       containerRef.current.innerHTML = '';
@@ -21,7 +21,25 @@ function LiveAvatarWidget() {
     videoRef.current = null;
   }, []);
 
+  // Fully stop + cleanup an existing session
+  const stopSession = useCallback(async () => {
+    if (sessionRef.current) {
+      try {
+        sessionRef.current.removeAllListeners();
+        await sessionRef.current.stop();
+      } catch {
+        // already ended
+      }
+      sessionRef.current = null;
+    }
+    cleanupVideo();
+    setSubtitle('');
+  }, [cleanupVideo]);
+
   const startAvatar = useCallback(async () => {
+    // Clean up any existing session first
+    await stopSession();
+    
     setMode('loading');
     setError('');
     setSubtitle('');
@@ -85,6 +103,7 @@ function LiveAvatarWidget() {
         sessionRef.current = null;
         cleanupVideo();
         setSubtitle('');
+        // Don't close the widget — show Start Talking again
         setMode('closed');
       });
 
@@ -97,6 +116,7 @@ function LiveAvatarWidget() {
 
       await session.start();
       sessionRef.current = session;
+      console.log('[LiveAvatar] Session started successfully');
 
       // Sandbox auto-end timer
       setTimeout(() => {
@@ -114,33 +134,29 @@ function LiveAvatarWidget() {
       cleanupVideo();
       setError(err.message || 'Could not start avatar.');
       setMode('error');
+      // Auto-retry after a delay for transient errors
+      if (err.message && err.message.includes('concurrency')) {
+        setTimeout(() => {
+          if (mode === 'error') {
+            setMode('closed');
+          }
+        }, 3000);
+      }
     }
-  }, [cleanupVideo]);
+  }, [cleanupVideo, stopSession]);
 
   const stopAvatar = useCallback(async () => {
-    setSubtitle('');
-    if (sessionRef.current) {
-      try {
-        await sessionRef.current.stop();
-      } catch {
-        // already ended
-      }
-      sessionRef.current = null;
-    }
-    cleanupVideo();
+    await stopSession();
     setMode('closed');
     setOpen(false);
-  }, [cleanupVideo]);
+  }, [stopSession]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (sessionRef.current) {
-        sessionRef.current.stop().catch(() => {});
-      }
-      cleanupVideo();
+      stopSession();
     };
-  }, [cleanupVideo]);
+  }, [stopSession]);
 
   const handleOpen = () => {
     setOpen(true);
