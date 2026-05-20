@@ -23,7 +23,12 @@ function LiveAvatarWidget() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || 'Failed to start avatar session');
+        const detail = err.detail || '';
+        // Make concurrency limit error user-friendly
+        if (detail.includes('Session concurrency limit')) {
+          throw new Error('Avatar sessions are full right now. Please wait a moment and try again, or use our text chat.');
+        }
+        throw new Error(detail || 'Failed to start avatar session');
       }
 
       const data = await res.json();
@@ -146,12 +151,20 @@ function LiveAvatarWidget() {
                 </div>
                 <p className="text-white text-sm font-medium">Connection Issue</p>
                 <p className="text-gray-400 text-xs">{error}</p>
-                <button
-                  onClick={() => setMode('closed')}
-                  className="mt-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm transition-colors"
-                >
-                  Try Text Chat Instead
-                </button>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={startAvatar}
+                    className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-white text-sm transition-colors"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={() => setMode('closed')}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
 
