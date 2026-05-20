@@ -34,9 +34,17 @@ function LiveAvatarWidget() {
 
       session.on(SessionEvent.SESSION_STREAM_READY, () => {
         console.log('[LiveAvatar] Stream ready, attaching to container');
-        // Attach video to the container div once stream is ready
+        // The SDK's attach() expects a video/audio element.
+        // Create a video element inside our container and attach that.
         if (containerRef.current) {
-          session.attach(containerRef.current);
+          const videoEl = document.createElement('video');
+          videoEl.style.width = '100%';
+          videoEl.style.height = '100%';
+          videoEl.style.objectFit = 'cover';
+          videoEl.setAttribute('playsinline', '');
+          videoEl.setAttribute('autoplay', '');
+          containerRef.current.appendChild(videoEl);
+          session.attach(videoEl);
           setMode('avatar');
         }
       });
