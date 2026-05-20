@@ -114,7 +114,12 @@ function LiveAvatarWidget() {
         setMode('error');
       });
 
-      await session.start();
+      // Start session with a timeout
+      const startPromise = session.start();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Session start timed out. Try again.')), 25000)
+      );
+      await Promise.race([startPromise, timeoutPromise]);
       sessionRef.current = session;
       console.log('[LiveAvatar] Session started successfully');
 
@@ -132,16 +137,9 @@ function LiveAvatarWidget() {
       console.error('[LiveAvatar] Start failed:', err);
       sessionRef.current = null;
       cleanupVideo();
-      setError(err.message || 'Could not start avatar.');
+      // Show a clear error so the user knows what happened
+      setError(err.message || 'Could not start avatar. Please try again.');
       setMode('error');
-      // Auto-retry after a delay for transient errors
-      if (err.message && err.message.includes('concurrency')) {
-        setTimeout(() => {
-          if (mode === 'error') {
-            setMode('closed');
-          }
-        }, 3000);
-      }
     }
   }, [cleanupVideo, stopSession]);
 
