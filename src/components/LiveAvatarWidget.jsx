@@ -1,6 +1,5 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { MessageCircle, X, Loader2, AlertTriangle, Volume2 } from 'lucide-react';
-import { LiveAvatarSession, SessionEvent, AgentEventsEnum } from '@heygen/liveavatar-web-sdk';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -8,45 +7,15 @@ function LiveAvatarWidget() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState('closed'); // closed | loading | avatar | error
   const [error, setError] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const sessionRef = useRef(null);
-  const containerRef = useRef(null);
-  const videoRef = useRef(null);
-
-  // Cleanup video element from container and stop old session
-  const cleanupVideo = useCallback(() => {
-    if (containerRef.current) {
-      containerRef.current.innerHTML = '';
-    }
-    videoRef.current = null;
-  }, []);
-
-  // Fully stop + cleanup an existing session
-  const stopSession = useCallback(async () => {
-    if (sessionRef.current) {
-      try {
-        sessionRef.current.removeAllListeners();
-        await sessionRef.current.stop();
-      } catch {
-        // already ended
-      }
-      sessionRef.current = null;
-    }
-    cleanupVideo();
-    setSubtitle('');
-  }, [cleanupVideo]);
+  const [embedUrl, setEmbedUrl] = useState('');
 
   const startAvatar = useCallback(async () => {
-    // Clean up any existing session first
-    await stopSession();
-    
     setMode('loading');
     setError('');
-    setSubtitle('');
-    cleanupVideo();
 
     try {
-      const res = await fetch(`${API_BASE}/api/public/avatar-token`, {
+      // Get embed URL from backend (which proxies the LiveAvatar API)
+      const res = await fetch(`${API_BASE}/api/public/avatar-embed`, {
         method: 'POST',
       });
 
@@ -56,118 +25,26 @@ function LiveAvatarWidget() {
       }
 
       const data = await res.json();
-
-      const session = new LiveAvatarSession(data.session_token, {
-        voiceChat: true,
-      });
-
-      // Listen for avatar speech transcription (what the avatar says)
-      session.on(AgentEventsEnum.AVATAR_TRANSCRIPTION, (payload) => {
-        if (payload && payload.text) {
-          // If it's a final transcription, replace. If chunk, append.
-          setSubtitle(payload.text);
-        }
-      });
-
-      session.on(AgentEventsEnum.AVATAR_TRANSCRIPTION_CHUNK, (payload) => {
-        if (payload && payload.text) {
-          setSubtitle(payload.text);
-        }
-      });
-
-      // Clear subtitle when avatar stops speaking
-      session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, () => {
-        // Keep the last subtitle visible for a moment, then clear
-        setTimeout(() => setSubtitle(''), 2000);
-      });
-
-      session.on(SessionEvent.SESSION_STREAM_READY, () => {
-        console.log('[LiveAvatar] Stream ready');
-        if (containerRef.current && !videoRef.current) {
-          const videoEl = document.createElement('video');
-          videoEl.style.width = '100%';
-          videoEl.style.height = '100%';
-          videoEl.style.objectFit = 'cover';
-          videoEl.setAttribute('playsinline', '');
-          videoEl.setAttribute('autoplay', '');
-          videoEl.muted = false;
-          containerRef.current.appendChild(videoEl);
-          videoRef.current = videoEl;
-          session.attach(videoEl);
-          setMode('avatar');
-        }
-      });
-
-      session.on(SessionEvent.SESSION_DISCONNECTED, () => {
-        console.log('[LiveAvatar] Session disconnected');
-        sessionRef.current = null;
-        cleanupVideo();
-        setSubtitle('');
-        // If we disconnected during loading, show an error
-        setMode(prev => {
-          if (prev === 'loading') {
-            setError('Session ended before it could start. Please try again.');
-            return 'error';
-          }
-          return 'closed';
-        });
-      });
-
-      // Also listen for generic error events
-      session.on('session.error', (err) => {
-        console.error('[LiveAvatar] Error:', err);
-        setError('Connection lost. Try again.');
-        setMode('error');
-      });
-
-      // Start session with a timeout (shorter timeout for retries)
-      const startPromise = session.start();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timed out. Please check your internet and try again.')), 15000)
-      );
-      await Promise.race([startPromise, timeoutPromise]);
-      sessionRef.current = session;
-      console.log('[LiveAvatar] Session started successfully');
-
-      // Sandbox auto-end timer
-      setTimeout(() => {
-        if (sessionRef.current) {
-          session.stop().catch(() => {});
-          sessionRef.current = null;
-          cleanupVideo();
-          setSubtitle('');
-          setMode('closed');
-        }
-      }, 55000);
+      setEmbedUrl(data.url);
+      setMode('avatar');
     } catch (err) {
       console.error('[LiveAvatar] Start failed:', err);
-      sessionRef.current = null;
-      cleanupVideo();
-      // Show a clear error so the user knows what happened
-      setError(err.message || 'Could not start avatar. Please try again.');
       setMode('error');
+      setError(err.message || 'Could not start avatar. Please try again.');
     }
-  }, [cleanupVideo, stopSession]);
+  }, []);
 
-  const stopAvatar = useCallback(async () => {
-    await stopSession();
+  const stopAvatar = useCallback(() => {
+    setEmbedUrl('');
     setMode('closed');
     setOpen(false);
-  }, [stopSession]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopSession();
-    };
-  }, [stopSession]);
+  }, []);
 
   const handleOpen = () => {
     setOpen(true);
     setMode('closed');
     setError('');
-    setSubtitle('');
-    cleanupVideo();
+    setEmbedUrl('');
   };
 
   const handleClose = () => {
@@ -214,7 +91,7 @@ function LiveAvatarWidget() {
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-4">
                 <Loader2 size={40} className="animate-spin text-cyan-400" />
                 <p className="text-white text-sm font-medium">Starting avatar...</p>
-                <p className="text-gray-400 text-xs">This may take a few seconds</p>
+                <p className="text-gray-400 text-xs">Please wait a moment</p>
               </div>
             )}
 
@@ -233,7 +110,7 @@ function LiveAvatarWidget() {
                     Try Again
                   </button>
                   <button
-                    onClick={() => setMode('closed')}
+                    onClick={() => { setMode('closed'); setEmbedUrl(''); }}
                     className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm transition-colors"
                   >
                     Close
@@ -242,28 +119,23 @@ function LiveAvatarWidget() {
               </div>
             )}
 
-            {mode === 'avatar' && (
-              <>
-                {/* Video container */}
-                <div ref={containerRef} className="flex-1 bg-black" />
-
-                {/* Subtitle overlay at bottom of video */}
-                {subtitle && (
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
-                    <p className="text-white text-sm leading-relaxed text-center drop-shadow-lg">
-                      {subtitle}
-                    </p>
-                  </div>
-                )}
-
-                {/* Sandbox badge */}
+            {mode === 'avatar' && embedUrl && (
+              <div className="flex-1 flex flex-col">
+                <div className="flex-1 bg-black">
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full border-0"
+                    allow="microphone; camera; autoplay"
+                    title="FY Intech Avatar"
+                  />
+                </div>
                 <p className="text-gray-500 text-[10px] text-center py-1 shrink-0">
                   Sandbox mode — ~1 min per session
                 </p>
-              </>
+              </div>
             )}
 
-            {mode === 'closed' && (
+            {mode === 'closed' && !embedUrl && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-4">
                 <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center">
                   <Volume2 size={32} className="text-cyan-400" />

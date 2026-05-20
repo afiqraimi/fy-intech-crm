@@ -1521,3 +1521,36 @@ def create_avatar_token():
     except requests.RequestException as e:
         logger.error("LiveAvatar request failed: %s", e)
         raise HTTPException(status_code=502, detail=f"Avatar service unavailable. Try again later.")
+
+@app.post("/api/public/avatar-embed")
+def create_avatar_embed():
+    """Create a LiveAvatar embed for the public website. No auth. Uses Embed V2 API."""
+    if not LIVEAVATAR_API_KEY:
+        raise HTTPException(status_code=503, detail="LiveAvatar not configured")
+    
+    try:
+        resp = requests.post(
+            "https://api.liveavatar.com/v2/embeddings",
+            headers={
+                "X-API-KEY": LIVEAVATAR_API_KEY,
+                "Content-Type": "application/json",
+            },
+            json={
+                "avatar_id": "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a",
+                "context_id": "07019418-9343-4f61-a120-f1aeca737598",
+                "voice_id": "c2527536-6d1f-4412-a643-53a3497dada9",
+                "is_sandbox": True,
+                "default_language": "en",
+            },
+            timeout=30,
+        )
+        data = resp.json()
+        
+        if data.get("code") != 1000:
+            detail = str(data.get("message", "Unknown error"))
+            raise HTTPException(status_code=502, detail=f"LiveAvatar error: {detail}")
+        
+        return {"url": data["data"]["url"], "embed_id": data["data"]["embed_id"]}
+    except requests.RequestException as e:
+        logger.error("LiveAvatar embed request failed: %s", e)
+        raise HTTPException(status_code=502, detail=f"Avatar service unavailable. Try again later.")
