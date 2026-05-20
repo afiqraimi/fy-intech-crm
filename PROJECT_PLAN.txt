@@ -109,8 +109,24 @@ COMPLETED (Session: May 2026):
    - Created src/components/ChatWidget.jsx — floating chat bubble widget
    - Added ChatWidget to App.jsx — appears on all public pages (Intro3D, LoginPage)
    - Deployed: Render backend (manual deploy), Vercel frontend (auto)
-   - User has LiveAvatar API key ready
-   - NEXT: Integrate LiveAvatar realistic human avatar for voice + face
+   - User has LiveAvatar API key: 8866248b-5378-11f1-8d28-066a7fa2e369
+   - NEXT: Integrate LiveAvatar realistic human avatar for voice + face on website
+
+============================================================
+NEXT STEPS (May 20, 2026 — Current):
+============================================================
+
+9. LiveAvatar Interactive Avatar Integration (Started)
+   - Installed @heygen/liveavatar-web-sdk into the frontend
+   - Created LiveAvatar context on LiveAvatar API with FY Intech knowledge base
+     (context_id: 07019418-9343-4f61-a120-f1aeca737598)
+   - Added /api/public/avatar-token endpoint to backend (creates FULL Mode sandbox session)
+   - Created LiveAvatarWidget.jsx — floating avatar widget that replaces ChatWidget
+   - Updated App.jsx to use LiveAvatarWidget instead of ChatWidget
+   - Sandbox mode: free, uses "Wayne" avatar, ~1 min sessions, no credits consumed
+   - TODO: Redeploy backend to Render (add LIVEAVATAR_API_KEY env var first)
+   - TODO: Test end-to-end on live website
+   - TODO: After sandbox testing works, decide: upgrade to paid plan or find alternative
 
 ============================================================
 DEPLOYMENT NOTES:
