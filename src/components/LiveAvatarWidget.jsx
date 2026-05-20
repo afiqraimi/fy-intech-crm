@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { MessageCircle, X, Loader2, AlertTriangle } from 'lucide-react';
 import { LiveAvatarSession } from '@heygen/liveavatar-web-sdk';
 
@@ -16,24 +16,18 @@ function LiveAvatarWidget() {
     setError('');
 
     try {
-      // Step 1: Get session token from our backend
       const res = await fetch(`${API_BASE}/api/public/avatar-token`, {
         method: 'POST',
       });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        const detail = err.detail || '';
-        // Make concurrency limit error user-friendly
-        if (detail.includes('Session concurrency limit')) {
-          throw new Error('Avatar sessions are full right now. Please wait a moment and try again, or use our text chat.');
-        }
-        throw new Error(detail || 'Failed to start avatar session');
+        throw new Error(err.detail || 'Failed to start avatar');
       }
 
       const data = await res.json();
 
-      // Step 2: Start the LiveAvatar session with the token
+      // SDK handles the session start internally with just the token
       const session = new LiveAvatarSession(data.session_token, {
         voiceChat: true,
       });
@@ -51,10 +45,7 @@ function LiveAvatarWidget() {
       session.on('disconnected', () => {
         console.log('[LiveAvatar] Session ended');
         sessionRef.current = null;
-        if (mode !== 'closed') {
-          setMode('closed');
-          setOpen(false);
-        }
+        setMode('closed');
       });
 
       await session.start();
@@ -67,7 +58,6 @@ function LiveAvatarWidget() {
           session.stop().catch(() => {});
           sessionRef.current = null;
           setMode('closed');
-          setOpen(false);
         }
       }, 55000);
     } catch (err) {
@@ -88,6 +78,15 @@ function LiveAvatarWidget() {
     }
     setMode('closed');
     setOpen(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (sessionRef.current) {
+        sessionRef.current.stop().catch(() => {});
+      }
+    };
   }, []);
 
   const handleOpen = () => {

@@ -1479,8 +1479,6 @@ LIVEAVATAR_API_KEY = os.environ.get("LIVEAVATAR_API_KEY", "")
 class AvatarTokenResponse(BaseModel):
     session_token: str
     session_id: str
-    livekit_url: str
-    livekit_token: str
 
 @app.post("/api/public/avatar-token")
 def create_avatar_token():
@@ -1489,7 +1487,7 @@ def create_avatar_token():
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
     
     try:
-        # Step 1: Create session token
+        # Create session token only — SDK on frontend handles the start
         token_resp = requests.post(
             "https://api.liveavatar.com/v1/sessions/token",
             headers={
@@ -1511,35 +1509,15 @@ def create_avatar_token():
         token_data = token_resp.json()
         
         if token_data.get("code") != 1000:
-            raise HTTPException(status_code=502, detail=f"LiveAvatar token error: {token_data}")
-        
-        session_token = token_data["data"]["session_token"]
-        session_id = token_data["data"]["session_id"]
-        
-        # Step 2: Start the session (gets LiveKit credentials)
-        start_resp = requests.post(
-            "https://api.liveavatar.com/v1/sessions/start",
-            headers={
-                "Authorization": f"Bearer {session_token}",
-                "Content-Type": "application/json",
-            },
-            timeout=30,
-        )
-        start_data = start_resp.json()
-        
-        if start_data.get("code") != 1000:
-            raise HTTPException(status_code=502, detail=f"LiveAvatar start error: {start_data}")
-        
-        livekit_url = start_data["data"]["livekit_url"]
-        livekit_token = start_data["data"]["livekit_client_token"]
-        session_id = start_data["data"]["session_id"]
+            detail = str(token_data.get("message", "Unknown error"))
+            if "concurrency" in detail.lower():
+                raise HTTPException(status_code=429, detail="Avatar is busy right now. Please wait a moment and try again.")
+            raise HTTPException(status_code=502, detail=f"LiveAvatar error: {detail}")
         
         return AvatarTokenResponse(
-            session_token=session_token,
-            session_id=session_id,
-            livekit_url=livekit_url,
-            livekit_token=livekit_token,
+            session_token=token_data["data"]["session_token"],
+            session_id=token_data["data"]["session_id"],
         )
     except requests.RequestException as e:
         logger.error("LiveAvatar request failed: %s", e)
-        raise HTTPException(status_code=502, detail=f"LiveAvatar connection error: {str(e)}")
+        raise HTTPException(status_code=502, detail=f"Avatar service unavailable. Try again later.")
