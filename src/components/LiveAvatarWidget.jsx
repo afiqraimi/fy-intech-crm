@@ -69,77 +69,27 @@ function LiveAvatarWidget() {
   const [mode, setMode] = useState('choose'); // choose | loading | avatar | chat | error
   const [error, setError] = useState('');
   const [embedUrl, setEmbedUrl] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
-  const endRef = useRef(null);
-  const sessionId = useRef('visitor-' + Date.now());
-  const iframeTimer = useRef(null);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-  // ── Start Avatar via Embed V2 (FAST - no WebRTC on our side) ──
   const startAvatar = useCallback(async () => {
     setMode('loading');
     setError('');
     setEmbedUrl('');
-    setMessages([]);
-    setIframeError(false);
-
     try {
       const res = await fetch(`${API_BASE}/api/public/avatar-embed`, { method: 'POST' });
       if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Failed');
       const data = await res.json();
       setEmbedUrl(data.url);
       setMode('avatar');
-      setMessages([{ role: 'assistant', text: "Hi! I'm FY Intech's AI assistant. Ask me about our VR/AR solutions, past projects, or anything about FY Intech!", final: true }]);
-      
-      // Timeout: if iframe doesn't load in 10s, show error
-      if (iframeTimer.current) clearTimeout(iframeTimer.current);
-      iframeTimer.current = setTimeout(() => {
-        if (!document.querySelector('iframe[src*="embed.liveavatar.com"]')) {
-          setIframeError(true);
-          setError('Avatar took too long to load. Please try again.');
-          setMode('error');
-        }
-      }, 10000);
     } catch (err) {
       setError(err.message);
       setMode('error');
     }
   }, []);
 
-  // ── Text Chat ──
-  const startChat = useCallback(() => {
-    setMode('chat');
-    setMessages([]);
-  }, []);
-
-  // ── Send text ──
-  const sendChat = useCallback(async () => {
-    const text = input.trim();
-    if (!text || chatLoading) return;
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', text, final: true }]);
-    setChatLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/public/chat`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, session_id: sessionId.current }),
-      });
-      const data = await res.json();
-      setMessages(prev => [...prev, { role: 'assistant', text: data.reply, final: true }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, having trouble. Email ask@fyintech.com!', final: true }]);
-    }
-    setChatLoading(false);
-  }, [input, chatLoading]);
+  const startChat = useCallback(() => { setMode('chat'); }, []);
 
   const stopAll = useCallback(() => {
-    if (iframeTimer.current) clearTimeout(iframeTimer.current);
     setEmbedUrl('');
-    setMessages([]);
     setMode('choose');
     setOpen(false);
   }, []);
@@ -149,7 +99,6 @@ function LiveAvatarWidget() {
     setMode('choose');
     setError('');
     setEmbedUrl('');
-    setMessages([]);
   };
 
   return (
@@ -170,8 +119,8 @@ function LiveAvatarWidget() {
                 {mode === 'chat' ? <MessageSquare size={18} /> : <Volume2 size={18} />}
               </div>
               <div>
-                <div className="font-semibold text-sm">{mode === 'chat' ? 'FY Intech Chat' : 'FY Intech Assistant'}</div>
-                <div className="text-xs text-white/70">{mode === 'choose' ? 'Choose mode' : mode === 'loading' ? 'Starting...' : mode === 'avatar' ? 'Talk to the avatar' : mode === 'chat' ? 'Text chat' : ''}</div>
+                <div className="font-semibold text-sm">{mode === 'chat' ? 'Text Chat' : 'FY Intech Assistant'}</div>
+                <div className="text-xs text-white/70">{mode === 'choose' ? 'Choose mode' : mode === 'loading' ? 'Starting...' : mode === 'avatar' ? 'Click the CC icon for subtitles' : ''}</div>
               </div>
             </div>
             <button onClick={stopAll} className="hover:bg-white/20 p-1 rounded-lg transition-colors"><X size={20} /></button>
@@ -188,7 +137,7 @@ function LiveAvatarWidget() {
                 <button onClick={startAvatar}
                   className="w-full max-w-xs flex items-center gap-4 px-5 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl transition-all shadow-lg">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"><Volume2 size={20} /></div>
-                  <div className="text-left"><p className="font-bold text-sm">Talking Avatar</p><p className="text-xs text-white/70">Face-to-face with voice</p></div>
+                  <div className="text-left"><p className="font-bold text-sm">Talking Avatar</p><p className="text-xs text-white/70">Realistic face + voice</p></div>
                 </button>
                 <button onClick={startChat}
                   className="w-full max-w-xs flex items-center gap-4 px-5 py-4 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all">
@@ -218,52 +167,13 @@ function LiveAvatarWidget() {
               </div>
             )}
 
-            {/* ── Avatar Mode ── */}
+            {/* ── Avatar Mode — FULL SCREEN IFRAME ── */}
             {mode === 'avatar' && embedUrl && (
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="h-[200px] shrink-0 bg-black relative">
-                  <iframe src={embedUrl}
-                    className="w-full h-full border-0"
-                    allow="microphone; camera; autoplay"
-                    title="FY Intech Avatar"
-                    onLoad={() => { if (iframeTimer.current) clearTimeout(iframeTimer.current); }}
-                    onError={() => { setError('Failed to load avatar.'); setMode('error'); }} />
-                </div>
-
-                <div className="h-px bg-gray-700 shrink-0" />
-
-                {/* Transcript + Input */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="px-3 py-1.5 bg-gray-900 border-b border-gray-800 shrink-0">
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Type below to chat</p>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                    {messages.map((msg, i) => (
-                      <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        {msg.role === 'assistant' && <div className="w-6 h-6 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-0.5"><Bot size={12} className="text-white" /></div>}
-                        <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-cyan-600/20 text-white rounded-br-md border border-cyan-500/20' : 'bg-gray-800 text-gray-100 rounded-bl-md'}`}>{msg.text}</div>
-                        {msg.role === 'user' && <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-0.5"><User size={12} className="text-white" /></div>}
-                      </div>
-                    ))}
-                    {chatLoading && (
-                      <div className="flex gap-2 justify-start">
-                        <div className="w-6 h-6 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-0.5"><Bot size={12} className="text-white" /></div>
-                        <div className="bg-gray-800 text-gray-400 px-3 py-2 rounded-2xl rounded-bl-md text-sm"><span className="animate-pulse">Thinking...</span></div>
-                      </div>
-                    )}
-                    <div ref={endRef} />
-                  </div>
-
-                  <div className="border-t border-gray-800 p-2 shrink-0 flex gap-2">
-                    <input type="text" value={input} onChange={e => setInput(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && sendChat()}
-                      placeholder="Type your question..." className="flex-1 bg-gray-800 text-white text-xs rounded-xl px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500 placeholder-gray-500" />
-                    <button onClick={sendChat} disabled={chatLoading || !input.trim()}
-                      className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white rounded-xl px-3 py-2 transition-colors"><Send size={14} /></button>
-                  </div>
-                </div>
-
-                <p className="text-gray-500 text-[10px] text-center py-0.5 shrink-0 bg-gray-900">Sandbox — ~1 min</p>
+              <div className="flex-1 bg-black">
+                <iframe src={embedUrl}
+                  className="w-full h-full border-0"
+                  allow="microphone; camera; autoplay"
+                  title="FY Intech Avatar" />
               </div>
             )}
 
