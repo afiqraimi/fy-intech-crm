@@ -1482,10 +1482,15 @@ class AvatarTokenResponse(BaseModel):
     session_id: str
 
 
-def _update_context_with_live_data(db):
-    """Query the CRM database and inject live stats into the LiveAvatar context."""
+def _update_context_with_live_data():
+    """Query the CRM database and inject live stats into the LiveAvatar context.
+    Creates its own DB session to avoid dependency injection issues."""
     try:
+        from database import SessionLocal
+        db = SessionLocal()
+        
         # Lead stats
+        import models
         total_leads = db.query(models.Lead).count()
         new_leads = db.query(models.Lead).filter(models.Lead.status == "New").count()
         in_progress = db.query(models.Lead).filter(models.Lead.status.in_(["To Approach", "Approached", "Proposal Sent"])).count()
@@ -1498,6 +1503,8 @@ def _update_context_with_live_data(db):
         projects = db.query(models.Project).filter(
             ~models.Project.stage.in_(["Completed", "Deployed", "Closed"])
         ).order_by(models.Project.last_update.desc()).limit(5).all()
+        
+        db.close()
         
         # Lead engine schedule
         from lead_schedule import load_schedule
@@ -1558,9 +1565,7 @@ def _update_context_with_live_data(db):
         logger.error("Failed to update LiveAvatar context: %s", e)
 
 @app.post("/api/public/avatar-token")
-def create_avatar_token(
-    db: Session = Depends(get_db),
-):
+def create_avatar_token():
     """Create a LiveAvatar session token for the public website avatar.
     Injects live CRM data into the context before each session. No auth."""
     if not LIVEAVATAR_API_KEY:
@@ -1568,7 +1573,7 @@ def create_avatar_token(
     
     try:
         # ── Update context with live CRM data ────────────────────────────
-        _update_context_with_live_data(db)
+        _update_context_with_live_data()
         
         # ── Create session token ─────────────────────────────────────────
         token_resp = requests.post(
@@ -1606,17 +1611,14 @@ def create_avatar_token(
         raise HTTPException(status_code=502, detail=f"Avatar service unavailable. Try again later.")
 
 @app.post("/api/public/avatar-embed")
-def create_avatar_embed(
-    db: Session = Depends(get_db),
-):
-    """Create a LiveAvatar embed for the public website. No auth.
-    Injects live CRM data into the context before each session."""
+def create_avatar_embed():
+    """Create a LiveAvatar embed for the public website. No auth. No auth."""
     if not LIVEAVATAR_API_KEY:
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
     
     try:
         # ── Update context with live CRM data ────────────────────────────
-        _update_context_with_live_data(db)
+        _update_context_with_live_data()
         
         # ── Create the embed ─────────────────────────────────────────────
         resp = requests.post(
