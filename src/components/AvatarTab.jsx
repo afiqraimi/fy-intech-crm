@@ -61,7 +61,7 @@ export default function AvatarTab() {
       )}
 
       {state === 'active' && embedUrl && (
-        <div className="rounded-2xl overflow-hidden border border-crm-border/50 bg-black" style={{ height: '60vh' }}>
+        <div className="rounded-2xl overflow-hidden border border-crm-border/50 bg-black" style={{ aspectRatio: '16/9', maxHeight: '80vh' }}>
           <iframe
             src={embedUrl}
             className="w-full h-full border-0"
