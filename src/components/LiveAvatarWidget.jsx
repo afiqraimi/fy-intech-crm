@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MessageCircle, X, Loader2, AlertTriangle, Volume2, Send, Bot, User, MessageSquare } from 'lucide-react';
-import { LiveAvatarSession, SessionEvent, AgentEventsEnum } from '@heygen/liveavatar-web-sdk';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ─── Text Chat Component ──────────────────────────────────────────────────
-function TextChat() {
+function TextChat({ onBack }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hi! I'm FY Intech's AI assistant. Ask me anything about our VR/AR solutions, past projects, or how we can help your business!" }
   ]);
@@ -40,15 +39,9 @@ function TextChat() {
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {msg.role === 'assistant' && (
-              <div className="w-7 h-7 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-1"><Bot size={14} className="text-white" /></div>
-            )}
-            <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
-              msg.role === 'user' ? 'bg-cyan-600 text-white rounded-br-md' : 'bg-gray-800 text-gray-100 rounded-bl-md'
-            }`}>{msg.text}</div>
-            {msg.role === 'user' && (
-              <div className="w-7 h-7 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-1"><User size={14} className="text-white" /></div>
-            )}
+            {msg.role === 'assistant' && <div className="w-7 h-7 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-1"><Bot size={14} className="text-white" /></div>}
+            <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-cyan-600 text-white rounded-br-md' : 'bg-gray-800 text-gray-100 rounded-bl-md'}`}>{msg.text}</div>
+            {msg.role === 'user' && <div className="w-7 h-7 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-1"><User size={14} className="text-white" /></div>}
           </div>
         ))}
         {loading && (
@@ -73,157 +66,57 @@ function TextChat() {
 // ─── Main Widget ──────────────────────────────────────────────────────────
 function LiveAvatarWidget() {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState('choose'); // choose | loading-avatar | avatar | chat | error
+  const [mode, setMode] = useState('choose'); // choose | loading | avatar | chat | error
   const [error, setError] = useState('');
+  const [embedUrl, setEmbedUrl] = useState('');
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
-  const [transcriptAvailable, setTranscriptAvailable] = useState(false);
-  const sessionRef = useRef(null);
-  const containerRef = useRef(null);
+  const [iframeError, setIframeError] = useState(false);
   const endRef = useRef(null);
   const sessionId = useRef('visitor-' + Date.now());
+  const iframeTimer = useRef(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (sessionRef.current) {
-        try { sessionRef.current.stop(); } catch {}
-        sessionRef.current = null;
-      }
-    };
-  }, []);
-
-  // ── Start Avatar (SDK with voice + transcript) ──
+  // ── Start Avatar via Embed V2 (FAST - no WebRTC on our side) ──
   const startAvatar = useCallback(async () => {
-    setMode('loading-avatar');
+    setMode('loading');
     setError('');
+    setEmbedUrl('');
     setMessages([]);
-    setTranscriptAvailable(false);
-
-    // Clean previous session
-    if (sessionRef.current) {
-      try { sessionRef.current.stop(); } catch {}
-      sessionRef.current = null;
-    }
-    if (containerRef.current) containerRef.current.innerHTML = '';
+    setIframeError(false);
 
     try {
-      const res = await fetch(`${API_BASE}/api/public/avatar-token`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/api/public/avatar-embed`, { method: 'POST' });
       if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Failed');
       const data = await res.json();
-
-      const session = new LiveAvatarSession(data.session_token, { voiceChat: true });
-
-      // ── User transcription (what user said) ──
-      session.on(AgentEventsEnum.USER_TRANSCRIPTION, (payload) => {
-        if (payload && payload.text) {
-          setMessages(prev => {
-            const copy = [...prev];
-            if (copy.length > 0 && copy[copy.length-1].role === 'user' && !copy[copy.length-1].final) {
-              copy[copy.length-1] = { role: 'user', text: payload.text, final: false };
-            } else {
-              copy.push({ role: 'user', text: payload.text, final: false });
-            }
-            return copy;
-          });
-          setTranscriptAvailable(true);
+      setEmbedUrl(data.url);
+      setMode('avatar');
+      setMessages([{ role: 'assistant', text: "Hi! I'm FY Intech's AI assistant. Ask me about our VR/AR solutions, past projects, or anything about FY Intech!", final: true }]);
+      
+      // Timeout: if iframe doesn't load in 10s, show error
+      if (iframeTimer.current) clearTimeout(iframeTimer.current);
+      iframeTimer.current = setTimeout(() => {
+        if (!document.querySelector('iframe[src*="embed.liveavatar.com"]')) {
+          setIframeError(true);
+          setError('Avatar took too long to load. Please try again.');
+          setMode('error');
         }
-      });
-
-      // ── Final user transcription ──
-      session.on(AgentEventsEnum.USER_SPEAK_ENDED, () => {
-        setMessages(prev => {
-          const copy = [...prev];
-          if (copy.length > 0 && copy[copy.length-1].role === 'user') {
-            copy[copy.length-1] = { ...copy[copy.length-1], final: true };
-          }
-          return copy;
-        });
-      });
-
-      // ── Avatar transcription (what avatar says) ──
-      session.on(AgentEventsEnum.AVATAR_TRANSCRIPTION, (payload) => {
-        if (payload && payload.text) {
-          setMessages(prev => {
-            const copy = [...prev];
-            if (copy.length > 0 && copy[copy.length-1].role === 'assistant' && !copy[copy.length-1].final) {
-              copy[copy.length-1] = { role: 'assistant', text: payload.text, final: false };
-            } else {
-              copy.push({ role: 'assistant', text: payload.text, final: false });
-            }
-            return copy;
-          });
-          setTranscriptAvailable(true);
-        }
-      });
-
-      // ── Final avatar transcription ──
-      session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, () => {
-        setMessages(prev => {
-          const copy = [...prev];
-          if (copy.length > 0 && copy[copy.length-1].role === 'assistant') {
-            copy[copy.length-1] = { ...copy[copy.length-1], final: true };
-          }
-          return copy;
-        });
-      });
-
-      // ── Stream ready — attach video ──
-      session.on(SessionEvent.SESSION_STREAM_READY, () => {
-        if (containerRef.current) {
-          const videoEl = document.createElement('video');
-          videoEl.style.width = '100%';
-          videoEl.style.height = '100%';
-          videoEl.style.objectFit = 'cover';
-          videoEl.setAttribute('playsinline', '');
-          videoEl.setAttribute('autoplay', '');
-          containerRef.current.appendChild(videoEl);
-          session.attach(videoEl);
-          setMode('avatar');
-        }
-      });
-
-      // ── Disconnected ──
-      session.on(SessionEvent.SESSION_DISCONNECTED, () => {
-        sessionRef.current = null;
-        if (containerRef.current) containerRef.current.innerHTML = '';
-        setMessages(prev => [...prev, { role: 'assistant', text: 'Session ended. Close and start again!', final: true }]);
-      });
-
-      // ── Start with timeout ──
-      await Promise.race([
-        session.start(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timed out. Please try again.')), 25000))
-      ]);
-      sessionRef.current = session;
-
-      // Sandbox auto-end
-      setTimeout(() => {
-        if (sessionRef.current) {
-          try { session.stop(); } catch {}
-          sessionRef.current = null;
-          if (containerRef.current) containerRef.current.innerHTML = '';
-        }
-      }, 58000);
-
+      }, 10000);
     } catch (err) {
-      console.error('[Avatar]', err);
-      if (containerRef.current) containerRef.current.innerHTML = '';
-      setError(err.message || 'Could not start avatar.');
+      setError(err.message);
       setMode('error');
     }
   }, []);
 
-  // ── Text Chat (independent, no avatar) ──
+  // ── Text Chat ──
   const startChat = useCallback(() => {
     setMode('chat');
     setMessages([]);
   }, []);
 
-  // ── Send text (used in avatar mode too) ──
+  // ── Send text ──
   const sendChat = useCallback(async () => {
     const text = input.trim();
     if (!text || chatLoading) return;
@@ -244,11 +137,8 @@ function LiveAvatarWidget() {
   }, [input, chatLoading]);
 
   const stopAll = useCallback(() => {
-    if (sessionRef.current) {
-      try { sessionRef.current.stop(); } catch {}
-      sessionRef.current = null;
-    }
-    if (containerRef.current) containerRef.current.innerHTML = '';
+    if (iframeTimer.current) clearTimeout(iframeTimer.current);
+    setEmbedUrl('');
     setMessages([]);
     setMode('choose');
     setOpen(false);
@@ -258,6 +148,7 @@ function LiveAvatarWidget() {
     setOpen(true);
     setMode('choose');
     setError('');
+    setEmbedUrl('');
     setMessages([]);
   };
 
@@ -279,18 +170,13 @@ function LiveAvatarWidget() {
                 {mode === 'chat' ? <MessageSquare size={18} /> : <Volume2 size={18} />}
               </div>
               <div>
-                <div className="font-semibold text-sm">
-                  {mode === 'chat' ? 'FY Intech Chat' : 'FY Intech Assistant'}
-                </div>
-                <div className="text-xs text-white/70">
-                  {mode === 'choose' ? 'Choose mode' : mode === 'loading-avatar' ? 'Connecting...' : mode === 'avatar' ? 'Speak naturally - transcript below' : mode === 'chat' ? 'Text chat' : ''}
-                </div>
+                <div className="font-semibold text-sm">{mode === 'chat' ? 'FY Intech Chat' : 'FY Intech Assistant'}</div>
+                <div className="text-xs text-white/70">{mode === 'choose' ? 'Choose mode' : mode === 'loading' ? 'Starting...' : mode === 'avatar' ? 'Talk to the avatar' : mode === 'chat' ? 'Text chat' : ''}</div>
               </div>
             </div>
             <button onClick={stopAll} className="hover:bg-white/20 p-1 rounded-lg transition-colors"><X size={20} /></button>
           </div>
 
-          {/* Body */}
           <div className="flex-1 flex flex-col bg-gray-950 overflow-hidden">
             {/* ── Choose Mode ── */}
             {mode === 'choose' && (
@@ -302,30 +188,21 @@ function LiveAvatarWidget() {
                 <button onClick={startAvatar}
                   className="w-full max-w-xs flex items-center gap-4 px-5 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl transition-all shadow-lg">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"><Volume2 size={20} /></div>
-                  <div className="text-left">
-                    <p className="font-bold text-sm">Talking Avatar</p>
-                    <p className="text-xs text-white/70">Voice + automatic transcript</p>
-                  </div>
+                  <div className="text-left"><p className="font-bold text-sm">Talking Avatar</p><p className="text-xs text-white/70">Face-to-face with voice</p></div>
                 </button>
                 <button onClick={startChat}
                   className="w-full max-w-xs flex items-center gap-4 px-5 py-4 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all">
                   <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0"><MessageSquare size={20} /></div>
-                  <div className="text-left">
-                    <p className="font-bold text-sm">Text Chat</p>
-                    <p className="text-xs text-white/70">Quick and simple</p>
-                  </div>
+                  <div className="text-left"><p className="font-bold text-sm">Text Chat</p><p className="text-xs text-white/70">Quick and simple</p></div>
                 </button>
               </div>
             )}
 
-            {/* ── Loading Avatar ── */}
-            {mode === 'loading-avatar' && (
+            {/* ── Loading ── */}
+            {mode === 'loading' && (
               <div className="flex-1 flex items-center justify-center gap-3">
                 <Loader2 size={28} className="animate-spin text-cyan-400" />
-                <div>
-                  <p className="text-white text-sm font-medium">Connecting to avatar...</p>
-                  <p className="text-gray-400 text-xs mt-1">This takes about 10 seconds</p>
-                </div>
+                <p className="text-white text-sm">Starting avatar...</p>
               </div>
             )}
 
@@ -342,44 +219,51 @@ function LiveAvatarWidget() {
             )}
 
             {/* ── Avatar Mode ── */}
-            {mode === 'avatar' && (
+            {mode === 'avatar' && embedUrl && (
               <div className="flex-1 flex flex-col overflow-hidden">
-                <div ref={containerRef} className="h-[200px] shrink-0 bg-black" />
+                <div className="h-[200px] shrink-0 bg-black relative">
+                  <iframe src={embedUrl}
+                    className="w-full h-full border-0"
+                    allow="microphone; camera; autoplay"
+                    title="FY Intech Avatar"
+                    onLoad={() => { if (iframeTimer.current) clearTimeout(iframeTimer.current); }}
+                    onError={() => { setError('Failed to load avatar.'); setMode('error'); }} />
+                </div>
+
                 <div className="h-px bg-gray-700 shrink-0" />
 
-                {/* Transcript */}
+                {/* Transcript + Input */}
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <div className="px-3 py-1.5 bg-gray-900 border-b border-gray-800 shrink-0">
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                      Transcript {transcriptAvailable ? '' : '(speak to see text)'}
-                    </p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Type below to chat</p>
                   </div>
                   <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                    {messages.length === 0 && !transcriptAvailable && (
-                      <div className="flex flex-col items-center justify-center h-full text-gray-500 text-xs gap-2">
-                        <Volume2 size={24} className="opacity-30" />
-                        <p>Start speaking — your words and the avatar's</p>
-                        <p>responses will appear here automatically</p>
-                      </div>
-                    )}
                     {messages.map((msg, i) => (
                       <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        {msg.role === 'assistant' && (
-                          <div className="w-6 h-6 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-0.5"><Bot size={12} className="text-white" /></div>
-                        )}
-                        <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
-                          msg.role === 'user' ? 'bg-cyan-600/20 text-white rounded-br-md border border-cyan-500/20' : 'bg-gray-800 text-gray-100 rounded-bl-md'
-                        }`}>{msg.text}</div>
-                        {msg.role === 'user' && (
-                          <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-0.5"><User size={12} className="text-white" /></div>
-                        )}
+                        {msg.role === 'assistant' && <div className="w-6 h-6 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-0.5"><Bot size={12} className="text-white" /></div>}
+                        <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-cyan-600/20 text-white rounded-br-md border border-cyan-500/20' : 'bg-gray-800 text-gray-100 rounded-bl-md'}`}>{msg.text}</div>
+                        {msg.role === 'user' && <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-0.5"><User size={12} className="text-white" /></div>}
                       </div>
                     ))}
+                    {chatLoading && (
+                      <div className="flex gap-2 justify-start">
+                        <div className="w-6 h-6 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-0.5"><Bot size={12} className="text-white" /></div>
+                        <div className="bg-gray-800 text-gray-400 px-3 py-2 rounded-2xl rounded-bl-md text-sm"><span className="animate-pulse">Thinking...</span></div>
+                      </div>
+                    )}
                     <div ref={endRef} />
+                  </div>
+
+                  <div className="border-t border-gray-800 p-2 shrink-0 flex gap-2">
+                    <input type="text" value={input} onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && sendChat()}
+                      placeholder="Type your question..." className="flex-1 bg-gray-800 text-white text-xs rounded-xl px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500 placeholder-gray-500" />
+                    <button onClick={sendChat} disabled={chatLoading || !input.trim()}
+                      className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white rounded-xl px-3 py-2 transition-colors"><Send size={14} /></button>
                   </div>
                 </div>
 
-                <p className="text-gray-500 text-[10px] text-center py-0.5 shrink-0 bg-gray-900">Sandbox — ~1 min session</p>
+                <p className="text-gray-500 text-[10px] text-center py-0.5 shrink-0 bg-gray-900">Sandbox — ~1 min</p>
               </div>
             )}
 
