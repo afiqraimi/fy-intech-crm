@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MessageCircle, X, Loader2, AlertTriangle, Volume2, Send, Bot, User } from 'lucide-react';
-import { LiveAvatarSession, SessionEvent, AgentEventsEnum } from '@heygen/liveavatar-web-sdk';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -8,44 +7,28 @@ function LiveAvatarWidget() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState('closed'); // closed | loading | avatar | error
   const [error, setError] = useState('');
+  const [embedUrl, setEmbedUrl] = useState('');
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+  const [lastQ, setLastQ] = useState('');
   const chatEndRef = useRef(null);
-  const containerRef = useRef(null);
-  const sessionRef = useRef(null);
   const sessionId = useRef('visitor-' + Date.now());
-  const subtitleTimer = useRef(null);
+  const embedRef = useRef(null);
 
-  // Auto-scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Cleanup session on unmount
-  useEffect(() => {
-    return () => {
-      if (sessionRef.current) {
-        try { sessionRef.current.stop(); } catch {}
-        sessionRef.current = null;
-      }
-    };
-  }, []);
-
   const startAvatar = useCallback(async () => {
     setMode('loading');
     setError('');
-    setMessages([{ role: 'assistant', text: "Hi! I'm FY Intech's AI assistant. Ask me about our VR/AR solutions, past projects, or live CRM data!" }]);
-
-    // Clean up any previous session
-    if (sessionRef.current) {
-      try { sessionRef.current.stop(); } catch {}
-      sessionRef.current = null;
-    }
+    setMessages([]);
+    setEmbedUrl('');
 
     try {
-      // 1. Get session token from backend
-      const res = await fetch(`${API_BASE}/api/public/avatar-token`, {
+      // Create embed (fast - returns iframe URL directly)
+      const res = await fetch(`${API_BASE}/api/public/avatar-embed`, {
         method: 'POST',
       });
 
@@ -55,127 +38,20 @@ function LiveAvatarWidget() {
       }
 
       const data = await res.json();
-
-      // 2. Create SDK session
-      const session = new LiveAvatarSession(data.session_token, {
-        voiceChat: true,
-      });
-
-      // ── SDK Event Listeners ──
-
-      // When avatar starts speaking, show text
-      session.on(AgentEventsEnum.AVATAR_TRANSCRIPTION, (payload) => {
-        if (payload && payload.text) {
-          // Add/update the last assistant message with the transcription
-          setMessages(prev => {
-            const copy = [...prev];
-            // If the last message is already assistant, update it
-            if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && !copy[copy.length - 1].final) {
-              copy[copy.length - 1] = { role: 'assistant', text: payload.text, final: false };
-            } else {
-              copy.push({ role: 'assistant', text: payload.text, final: false });
-            }
-            return copy;
-          });
-        }
-      });
-
-      // Transcription chunks for real-time updates
-      session.on(AgentEventsEnum.AVATAR_TRANSCRIPTION_CHUNK, (payload) => {
-        if (payload && payload.text) {
-          setMessages(prev => {
-            const copy = [...prev];
-            if (copy.length > 0 && copy[copy.length - 1].role === 'assistant' && !copy[copy.length - 1].final) {
-              copy[copy.length - 1] = { role: 'assistant', text: payload.text, final: false };
-            } else {
-              copy.push({ role: 'assistant', text: payload.text, final: false });
-            }
-            return copy;
-          });
-        }
-      });
-
-      // Mark transcription as final when avatar stops speaking
-      session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, () => {
-        setMessages(prev => {
-          const copy = [...prev];
-          if (copy.length > 0 && copy[copy.length - 1].role === 'assistant') {
-            copy[copy.length - 1] = { ...copy[copy.length - 1], final: true };
-          }
-          return copy;
-        });
-      });
-
-      // User transcription (what user said)
-      session.on(AgentEventsEnum.USER_TRANSCRIPTION, (payload) => {
-        if (payload && payload.text) {
-          setMessages(prev => {
-            const copy = [...prev];
-            if (copy.length > 0 && copy[copy.length - 1].role === 'user' && !copy[copy.length - 1].final) {
-              copy[copy.length - 1] = { role: 'user', text: payload.text, final: false };
-            } else {
-              copy.push({ role: 'user', text: payload.text, final: false });
-            }
-            return copy;
-          });
-        }
-      });
-
-      // When stream is ready (video + audio), attach to our container
-      session.on(SessionEvent.SESSION_STREAM_READY, () => {
-        if (containerRef.current) {
-          const videoEl = document.createElement('video');
-          videoEl.style.width = '100%';
-          videoEl.style.height = '100%';
-          videoEl.style.objectFit = 'cover';
-          videoEl.setAttribute('playsinline', '');
-          videoEl.setAttribute('autoplay', '');
-          containerRef.current.appendChild(videoEl);
-          session.attach(videoEl);
-          setMode('avatar');
-        }
-      });
-
-      // Session ended
-      session.on(SessionEvent.SESSION_DISCONNECTED, () => {
-        sessionRef.current = null;
-        if (containerRef.current) containerRef.current.innerHTML = '';
-        // Only reset if we're not already closed
-        setMode(prev => prev === 'avatar' ? 'closed' : prev);
-      });
-
-      // 3. Start the session
-      const startPromise = session.start();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timed out. Please try again.')), 20000)
-      );
-      await Promise.race([startPromise, timeoutPromise]);
-      sessionRef.current = session;
-
-      // Sandbox auto-end timer
-      setTimeout(() => {
-        if (sessionRef.current) {
-          try { session.stop(); } catch {}
-          sessionRef.current = null;
-          if (containerRef.current) containerRef.current.innerHTML = '';
-          setMode('closed');
-        }
-      }, 55000);
-
+      setEmbedUrl(data.url);
+      setMode('avatar');
+      setMessages([
+        { role: 'assistant', text: "Hi! I'm FY Intech's AI assistant. Ask me about our VR/AR solutions, past projects, or anything about FY Intech!", final: true }
+      ]);
     } catch (err) {
-      console.error('[LiveAvatar] Error:', err);
-      if (containerRef.current) containerRef.current.innerHTML = '';
-      setError(err.message || 'Could not start avatar.');
+      console.error('[Avatar] Error:', err);
       setMode('error');
+      setError(err.message || 'Could not start avatar.');
     }
   }, []);
 
   const stopAvatar = useCallback(() => {
-    if (sessionRef.current) {
-      try { sessionRef.current.stop(); } catch {}
-      sessionRef.current = null;
-    }
-    if (containerRef.current) containerRef.current.innerHTML = '';
+    setEmbedUrl('');
     setMessages([]);
     setMode('closed');
     setOpen(false);
@@ -185,6 +61,7 @@ function LiveAvatarWidget() {
     const text = input.trim();
     if (!text || chatLoading) return;
     setInput('');
+    setLastQ(text);
     setMessages(prev => [...prev, { role: 'user', text, final: true }]);
     setChatLoading(true);
 
@@ -197,7 +74,7 @@ function LiveAvatarWidget() {
       const data = await res.json();
       setMessages(prev => [...prev, { role: 'assistant', text: data.reply, final: true }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, having trouble. Email ask@fyintech.com for help!', final: true }]);
+      setMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, having trouble connecting. Email ask@fyintech.com!', final: true }]);
     }
     setChatLoading(false);
   }, [input, chatLoading]);
@@ -206,6 +83,7 @@ function LiveAvatarWidget() {
     setOpen(true);
     setMode('closed');
     setError('');
+    setEmbedUrl('');
     setMessages([]);
   };
 
@@ -242,9 +120,9 @@ function LiveAvatarWidget() {
           {/* Body */}
           <div className="flex-1 flex flex-col bg-gray-950 overflow-hidden">
             {mode === 'loading' && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 p-4">
-                <Loader2 size={40} className="animate-spin text-cyan-400" />
-                <p className="text-white text-sm font-medium">Starting avatar...</p>
+              <div className="flex-1 flex items-center justify-center gap-3 p-4">
+                <Loader2 size={32} className="animate-spin text-cyan-400" />
+                <p className="text-white text-sm">Starting avatar...</p>
               </div>
             )}
 
@@ -255,15 +133,22 @@ function LiveAvatarWidget() {
                 <p className="text-gray-400 text-xs">{error}</p>
                 <div className="flex gap-2 mt-2">
                   <button onClick={startAvatar} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-white text-sm">Try Again</button>
-                  <button onClick={() => { setMode('closed'); }} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm">Close</button>
+                  <button onClick={() => setMode('closed')} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm">Close</button>
                 </div>
               </div>
             )}
 
-            {mode === 'avatar' && (
-              <div className="flex-1 flex flex-col">
-                {/* Video area */}
-                <div ref={containerRef} className="h-[200px] shrink-0 bg-black" />
+            {mode === 'avatar' && embedUrl && (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Avatar iframe */}
+                <div className="h-[200px] shrink-0 bg-black">
+                  <iframe ref={embedRef}
+                    src={embedUrl}
+                    className="w-full h-full border-0"
+                    allow="microphone; camera; autoplay"
+                    title="FY Intech Avatar"
+                  />
+                </div>
 
                 <div className="h-px bg-gray-700 shrink-0" />
 
@@ -282,9 +167,7 @@ function LiveAvatarWidget() {
                           msg.role === 'user'
                             ? 'bg-cyan-600/20 text-white rounded-br-md border border-cyan-500/20'
                             : 'bg-gray-800 text-gray-100 rounded-bl-md'
-                        }`}>
-                          {msg.text}
-                        </div>
+                        }`}>{msg.text}</div>
                         {msg.role === 'user' && (
                           <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-0.5"><User size={12} className="text-white" /></div>
                         )}
@@ -293,13 +176,13 @@ function LiveAvatarWidget() {
                     {chatLoading && (
                       <div className="flex gap-2 justify-start">
                         <div className="w-6 h-6 rounded-full bg-cyan-600 flex items-center justify-center flex-shrink-0 mt-0.5"><Bot size={12} className="text-white" /></div>
-                        <div className="bg-gray-800 text-gray-400 px-3 py-2 rounded-2xl rounded-bl-md text-sm"><span className="animate-pulse">Typing...</span></div>
+                        <div className="bg-gray-800 text-gray-400 px-3 py-2 rounded-2xl rounded-bl-md text-sm"><span className="animate-pulse">Thinking...</span></div>
                       </div>
                     )}
                     <div ref={chatEndRef} />
                   </div>
 
-                  {/* Chat input */}
+                  {/* Input */}
                   <div className="border-t border-gray-800 p-2 shrink-0 flex gap-2">
                     <input type="text" value={input} onChange={e => setInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && sendChat()}
@@ -309,7 +192,7 @@ function LiveAvatarWidget() {
                   </div>
                 </div>
 
-                <p className="text-gray-500 text-[10px] text-center py-0.5 shrink-0 bg-gray-900">Sandbox — ~1 min</p>
+                <p className="text-gray-500 text-[10px] text-center py-0.5 shrink-0 bg-gray-900">Sandbox — ~1 min session</p>
               </div>
             )}
 
@@ -318,9 +201,12 @@ function LiveAvatarWidget() {
                 <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center"><Volume2 size={32} className="text-cyan-400" /></div>
                 <div>
                   <p className="text-white text-sm font-medium mb-1">Talk to our AI assistant</p>
-                  <p className="text-gray-400 text-xs">VR/AR solutions, live CRM data, projects, and more!</p>
+                  <p className="text-gray-400 text-xs">Ask about VR/AR, past projects, or FY Intech services!</p>
                 </div>
-                <button onClick={startAvatar} className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20">Start Talking</button>
+                <button onClick={startAvatar}
+                  className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20">
+                  Start Talking
+                </button>
                 <p className="text-gray-500 text-[10px]">Free preview — 1 minute</p>
               </div>
             )}
