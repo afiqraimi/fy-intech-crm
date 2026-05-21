@@ -82,7 +82,7 @@ function LiveAvatarWidget() {
             <button onClick={() => { setEmbedUrl(''); setMode('choose'); setOpen(false); }} className="hover:bg-white/20 p-1 rounded-lg"><X size={20} /></button>
           </div>
 
-          <div className="flex-1 flex flex-col bg-gray-950 overflow-hidden">
+          <div className="flex-1 flex flex-col bg-gray-950 overflow-hidden relative">
             {mode === 'choose' && (
               <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6">
                 <p className="text-white text-base font-bold mb-1">How can I help you?</p>
@@ -110,7 +110,7 @@ function LiveAvatarWidget() {
             )}
 
             {mode === 'avatar' && embedUrl && (
-              <div className="flex-1 bg-black">
+              <div className="absolute inset-0 top-[49px]">
                 <iframe src={embedUrl} className="w-full h-full border-0" allow="microphone; camera; autoplay" title="FY Intech Avatar" />
               </div>
             )}
