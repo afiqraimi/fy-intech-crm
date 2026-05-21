@@ -1485,6 +1485,7 @@ class AvatarTokenResponse(BaseModel):
 def _update_context_with_live_data():
     """Query the CRM database and inject live stats into the LiveAvatar context.
     Creates its own DB session to avoid dependency injection issues."""
+    _log = logging.getLogger("liveavatar")
     try:
         from database import SessionLocal
         db = SessionLocal()
@@ -1560,9 +1561,9 @@ def _update_context_with_live_data():
             },
             timeout=15,
         )
-        logger.info("LiveAvatar context updated with live CRM data")
+        _log.info("LiveAvatar context updated with live CRM data")
     except Exception as e:
-        logger.error("Failed to update LiveAvatar context: %s", e)
+        _log.error("Failed to update LiveAvatar context: %s", e)
 
 @app.post("/api/public/avatar-token")
 def create_avatar_token():
