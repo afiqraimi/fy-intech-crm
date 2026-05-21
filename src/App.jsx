@@ -4,14 +4,14 @@ import Intro3D from './components/Intro3D';
 import LoginPage from './components/LoginPage';
 import DashboardShell from './components/DashboardShell';
 import ProtectedRoute from './components/ProtectedRoute';
-import LiveAvatarWidget from './components/LiveAvatarWidget';
+import ChatWidget from './components/ChatWidget';
 
 export default function App() {
   return (
     <BrowserRouter>
       {/* Background3D stays outside Routes so it persists seamlessly across all page transitions! */}
       <Background3D />
-      <LiveAvatarWidget />
+      <ChatWidget />
       <Routes>
         <Route path="/" element={<Intro3D />} />
         <Route path="/login" element={<LoginPage />} />

@@ -18,6 +18,7 @@ import {
   Download,
   Share2,
   X,
+  Volume2,
 } from 'lucide-react';
 
 import DashboardTab from './DashboardTab';
@@ -25,6 +26,7 @@ import LeadRadarTab from './LeadRadarTab';
 import PipelineTab from './PipelineTab';
 import SettingsTab from './SettingsTab';
 import ProjectsTab from './ProjectsTab';
+import AvatarTab from './AvatarTab';
 import { apiJson } from '../utils/api';
 import { clearAuthSession, getStoredProfile, setStoredProfile } from '../utils/auth';
 import toast from 'react-hot-toast';
@@ -228,6 +230,7 @@ export default function DashboardShell() {
           <SidebarItem icon={Rocket} label="Active Projects" isActive={activeTab === 'Active Projects'} onClick={() => setActiveTab('Active Projects')} />
           <SidebarItem icon={Radar} label="Lead Radar" isActive={activeTab === 'Lead Radar'} onClick={() => setActiveTab('Lead Radar')} />
           <SidebarItem icon={KanbanSquare} label="Pipeline" isActive={activeTab === 'Pipeline'} onClick={() => setActiveTab('Pipeline')} />
+          <SidebarItem icon={Volume2} label="AI Avatar" isActive={activeTab === 'AI Avatar'} onClick={() => setActiveTab('AI Avatar')} />
           <SidebarItem icon={Settings} label="Settings" isActive={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
         </nav>
 
@@ -354,6 +357,7 @@ export default function DashboardShell() {
               {activeTab === 'Active Projects' && <ProjectsTab />}
               {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} updateLeadStatus={updateLeadStatus} searchQuery={searchQuery} onSearchChange={setSearchQuery} />}
               {activeTab === 'Pipeline' && <PipelineTab leads={leads} updateLeadStatus={updateLeadStatus} />}
+              {activeTab === 'AI Avatar' && <AvatarTab />}
               {activeTab === 'Settings' && <SettingsTab onProfileChange={handleProfileChange} />}
             </>
           )}
@@ -365,6 +369,7 @@ export default function DashboardShell() {
         <MobileNavItem icon={Rocket} label="Projects" active={activeTab === 'Active Projects'} onClick={() => setActiveTab('Active Projects')} />
         <MobileNavItem icon={Radar} label="Leads" active={activeTab === 'Lead Radar'} onClick={() => setActiveTab('Lead Radar')} />
         <MobileNavItem icon={KanbanSquare} label="Pipeline" active={activeTab === 'Pipeline'} onClick={() => setActiveTab('Pipeline')} />
+        <MobileNavItem icon={Volume2} label="Avatar" active={activeTab === 'AI Avatar'} onClick={() => setActiveTab('AI Avatar')} />
         <MobileNavItem icon={Settings} label="Settings" active={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
         <MobileNavItem icon={LogOut} label="Logout" danger onClick={handleLogout} />
       </nav>
