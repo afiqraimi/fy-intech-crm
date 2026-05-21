@@ -112,6 +112,8 @@ function LiveAvatarWidget() {
             {mode === 'avatar' && embedUrl && (
               <div className="absolute inset-0 top-[49px]">
                 <iframe src={embedUrl} className="w-full h-full border-0" allow="microphone; camera; autoplay" title="FY Intech Avatar" />
+                {/* Cover LiveAvatar's bottom UI (buttons, CC icon, language selector) */}
+                <div className="absolute bottom-0 left-0 right-0 h-12 bg-black" />
               </div>
             )}
 
