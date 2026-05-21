@@ -25,7 +25,7 @@ export default function AvatarTab() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full">
       {state === 'idle' && (
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center border border-cyan-500/30">
@@ -61,7 +61,7 @@ export default function AvatarTab() {
       )}
 
       {state === 'active' && embedUrl && (
-        <div className="absolute inset-0 rounded-2xl overflow-hidden border border-crm-border/50 bg-black">
+        <div className="rounded-2xl overflow-hidden border border-crm-border/50 bg-black h-[calc(100vh-220px)]">
           <iframe
             src={embedUrl}
             className="w-full h-full border-0"
