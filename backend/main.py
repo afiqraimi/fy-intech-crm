@@ -1573,9 +1573,6 @@ def create_avatar_token():
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
     
     try:
-        # ── Update context with live CRM data ────────────────────────────
-        _update_context_with_live_data()
-        
         # ── Create session token ─────────────────────────────────────────
         token_resp = requests.post(
             "https://api.liveavatar.com/v1/sessions/token",
@@ -1618,9 +1615,6 @@ def create_avatar_embed():
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
     
     try:
-        # ── Update context with live CRM data ────────────────────────────
-        _update_context_with_live_data()
-        
         # ── Create the embed ─────────────────────────────────────────────
         resp = requests.post(
             "https://api.liveavatar.com/v2/embeddings",
