@@ -123,6 +123,13 @@ NEXT STEPS (May 20, 2026 — Current):
    - Added /api/public/avatar-token endpoint to backend (creates FULL Mode sandbox session)
    - Created LiveAvatarWidget.jsx — floating avatar widget that replaces ChatWidget
    - Updated App.jsx to use LiveAvatarWidget instead of ChatWidget
+   - Switched to Embed V2 API (iframe) for simpler, more reliable sessions
+   - Switched back to Embed V2 after SDK had lifecycle issues on session retry
+   - Added live CRM data injection: before each session, backend queries DB for lead stats,
+     recent companies, active projects, and Lead Engine status, then updates the LiveAvatar
+     context so the avatar can answer CRM-related questions
+   - Redesigned widget: avatar video on top, scrolling text transcript panel below with
+     a text chat input for keyboard users
    - Sandbox mode: free, uses "Wayne" avatar, ~1 min sessions, no credits consumed
    - TODO: Redeploy backend to Render (add LIVEAVATAR_API_KEY env var first)
    - TODO: Test end-to-end on live website

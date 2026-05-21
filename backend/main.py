@@ -1523,12 +1523,87 @@ def create_avatar_token():
         raise HTTPException(status_code=502, detail=f"Avatar service unavailable. Try again later.")
 
 @app.post("/api/public/avatar-embed")
-def create_avatar_embed():
-    """Create a LiveAvatar embed for the public website. No auth. Uses Embed V2 API."""
+def create_avatar_embed(
+    db: Session = Depends(get_db),
+):
+    """Create a LiveAvatar embed for the public website. No auth.
+    Injects live CRM data into the context before each session."""
     if not LIVEAVATAR_API_KEY:
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
     
     try:
+        # ── Build live CRM data summary ──────────────────────────────────
+        live_parts = []
+        
+        # Lead stats
+        total_leads = db.query(models.Lead).count()
+        new_leads = db.query(models.Lead).filter(models.Lead.status == "New").count()
+        in_progress = db.query(models.Lead).filter(models.Lead.status.in_(["To Approach", "Approached", "Proposal Sent"])).count()
+        closed_leads = db.query(models.Lead).filter(models.Lead.status == "Closed").count()
+        
+        # Recent leads (last 5)
+        recent = db.query(models.Lead).order_by(models.Lead.id.desc()).limit(5).all()
+        
+        # Active projects
+        projects = db.query(models.Project).filter(
+            ~models.Project.stage.in_(["Completed", "Deployed", "Closed"])
+        ).order_by(models.Project.last_update.desc()).limit(5).all()
+        
+        # Lead engine schedule info
+        from lead_schedule import load_schedule
+        schedule = load_schedule()
+        enabled_count = sum(1 for s in schedule if s.get("enabled", False))
+        
+        # Build the live data text
+        live_lines = [
+            "LIVE CRM DATA (current as of this session):",
+            f"- Total leads in database: {total_leads}",
+            f"- New leads: {new_leads}",
+            f"- Leads in pipeline: {in_progress}",
+            f"- Closed leads: {closed_leads}",
+        ]
+        
+        if recent:
+            live_lines.append("- Recent companies added:")
+            for l in recent:
+                live_lines.append(f"  * {l.company} ({l.industry}) — Status: {l.status}, Score: {l.score}%")
+        
+        if projects:
+            live_lines.append("- Active projects:")
+            for p in projects:
+                live_lines.append(f"  * {p.project_name} for {p.client} — Stage: {p.stage}")
+        else:
+            live_lines.append("- No active projects currently.")
+        
+        live_lines.append(f"- Lead Engine: {enabled_count} of 12 industries scheduled daily (2AM-1PM MYT)")
+        
+        live_crm_text = "\n".join(live_lines)
+        
+        # ── Update the context with live data ────────────────────────────
+        context_resp = requests.get(
+            f"https://api.liveavatar.com/v1/contexts/07019418-9343-4f61-a120-f1aeca737598",
+            headers={"X-API-KEY": LIVEAVATAR_API_KEY},
+            timeout=15,
+        )
+        context_data = context_resp.json()
+        base_prompt = context_data["data"]["prompt"]
+        
+        # Append live data to the prompt
+        updated_prompt = base_prompt + f"\n\n{live_crm_text}\n\nIMPORTANT: When users ask about CRM data, lead counts, or recent activity, use the LIVE CRM DATA above. Say 'as of now' or 'currently' when citing numbers."
+        
+        requests.put(
+            f"https://api.liveavatar.com/v1/contexts/07019418-9343-4f61-a120-f1aeca737598",
+            headers={
+                "X-API-KEY": LIVEAVATAR_API_KEY,
+                "Content-Type": "application/json",
+            },
+            json={
+                "prompt": updated_prompt,
+            },
+            timeout=15,
+        )
+        
+        # ── Create the embed ─────────────────────────────────────────────
         resp = requests.post(
             "https://api.liveavatar.com/v2/embeddings",
             headers={
