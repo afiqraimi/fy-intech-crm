@@ -1663,7 +1663,7 @@ def create_avatar_token(request: Request):
             },
             json={
                 "mode": "FULL",
-                "is_sandbox": True,
+                "is_sandbox": False,
                 "avatar_id": LIVEAVATAR_AVATAR_ID,
                 "avatar_persona": {
                     "voice_id": LIVEAVATAR_VOICE_ID,

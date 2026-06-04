@@ -137,8 +137,8 @@ export default function DashboardTab({ metrics, leads = [], setActiveTab, projec
 
   return (
     <div className="relative min-h-full w-full flex flex-col items-center animate-in fade-in duration-1000">
-      {/* Subtle 3D Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
+      {/* 3D Background — hidden in light mode via CSS */}
+      <div className="three-bg absolute inset-0 z-0 pointer-events-none opacity-60">
         <Canvas camera={{ position: [0, 0, 12], fov: 45 }}>
           <ambientLight intensity={0.6} />
           <directionalLight position={[10, 10, 5]} intensity={1.2} color="#ffffff" />
@@ -146,6 +146,8 @@ export default function DashboardTab({ metrics, leads = [], setActiveTab, projec
           <HologramCore />
         </Canvas>
       </div>
+      {/* Light mode background gradient */}
+      <div className="light-bg absolute inset-0 z-0 pointer-events-none hidden" />
 
       {/* Header */}
       <div className="z-10 flex flex-col items-center justify-center text-center w-full mt-6 md:mt-10">

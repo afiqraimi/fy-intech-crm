@@ -27,7 +27,7 @@ import PipelineTab from './PipelineTab';
 import SettingsTab, { applyTheme } from './SettingsTab';
 import ProjectsTab from './ProjectsTab';
 import AvatarTab from './AvatarTab';
-import { apiJson } from '../utils/api';
+import { apiJson, API_BASE } from '../utils/api';
 import { clearAuthSession, getStoredProfile, setStoredProfile } from '../utils/auth';
 import toast from 'react-hot-toast';
 
@@ -87,6 +87,13 @@ export default function DashboardShell() {
 
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+  // Ping backend every 8 min to prevent Render free tier from sleeping
+  React.useEffect(() => {
+    const ping = () => fetch(`${API_BASE}/api/health`).catch(() => {});
+    const id = setInterval(ping, 8 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   React.useEffect(() => {
     const syncTheme = () => {
@@ -194,13 +201,17 @@ export default function DashboardShell() {
     return () => { cancelled = true; };
   }, [fetchData, refreshProfile]);
 
-  const recomputeMetrics = React.useCallback((currentLeads) => {
-    setMetrics(prev => prev.map(m => {
-      if (m.id === 1) return { ...m, value: String(currentLeads.length) };
-      if (m.id === 2) return { ...m, value: String(currentLeads.filter(l => l.score >= 80).length) };
-      if (m.id === 3) return { ...m, value: String(currentLeads.filter(l => l.status === 'Proposal Sent').length) };
-      return m; // id 4 = Active Projects, stays from backend
-    }));
+  // Delta-based optimistic metric update — avoids recomputing from the
+  // paginated local leads list, which misses any leads beyond the first 200.
+  const adjustProposalCount = React.useCallback((oldStatus, newStatus) => {
+    if (oldStatus === newStatus) return;
+    const delta = newStatus === 'Proposal Sent' ? 1 : oldStatus === 'Proposal Sent' ? -1 : 0;
+    if (delta === 0) return;
+    setMetrics(prev => prev.map(m =>
+      m.id === 3
+        ? { ...m, value: String(Math.max(0, parseInt(m.value || '0', 10) + delta)) }
+        : m
+    ));
   }, []);
 
   const updateLeadStatus = async (leadId, newStatus) => {
@@ -209,16 +220,14 @@ export default function DashboardShell() {
     const lead = leads.find(l => l.id === leadId);
     const updatedLeads = leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l);
 
-    // Optimistic update — leads AND metrics update instantly, no round-trip
     setLeads(updatedLeads);
-    recomputeMetrics(updatedLeads);
+    adjustProposalCount(lead?.status, newStatus); // instant metric update
 
     try {
       await apiJson(`/api/leads/${leadId}`, {
         method: 'PUT',
         body: JSON.stringify({ status: newStatus }),
       });
-      // Refresh from backend for accuracy (includes all DB leads, not just page 1)
       const metricsData = await apiJson('/api/metrics');
       setMetrics(metricsData.map(m => ({ ...m, ...METRIC_STYLES[m.id] })));
       if (lead) {
@@ -227,7 +236,7 @@ export default function DashboardShell() {
     } catch (error) {
       console.error('Error updating lead status:', error);
       setLeads(previousLeads);
-      setMetrics(previousMetrics); // roll back metrics too
+      setMetrics(previousMetrics);
       toast.error('Failed to update lead status');
     }
   };
