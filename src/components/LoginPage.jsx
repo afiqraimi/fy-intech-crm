@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isWaking, setIsWaking] = useState(false);
   const navigate = useNavigate();
@@ -84,11 +85,17 @@ export default function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
+                onBlur={() => {
+                  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    setEmailError('Please enter a valid email address');
+                  }
+                }}
                 placeholder="Email Address"
-                className="w-full bg-black/40 border border-crm-border/50 text-white text-sm rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-white/50 focus:bg-black/60 transition-all backdrop-blur-md"
+                className={`w-full bg-black/40 border text-white text-sm rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:bg-black/60 transition-all backdrop-blur-md ${emailError ? 'border-red-500/70 focus:border-red-500' : 'border-crm-border/50 focus:border-white/50'}`}
                 required
               />
+              {emailError && <p className="mt-1 text-xs text-red-400">{emailError}</p>}
             </div>
           </div>
           <div>

@@ -23,6 +23,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  const NOTIFY_SECRET = process.env.NOTIFY_SECRET;
+  if (NOTIFY_SECRET) {
+    const authHeader = req.headers['authorization'] || '';
+    if (authHeader !== `Bearer ${NOTIFY_SECRET}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+
   const { to_emails, subject, body } = req.body;
 
   if (!to_emails || !subject || !body) {

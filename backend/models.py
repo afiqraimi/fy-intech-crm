@@ -6,14 +6,14 @@ class Lead(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     company = Column(String, index=True)
-    industry = Column(String)
+    industry = Column(String, index=True)
     location = Column(String)
     score = Column(Integer)
-    status = Column(String)
+    status = Column(String, index=True)
     problem = Column(String, nullable=True)
     solution = Column(String, nullable=True)
     website = Column(String, nullable=True)
-    email_primary = Column(String, nullable=True)
+    email_primary = Column(String, nullable=True, index=True)
     email_additional = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     address = Column(Text, nullable=True)
@@ -50,7 +50,7 @@ class AdminUser(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, default="Admin User")
     email = Column(String, unique=True, index=True)
-    password_hash = Column(String)                    # SHA-256 hash
+    password_hash = Column(String)                    # bcrypt hash
     avatar = Column(String, nullable=True)            # base64 data URL
 
 class NotificationSettings(Base):

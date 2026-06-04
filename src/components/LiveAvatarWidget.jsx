@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { MessageCircle, X, Loader2, AlertTriangle, Volume2, MessageSquare } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { MessageCircle, X, Loader2, AlertTriangle, Volume2, MessageSquare, Bot, User } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -10,7 +10,7 @@ function TextChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
-  const sid = useRef('v-' + Date.now());
+  const sid = useRef(crypto.randomUUID());
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const send = async () => {

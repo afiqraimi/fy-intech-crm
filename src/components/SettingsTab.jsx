@@ -5,6 +5,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { apiJson } from '../utils/api';
 import { clearAuthSession, getStoredProfile, normalizeEmail, setAuthSession, setStoredProfile } from '../utils/auth';
 
+const DARK_VARS = {
+  '--color-crm-dark':       '#0a0a0a',
+  '--color-crm-darker':     '#000000',
+  '--color-crm-card':       '#121212',
+  '--color-crm-border':     '#262626',
+  '--color-crm-text':       '#ffffff',
+  '--color-crm-textMuted':  '#a3a3a3',
+};
+const LIGHT_VARS = {
+  '--color-crm-dark':       '#f1f5f9',
+  '--color-crm-darker':     '#f8fafc',
+  '--color-crm-card':       '#ffffff',
+  '--color-crm-border':     '#e2e8f0',
+  '--color-crm-text':       '#0f172a',
+  '--color-crm-textMuted':  '#64748b',
+};
+
+export function applyTheme(isDark) {
+  const root = document.documentElement;
+  const vars = isDark ? DARK_VARS : LIGHT_VARS;
+  Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+  root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+}
+
 const DEFAULT_PREFS = {
   darkMode: true,
   notifications: false,
@@ -76,7 +100,7 @@ const Toast = ({ message, type, onClose }) => (
 
 export default function SettingsTab({ onProfileChange }) {
   const [profile, setProfile] = useState(() => getStoredProfile() || { name: 'Admin User', email: 'admin@fyintech.com', avatar: null });
-  const [prefs, setPrefs] = useState(loadPrefs);
+  const [prefs, setPrefs] = useState(loadPrefs());
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
@@ -117,14 +141,23 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
   };
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', prefs.darkMode ? 'dark' : 'light');
+    applyTheme(prefs.darkMode);
   }, [prefs.darkMode]);
 
   useEffect(() => {
     let cancelled = false;
     let timer = null;
+    let pollCount = 0;
+    const MAX_POLLS = 150;
 
     const checkAndPoll = async () => {
+      if (pollCount >= MAX_POLLS) {
+        setSweeping(false);
+        setEnriching(false);
+        showToast('Operation timed out. Check logs.', 'error');
+        return;
+      }
+      pollCount++;
       try {
         const status = await apiJson('/api/admin/lead-engine/sweep-status');
         if (cancelled) return;
@@ -272,8 +305,8 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
   };
 
   const savePassword = async () => {
-    if (newPwd.length < 4) {
-      showToast('New password must be at least 4 characters.', 'error');
+    if (newPwd.length < 8) {
+      showToast('New password must be at least 8 characters.', 'error');
       return;
     }
     if (newPwd !== confirmPwd) {
@@ -508,7 +541,7 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="New Password">
-              <Input type={showPwd ? 'text' : 'password'} value={newPwd} onChange={setNewPwd} placeholder="New password (min. 4 chars)" />
+              <Input type={showPwd ? 'text' : 'password'} value={newPwd} onChange={setNewPwd} placeholder="New password (min. 8 chars)" />
             </Field>
             <Field label="Confirm New Password">
               <Input type={showPwd ? 'text' : 'password'} value={confirmPwd} onChange={setConfirmPwd} placeholder="Repeat new password" />
@@ -518,7 +551,7 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
             type="button"
             onClick={savePassword}
             disabled={savingPassword}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-black font-black text-sm rounded-xl transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-black text-sm rounded-xl transition-colors"
           >
             {savingPassword ? <Loader2 size={15} className="animate-spin" /> : <Shield size={15} />}
             <span>{savingPassword ? 'Updating...' : 'Update Password'}</span>
@@ -543,7 +576,7 @@ const engineRevenue = LEAD_ENGINE_INDUSTRIES.find(e => e.industry === engineIndu
           <button
             type="button"
             onClick={savePrefs}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold rounded-xl transition-colors"
           >
             <Save size={14} />
             <span>Save Appearance</span>

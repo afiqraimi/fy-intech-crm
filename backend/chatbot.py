@@ -3,7 +3,9 @@ FY Intech AI Avatar Chatbot — the brain that powers the website AI assistant.
 Uses DeepSeek API with comprehensive knowledge base + LIVE CRM data.
 """
 import os
+import time
 import logging
+from collections import OrderedDict
 from openai import OpenAI
 
 logger = logging.getLogger("chatbot")
@@ -81,7 +83,48 @@ LIVE CRM DATA:
 {live_data}
 """
 
-CONVERSATION_HISTORY = {}
+_HISTORY_TTL = 3600   # 1 hour
+_HISTORY_MAX = 500    # LRU cap
+
+
+class _SessionStore:
+    """Bounded LRU store with per-entry TTL."""
+    def __init__(self):
+        self._store: OrderedDict = OrderedDict()
+
+    def _expired(self, ts: float) -> bool:
+        return time.time() - ts > _HISTORY_TTL
+
+    def get(self, key, default=None):
+        if key not in self._store:
+            return default
+        ts, val = self._store[key]
+        if self._expired(ts):
+            del self._store[key]
+            return default
+        self._store.move_to_end(key)
+        return val
+
+    def set(self, key, val):
+        self._store[key] = (time.time(), val)
+        self._store.move_to_end(key)
+        while len(self._store) > _HISTORY_MAX:
+            self._store.popitem(last=False)
+
+    def __contains__(self, key):
+        return self.get(key) is not None
+
+    def __getitem__(self, key):
+        val = self.get(key)
+        if val is None:
+            raise KeyError(key)
+        return val
+
+    def __setitem__(self, key, val):
+        self.set(key, val)
+
+
+CONVERSATION_HISTORY = _SessionStore()
 
 
 def _get_live_data() -> str:
@@ -134,21 +177,16 @@ def chat(message: str, session_id: str = "default") -> str:
         live_data=live_data,
     )
 
-    if session_id not in CONVERSATION_HISTORY:
-        CONVERSATION_HISTORY[session_id] = [
-            {"role": "system", "content": system_prompt}
-        ]
+    history = CONVERSATION_HISTORY.get(session_id)
+    if history is None:
+        history = [{"role": "system", "content": system_prompt}]
     else:
-        # Update system prompt with latest live data each turn
-        CONVERSATION_HISTORY[session_id][0] = {"role": "system", "content": system_prompt}
+        history[0] = {"role": "system", "content": system_prompt}
 
-    history = CONVERSATION_HISTORY[session_id]
     history.append({"role": "user", "content": message})
-
-    # Keep last 10 messages
     if len(history) > 11:
         history = [history[0]] + history[-10:]
-        CONVERSATION_HISTORY[session_id] = history
+    CONVERSATION_HISTORY[session_id] = history  # always refresh TTL
 
     try:
         response = deepseek.chat.completions.create(

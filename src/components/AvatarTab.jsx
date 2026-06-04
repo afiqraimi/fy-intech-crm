@@ -12,15 +12,19 @@ export default function AvatarTab() {
     setState('loading');
     setError('');
     setEmbedUrl('');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
-      const res = await fetch(`${API_BASE}/api/public/avatar-embed`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/api/public/avatar-embed`, { method: 'POST', signal: controller.signal });
       if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Failed');
       const data = await res.json();
       setEmbedUrl(data.url);
       setState('active');
     } catch (err) {
-      setError(err.message);
+      setError(err.name === 'AbortError' ? 'Avatar startup timed out.' : err.message);
       setState('error');
+    } finally {
+      clearTimeout(timeoutId);
     }
   }, []);
 

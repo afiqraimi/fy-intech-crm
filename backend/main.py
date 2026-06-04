@@ -1,12 +1,19 @@
-from fastapi import FastAPI, Depends, Header, HTTPException
+from fastapi import FastAPI, Depends, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy.orm import Session
 from sqlalchemy import text, inspect
 import models
 from database import engine, SessionLocal
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Literal, Optional
+from dotenv import load_dotenv
+load_dotenv()
 import base64
+import bcrypt
 import csv
 import hashlib
 import html
@@ -17,7 +24,15 @@ import requests
 import time
 import logging
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+if os.environ.get("DATABASE_URL"):
+    from pythonjsonlogger import jsonlogger as _jl
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(_jl.JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+    logging.root.addHandler(_handler)
+    logging.root.setLevel(logging.INFO)
+else:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+logger = logging.getLogger("main")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -62,13 +77,21 @@ _migrate_lead_columns()
 
 # ─── Seed default admin on first startup ──────────────────────────────────────
 def _hash(pw: str) -> str:
-    return hashlib.sha256(pw.encode()).hexdigest()
+    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
+
+def _verify_password(plain: str, hashed: str) -> bool:
+    if hashed.startswith("$2"):
+        return bcrypt.checkpw(plain.encode(), hashed.encode())
+    # Legacy SHA-256 fallback — upgrades on next password change
+    return hashlib.sha256(plain.encode()).hexdigest() == hashed
 
 def _normalize_email(email: str) -> str:
     return (email or "").strip().lower()
 
-AUTH_SECRET = os.environ.get("AUTH_SECRET", "dev-only-change-me")
-AUTH_TOKEN_TTL_SECONDS = int(os.environ.get("AUTH_TOKEN_TTL_SECONDS", str(60 * 60 * 24 * 30)))
+AUTH_SECRET = os.environ.get("AUTH_SECRET", "")
+if not AUTH_SECRET or AUTH_SECRET == "dev-only-change-me":
+    raise RuntimeError("AUTH_SECRET env var must be set to a strong random value before starting the server.")
+AUTH_TOKEN_TTL_SECONDS = int(os.environ.get("AUTH_TOKEN_TTL_SECONDS", str(60 * 60 * 8)))
 
 def _b64url_encode(raw: bytes) -> str:
     return base64.urlsafe_b64encode(raw).decode().rstrip("=")
@@ -105,15 +128,21 @@ def _read_auth_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
 
 def seed_admin():
+    admin_email = os.environ.get("ADMIN_EMAIL", "")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "")
+    if not admin_email or not admin_password:
+        logger.warning("ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin seed.")
+        return
     db = SessionLocal()
     try:
         if db.query(models.AdminUser).count() == 0:
             db.add(models.AdminUser(
                 name="Admin User",
-                email="admin@fyintech.com",
-                password_hash=_hash("admin"),
+                email=admin_email.strip().lower(),
+                password_hash=_hash(admin_password),
             ))
             db.commit()
+            logger.info("Seeded default admin: %s", admin_email)
     finally:
         db.close()
 
@@ -565,23 +594,43 @@ _safe_call(seed_leads, "seed_leads")
 _safe_call(seed_projects, "seed_projects")
 _safe_call(seed_problem_solution, "seed_problem_solution")
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="FY Intech CRM API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+def _validate_env():
+    optional_vars = ["FIRECRAWL_API_KEY", "DEEPSEEK_API_KEY", "LIVEAVATAR_API_KEY", "ADMIN_EMAIL", "ADMIN_PASSWORD"]
+    for var in optional_vars:
+        if not os.environ.get(var):
+            logger.warning("Missing env var: %s — some features may not work.", var)
+
 @app.on_event("startup")
 def on_startup():
+    _validate_env()
     try:
         from scheduler import start_scheduler
         start_scheduler()
     except Exception:
-        logging.getLogger("main").warning("Scheduler not started (missing deps or config)")
+        logger.warning("Scheduler not started (missing deps or config)")
 
 @app.on_event("shutdown")
 def on_shutdown():
@@ -746,7 +795,7 @@ def _send_resend_email(to_emails: list[str], subject: str, body: str) -> dict:
             "Content-Type": "application/json",
         },
         json={
-            "from": os.environ.get("NOTIFICATION_FROM", "FY Intech CRM <onboarding@resend.dev>"),
+            "from": os.environ.get("RESEND_SENDER") or os.environ.get("NOTIFICATION_FROM", "FY Intech CRM <onboarding@resend.dev>"),
             "to": to_emails,
             "subject": subject,
             "text": body,
@@ -772,12 +821,13 @@ def _send_crm_notification(db: Session, subject: str, body: str) -> None:
         print(f"[Notification] Failed to send email: {exc}")
 
 @app.post("/api/auth/login")
-def login(data: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)):
     email = _normalize_email(data.email)
     admin = db.query(models.AdminUser).filter(
         models.AdminUser.email == email
     ).first()
-    if not admin or admin.password_hash != _hash(data.password):
+    if not admin or not _verify_password(data.password, admin.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token, expires_at = _create_auth_token(admin)
     return {
@@ -795,17 +845,19 @@ def update_credentials(
     db: Session = Depends(get_db),
     admin: models.AdminUser = Depends(get_current_admin),
 ):
-    if admin.password_hash != _hash(data.current_password):
+    if not _verify_password(data.current_password, admin.password_hash):
         raise HTTPException(status_code=401, detail="Current password is incorrect")
     if data.new_email:
         admin.email = _normalize_email(data.new_email)
     if data.new_password:
-        if len(data.new_password) < 4:
-            raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+        if len(data.new_password) < 8:
+            raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
         admin.password_hash = _hash(data.new_password)
     if data.new_name:
         admin.name = data.new_name
     if data.new_avatar is not None:
+        if len(data.new_avatar) > 2_000_000:
+            raise HTTPException(status_code=400, detail="Avatar image too large (max ~2 MB)")
         admin.avatar = data.new_avatar
     db.commit()
     db.refresh(admin)
@@ -883,16 +935,21 @@ def send_manual_notification(
 def health():
     return {"status": "ok"}
 
+LeadStatus = Literal["New", "To Approach", "Proposal Sent", "Negotiation", "Closed Won", "Closed", "In Progress", "Approached"]
+
 @app.get("/api/leads", response_model=List[LeadResponse])
 def get_leads(
+    skip: int = 0,
+    limit: int = 200,
     db: Session = Depends(get_db),
     admin: models.AdminUser = Depends(get_current_admin),
 ):
     try:
-        return db.query(models.Lead).all()
+        limit = min(limit, 500)
+        return db.query(models.Lead).offset(skip).limit(limit).all()
     except Exception as e:
-        logging.getLogger("main").error("get_leads failed: %s", e)
-        return []
+        logger.error("get_leads failed: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to fetch leads")
 
 @app.get("/api/metrics")
 def get_metrics(
@@ -1050,10 +1107,13 @@ def create_leads_batch(
 
 @app.get("/api/projects", response_model=List[ProjectResponse])
 def get_projects(
+    skip: int = 0,
+    limit: int = 200,
     db: Session = Depends(get_db),
     admin: models.AdminUser = Depends(get_current_admin),
 ):
-    return db.query(models.Project).all()
+    limit = min(limit, 500)
+    return db.query(models.Project).offset(skip).limit(limit).all()
 
 @app.post("/api/projects", response_model=ProjectResponse)
 def create_project(
@@ -1142,11 +1202,15 @@ def import_leads_csv(
                 if exists:
                     skipped += 1
                     continue
+                try:
+                    score = max(0, min(100, int(row.get("VR Potential Score (%)") or 50)))
+                except (ValueError, TypeError):
+                    score = 50
                 db.add(models.Lead(
                     company=company,
                     industry=(row.get("Industry") or "Unknown").strip()[:50],
                     location=(row.get("Location") or "Unknown").strip()[:50],
-                    score=int(row.get("VR Potential Score (%)") or 50),
+                    score=score,
                     status=(row.get("Status") or "New").strip(),
                 ))
                 imported += 1
@@ -1463,7 +1527,8 @@ class ChatResponse(BaseModel):
     reply: str
 
 @app.post("/api/public/chat", response_model=ChatResponse)
-def public_chat(data: ChatRequest):
+@limiter.limit("10/minute")
+def public_chat(request: Request, data: ChatRequest):
     """Public chatbot endpoint for the website AI avatar. No auth required."""
     try:
         from chatbot import chat as chatbot_chat
@@ -1475,17 +1540,27 @@ def public_chat(data: ChatRequest):
 # ─── LiveAvatar (Interactive Avatar) Endpoint ─────────────────────────────────
 
 LIVEAVATAR_API_KEY = os.environ.get("LIVEAVATAR_API_KEY", "")
-LIVEAVATAR_CONTEXT_ID = "07019418-9343-4f61-a120-f1aeca737598"
+LIVEAVATAR_CONTEXT_ID = os.environ.get("LIVEAVATAR_CONTEXT_ID", "07019418-9343-4f61-a120-f1aeca737598")
+LIVEAVATAR_AVATAR_ID = os.environ.get("LIVEAVATAR_AVATAR_ID", "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a")
+LIVEAVATAR_VOICE_ID = os.environ.get("LIVEAVATAR_VOICE_ID", "c2527536-6d1f-4412-a643-53a3497dada9")
 
 class AvatarTokenResponse(BaseModel):
     session_token: str
     session_id: str
 
 
+_context_cache: dict = {"ts": 0.0}
+_CONTEXT_CACHE_TTL = 300  # 5 minutes
+
+
 def _update_context_with_live_data():
     """Query the CRM database and inject live stats into the LiveAvatar context.
     Creates its own DB session to avoid dependency injection issues."""
     _log = logging.getLogger("liveavatar")
+    now = time.time()
+    if now - _context_cache["ts"] < _CONTEXT_CACHE_TTL:
+        _log.info("LiveAvatar context cache hit, skipping update")
+        return
     try:
         from database import SessionLocal
         db = SessionLocal()
@@ -1561,12 +1636,14 @@ def _update_context_with_live_data():
             },
             timeout=15,
         )
+        _context_cache["ts"] = time.time()
         _log.info("LiveAvatar context updated with live CRM data")
     except Exception as e:
         _log.error("Failed to update LiveAvatar context: %s", e)
 
 @app.post("/api/public/avatar-token")
-def create_avatar_token():
+@limiter.limit("10/minute")
+def create_avatar_token(request: Request):
     """Create a LiveAvatar session token for the public website avatar.
     Injects live CRM data into the context before each session. No auth."""
     if not LIVEAVATAR_API_KEY:
@@ -1583,10 +1660,10 @@ def create_avatar_token():
             json={
                 "mode": "FULL",
                 "is_sandbox": True,
-                "avatar_id": "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a",
+                "avatar_id": LIVEAVATAR_AVATAR_ID,
                 "avatar_persona": {
-                    "voice_id": "c2527536-6d1f-4412-a643-53a3497dada9",
-                    "context_id": "07019418-9343-4f61-a120-f1aeca737598",
+                    "voice_id": LIVEAVATAR_VOICE_ID,
+                    "context_id": LIVEAVATAR_CONTEXT_ID,
                     "language": "en",
                 },
             },
@@ -1609,7 +1686,8 @@ def create_avatar_token():
         raise HTTPException(status_code=502, detail=f"Avatar service unavailable. Try again later.")
 
 @app.post("/api/public/avatar-embed")
-def create_avatar_embed():
+@limiter.limit("10/minute")
+def create_avatar_embed(request: Request):
     """Create a LiveAvatar embed for the public website. No auth. No auth."""
     if not LIVEAVATAR_API_KEY:
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
@@ -1623,9 +1701,9 @@ def create_avatar_embed():
                 "Content-Type": "application/json",
             },
             json={
-                "avatar_id": "dd73ea75-1218-4ef3-92ce-606d5f7fbc0a",
+                "avatar_id": LIVEAVATAR_AVATAR_ID,
                 "context_id": LIVEAVATAR_CONTEXT_ID,
-                "voice_id": "c2527536-6d1f-4412-a643-53a3497dada9",
+                "voice_id": LIVEAVATAR_VOICE_ID,
                 "is_sandbox": True,
                 "default_language": "en",
             },

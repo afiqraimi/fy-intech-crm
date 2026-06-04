@@ -244,16 +244,17 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
       {/* Table Body */}
       <div className="flex-1 overflow-auto">
         {filteredAndSortedLeads.length === 0 && query ? (
-          <div className="flex flex-col items-center justify-center h-full text-crm-textMuted gap-2">
-            <Search size={32} className="opacity-30" />
-            <p className="text-sm">No leads match "{query}"</p>
+          <div className="flex flex-col items-center justify-center h-full text-crm-textMuted gap-3">
+            <Search size={36} className="opacity-20" />
+            <p className="text-sm">No leads match <span className="text-white font-semibold">"{query}"</span></p>
             <button
               onClick={() => {
                 if (onSearchChange) onSearchChange('');
                 setLocalSearch('');
               }}
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-xl transition-colors"
             >
+              <X size={12} />
               Clear search
             </button>
           </div>

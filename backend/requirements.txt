@@ -2,7 +2,11 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
-requests 
+requests
 psycopg2-binary
 openai
 apscheduler
+bcrypt
+python-dotenv
+slowapi
+python-json-logger

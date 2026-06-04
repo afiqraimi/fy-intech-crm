@@ -24,7 +24,7 @@ import {
 import DashboardTab from './DashboardTab';
 import LeadRadarTab from './LeadRadarTab';
 import PipelineTab from './PipelineTab';
-import SettingsTab from './SettingsTab';
+import SettingsTab, { applyTheme } from './SettingsTab';
 import ProjectsTab from './ProjectsTab';
 import AvatarTab from './AvatarTab';
 import { apiJson } from '../utils/api';
@@ -87,6 +87,18 @@ export default function DashboardShell() {
 
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+  React.useEffect(() => {
+    const syncTheme = () => {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('crm_prefs') || '{}');
+        applyTheme(prefs.darkMode !== false);
+      } catch (_) {}
+    };
+    syncTheme();
+    window.addEventListener('storage', syncTheme);
+    return () => window.removeEventListener('storage', syncTheme);
+  }, []);
 
   React.useEffect(() => {
     if (isIos && !isStandalone) {
@@ -213,6 +225,9 @@ export default function DashboardShell() {
 
   const handleLogout = () => {
     clearAuthSession();
+    localStorage.removeItem('crm_ios_tip_dismissed');
+    localStorage.removeItem('crm_last_seen_max_id');
+    localStorage.removeItem('crm_prefs');
     navigate('/login', { replace: true });
   };
 

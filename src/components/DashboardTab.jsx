@@ -1,12 +1,15 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { MeshDistortMaterial, Float } from '@react-three/drei';
 import { Radar, ArrowRight, Rocket, CheckCircle, Clock, Loader, BarChart3, PieChart, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 
 function HologramCore() {
   const meshRef = useRef();
+  const { gl } = useThree();
+
+  useEffect(() => () => gl.dispose(), [gl]);
 
   useFrame((state, delta) => {
     meshRef.current.rotation.x += delta * 0.1;

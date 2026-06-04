@@ -19,7 +19,7 @@ export default function ProjectFormModal({ onClose, onSave, prefill = {}, existi
     description: existingProject?.description || prefill.description || '',
     next_action: existingProject?.next_action || prefill.next_action || '',
     start_date: existingProject?.start_date || today,
-    last_update: today,
+    last_update: existingProject?.last_update || today,
     source_lead_id: existingProject?.source_lead_id || prefill.source_lead_id || null,
     source_lead_name: existingProject?.source_lead_name || prefill.source_lead_name || null,
   });
@@ -167,15 +167,26 @@ export default function ProjectFormModal({ onClose, onSave, prefill = {}, existi
             />
           </div>
 
-          {/* Start Date */}
-          <div>
-            <label className="block text-xs font-bold text-crm-textMuted uppercase tracking-widest mb-2">Start Date</label>
-            <input
-              type="date"
-              value={form.start_date}
-              onChange={e => set('start_date', e.target.value)}
-              className="bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-violet-500/50 text-sm [color-scheme:dark]"
-            />
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-crm-textMuted uppercase tracking-widest mb-2">Start Date</label>
+              <input
+                type="date"
+                value={form.start_date}
+                onChange={e => set('start_date', e.target.value)}
+                className="w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-violet-500/50 text-sm [color-scheme:dark]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-crm-textMuted uppercase tracking-widest mb-2">Last Update</label>
+              <input
+                type="date"
+                value={form.last_update}
+                onChange={e => set('last_update', e.target.value)}
+                className="w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-violet-500/50 text-sm [color-scheme:dark]"
+              />
+            </div>
           </div>
         </div>
 

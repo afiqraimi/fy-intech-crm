@@ -13,6 +13,18 @@
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       }
     </script>
+    <script>
+      try {
+        var p = JSON.parse(localStorage.getItem('crm_prefs') || '{}');
+        var isDark = p.darkMode !== false;
+        var root = document.documentElement;
+        root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        var vars = isDark
+          ? { '--color-crm-dark':'#0a0a0a','--color-crm-darker':'#000000','--color-crm-card':'#121212','--color-crm-border':'#262626','--color-crm-text':'#ffffff','--color-crm-textMuted':'#a3a3a3' }
+          : { '--color-crm-dark':'#f1f5f9','--color-crm-darker':'#f8fafc','--color-crm-card':'#ffffff','--color-crm-border':'#e2e8f0','--color-crm-text':'#0f172a','--color-crm-textMuted':'#64748b' };
+        Object.keys(vars).forEach(function(k){ root.style.setProperty(k, vars[k]); });
+      } catch (_) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

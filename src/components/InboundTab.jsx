@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Inbox, Check, X, Clock, DollarSign, Mail, User, Building, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiJson } from '../utils/api';
+import toast from 'react-hot-toast';
 
 export default function InboundTab() {
   const [inbounds, setInbounds] = useState([]);
@@ -29,6 +30,8 @@ export default function InboundTab() {
   }, []);
 
   const updateStatus = async (id, newStatus) => {
+    const previousInbounds = inbounds;
+    const previousSelected = selectedLead;
     setInbounds(prev => prev.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
     if (selectedLead && selectedLead.id === id) {
       setSelectedLead({ ...selectedLead, status: newStatus });
@@ -40,7 +43,9 @@ export default function InboundTab() {
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (error) {
-      console.error('Error updating inbound status:', error);
+      setInbounds(previousInbounds);
+      setSelectedLead(previousSelected);
+      toast.error('Failed to update status');
     }
   };
 

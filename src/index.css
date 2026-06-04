@@ -11,6 +11,30 @@
   --color-crm-textMuted: #a3a3a3;
 }
 
+/* ── Light mode overrides ────────────────────────────────────────────
+   CSS variables are set via JS inline styles (applyTheme in SettingsTab).
+   These rules handle Tailwind classes that hardcode white/black colors.   */
+
+[data-theme="light"] { color-scheme: light; }
+
+/* Hardcoded white text → slate-900 */
+[data-theme="light"] .text-white { color: #0f172a; }
+
+/* White borders → dark borders */
+[data-theme="light"] .border-white\/10 { border-color: rgb(0 0 0 / 0.10); }
+[data-theme="light"] .border-white\/20 { border-color: rgb(0 0 0 / 0.14); }
+[data-theme="light"] .border-white\/30 { border-color: rgb(0 0 0 / 0.18); }
+
+/* White bg hover/active states → dark equivalents */
+[data-theme="light"] .bg-white\/5  { background-color: rgb(0 0 0 / 0.04); }
+[data-theme="light"] .bg-white\/10 { background-color: rgb(0 0 0 / 0.07); }
+[data-theme="light"] .bg-white\/20 { background-color: rgb(0 0 0 / 0.11); }
+
+/* Glass panels: black bg → light bg */
+[data-theme="light"] .bg-black\/40 { background-color: rgb(255 255 255 / 0.75); }
+[data-theme="light"] .bg-black\/60 { background-color: rgb(255 255 255 / 0.85); }
+[data-theme="light"] .bg-black\/80 { background-color: rgb(255 255 255 / 0.92); }
+
 body {
   background-color: var(--color-crm-darker);
   color: var(--color-crm-text);

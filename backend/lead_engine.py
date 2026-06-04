@@ -9,6 +9,18 @@ from typing import Optional
 import requests
 from openai import OpenAI
 
+def _with_retry(fn, max_attempts=3, base_delay=1):
+    """Call fn() up to max_attempts times with exponential backoff on RequestException."""
+    for attempt in range(max_attempts):
+        try:
+            return fn()
+        except requests.exceptions.RequestException as e:
+            if attempt == max_attempts - 1:
+                raise
+            delay = base_delay * (4 ** attempt)
+            logging.getLogger("lead_engine").warning("Request failed (attempt %d/%d): %s — retrying in %ds", attempt + 1, max_attempts, e, delay)
+            time.sleep(delay)
+
 from database import SessionLocal
 import models
 
@@ -17,6 +29,12 @@ logger = logging.getLogger("lead_engine")
 FIRECRAWL_API_KEY = os.environ.get("FIRECRAWL_API_KEY", "")
 FIRECRAWL_BASE = "https://api.firecrawl.dev/v1"
 FIRECRAWL_TIMEOUT = 300
+
+SCORE_HIGH_REVENUE = (70, 90)
+SCORE_MID_REVENUE = (55, 75)
+SCORE_LOW_REVENUE = (40, 60)
+SCORE_VR_BOOST = 5
+SCORE_MAX = 99
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE = "https://api.deepseek.com"
@@ -115,12 +133,12 @@ def search_companies(industry: str, revenue_range: str, limit: int = 15) -> list
     for i, query in enumerate(queries):
         logger.info("  Query %d/%d: %s", i + 1, len(queries), query)
         try:
-            resp = requests.post(
+            resp = _with_retry(lambda: requests.post(
                 f"{FIRECRAWL_BASE}/search",
                 headers=_firecrawl_headers(),
                 json={"query": query, "limit": limit},
                 timeout=FIRECRAWL_TIMEOUT,
-            )
+            ))
             logger.info("  Firecrawl response: status=%d", resp.status_code)
 
             try:
@@ -164,7 +182,7 @@ def scrape_contacts(companies: list[dict]) -> list[dict]:
         url = company["website"]
         logger.info("Scraping [%d/%d] %s", i + 1, len(companies), url)
         try:
-            resp = requests.post(
+            resp = _with_retry(lambda: requests.post(
                 f"{FIRECRAWL_BASE}/scrape",
                 headers=_firecrawl_headers(),
                 json={
@@ -174,7 +192,7 @@ def scrape_contacts(companies: list[dict]) -> list[dict]:
                     "timeout": 60000,
                 },
                 timeout=FIRECRAWL_TIMEOUT,
-            )
+            ))
             resp.raise_for_status()
             data = resp.json()
             markdown = ""
@@ -360,40 +378,34 @@ def save_to_crm(leads: list[dict]) -> dict:
     skipped = 0
 
     try:
+        all_existing = db.query(models.Lead.company, models.Lead.website).all()
+        existing_names = {_normalize_company(c or "") for c, _ in all_existing}
+        existing_websites = {w.strip().lower() for _, w in all_existing if w}
+
         for lead in leads:
             company_name = (lead.get("name") or lead.get("company") or "").strip()
             if not company_name:
                 continue
 
             normalised = _normalize_company(company_name)
-            # Check all existing leads for duplicate by normalised name
-            all_existing = db.query(models.Lead.company, models.Lead.website).all()
-            is_dup = False
-            for existing_company, existing_website in all_existing:
-                if _normalize_company(existing_company or "") == normalised:
-                    is_dup = True
-                    break
-                lead_website = (lead.get("website") or "").strip().lower()
-                if lead_website and existing_website and lead_website == existing_website.strip().lower():
-                    is_dup = True
-                    break
+            lead_website = (lead.get("website") or "").strip().lower()
+            is_dup = normalised in existing_names or (lead_website and lead_website in existing_websites)
             if is_dup:
                 skipped += 1
                 continue
 
             revenue = lead.get("revenue_range") or ""
             if "50M+" in revenue or "50m+" in revenue.lower():
-                score = random.randint(70, 90)
+                score = random.randint(*SCORE_HIGH_REVENUE)
             elif "10M" in revenue or "10m" in revenue.lower():
-                score = random.randint(55, 75)
+                score = random.randint(*SCORE_MID_REVENUE)
             else:
-                score = random.randint(40, 60)
+                score = random.randint(*SCORE_LOW_REVENUE)
 
-            # Prefer industry-specific VR-adopting industries for slight boost
             industry_str = (lead.get("industry") or "").lower()
             vr_industries = ["oil", "gas", "manufacturing", "aerospace", "aviation", "construction", "energy", "engineering"]
             if any(kw in industry_str for kw in vr_industries):
-                score = min(99, score + 5)
+                score = min(SCORE_MAX, score + SCORE_VR_BOOST)
 
             problem = lead.get("pain_points") or lead.get("problem") or ""
             solution = lead.get("proposed_solution") or lead.get("solution") or ""

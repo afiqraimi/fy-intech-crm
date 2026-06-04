@@ -30,6 +30,7 @@ export default function ProjectsTab() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingStageId, setLoadingStageId] = useState(null);
   const [editingStage, setEditingStage] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
@@ -99,6 +100,9 @@ export default function ProjectsTab() {
   const updateStage = async (id, newStage) => {
     const today = new Date().toISOString().split('T')[0];
     const project = (projects || []).find(p => p.id === id);
+    const previousProjects = projects;
+    const previousSelected = selectedProject;
+    setLoadingStageId(id);
     setProjects(prev => (prev || []).map(p => p.id === id ? { ...p, stage: newStage, last_update: today } : p));
     if (selectedProject?.id === id) setSelectedProject(prev => ({ ...prev, stage: newStage, last_update: today }));
     setEditingStage(false);
@@ -116,8 +120,11 @@ export default function ProjectsTab() {
       }
       toast.success(`Stage updated to ${newStage}`);
     } catch (error) {
-      console.error("Error updating project stage:", error);
+      setProjects(previousProjects);
+      setSelectedProject(previousSelected);
       toast.error('Failed to update stage');
+    } finally {
+      setLoadingStageId(null);
     }
   };
 
@@ -255,9 +262,12 @@ export default function ProjectsTab() {
                     <div className="relative w-full md:w-auto">
                       <button
                         onClick={() => setEditingStage(v => !v)}
-                        className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-sm font-bold transition-all hover:brightness-125 ${stageConf?.color}`}
+                        disabled={loadingStageId === selectedProject.id}
+                        className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-sm font-bold transition-all hover:brightness-125 disabled:opacity-50 disabled:cursor-not-allowed ${stageConf?.color}`}
                       >
-                        <StageIcon size={14} />
+                        {loadingStageId === selectedProject.id
+                          ? <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                          : <StageIcon size={14} />}
                         <span>{selectedProject.stage}</span>
                         <Edit3 size={12} className="opacity-60" />
                       </button>
@@ -267,8 +277,16 @@ export default function ProjectsTab() {
                       </label>
                       <select
                         value={selectedProject.stage}
-                        onChange={(event) => updateStage(selectedProject.id, event.target.value)}
-                        className="md:hidden w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:ring-1 focus:ring-white/30"
+                        disabled={loadingStageId === selectedProject.id}
+                        onChange={(event) => {
+                          const newStage = event.target.value;
+                          if (newStage !== selectedProject.stage && window.confirm(`Change stage to "${newStage}"?`)) {
+                            updateStage(selectedProject.id, newStage);
+                          } else {
+                            event.target.value = selectedProject.stage;
+                          }
+                        }}
+                        className="md:hidden w-full bg-crm-darker border border-crm-border rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:ring-1 focus:ring-white/30 disabled:opacity-50"
                       >
                         {ALL_STAGES.map(stage => (
                           <option key={stage} value={stage}>{stage}</option>

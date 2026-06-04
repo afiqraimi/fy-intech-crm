@@ -12,6 +12,8 @@ logger = logging.getLogger("lead_scheduler")
 scheduler = BackgroundScheduler(daemon=True)
 _jobs_started = False
 _lock = threading.Lock()
+_running_jobs: set = set()
+_running_jobs_lock = threading.Lock()
 
 
 def _create_job(entry: dict):
@@ -20,8 +22,13 @@ def _create_job(entry: dict):
     desc = entry.get("description", f"{industry} | {revenue_range}")
 
     def job():
-        logger.info("Scheduled job triggered: %s", desc)
+        with _running_jobs_lock:
+            if desc in _running_jobs:
+                logger.warning("Job '%s' already running — skipping overlap.", desc)
+                return
+            _running_jobs.add(desc)
         try:
+            logger.info("Scheduled job triggered: %s", desc)
             result = run_pipeline(industry, revenue_range)
             if result.get("error"):
                 logger.error("Pipeline error for %s: %s", desc, result["error"])
@@ -34,6 +41,9 @@ def _create_job(entry: dict):
                 )
         except Exception:
             logger.exception("Unhandled error in scheduled job: %s", desc)
+        finally:
+            with _running_jobs_lock:
+                _running_jobs.discard(desc)
 
     return job
 
