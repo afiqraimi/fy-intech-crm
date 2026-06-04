@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Canvas, useFrame } from '@react-three/fiber';
 import {
   LayoutDashboard,
   Radar,
@@ -30,6 +31,101 @@ import AvatarTab from './AvatarTab';
 import { apiJson, API_BASE } from '../utils/api';
 import { clearAuthSession, getStoredProfile, setStoredProfile } from '../utils/auth';
 import toast from 'react-hot-toast';
+
+// ── Theme watcher ──────────────────────────────────────────────────
+function useIsDark() {
+  const [isDark, setIsDark] = useState(
+    document.documentElement.getAttribute('data-theme') !== 'light'
+  );
+  useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light')
+    );
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
+
+// ── Neural-network particle background (persistent across all tabs) ─
+const N = 130, LINK = 3.0, SPEED = 0.0028, BOUNDS = 9;
+
+function NeuralNet() {
+  const isDark   = useIsDark();
+  const groupRef = useRef();
+  const coreRef  = useRef();
+  const linesRef = useRef();
+
+  const { pos, vel, lineBuf } = useMemo(() => {
+    const pos    = new Float32Array(N * 3);
+    const vel    = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      pos[i*3]   = (Math.random() - 0.5) * BOUNDS * 2;
+      pos[i*3+1] = (Math.random() - 0.5) * BOUNDS * 2;
+      pos[i*3+2] = (Math.random() - 0.5) * BOUNDS;
+      const s = SPEED * (0.5 + Math.random());
+      const a = Math.random() * Math.PI * 2;
+      vel[i*3]   = Math.cos(a) * s;
+      vel[i*3+1] = Math.sin(a) * s;
+      vel[i*3+2] = (Math.random() - 0.5) * s * 0.35;
+    }
+    return { pos, vel, lineBuf: new Float32Array(N * N * 6) };
+  }, []);
+
+  useFrame(({ clock }) => {
+    for (let i = 0; i < N; i++) {
+      const b = i * 3;
+      pos[b]   += vel[b];   if (Math.abs(pos[b])   > BOUNDS)        vel[b]   *= -1;
+      pos[b+1] += vel[b+1]; if (Math.abs(pos[b+1]) > BOUNDS)        vel[b+1] *= -1;
+      pos[b+2] += vel[b+2]; if (Math.abs(pos[b+2]) > BOUNDS * 0.55) vel[b+2] *= -1;
+    }
+    if (coreRef.current)
+      coreRef.current.geometry.attributes.position.needsUpdate = true;
+
+    let seg = 0;
+    const ld2 = LINK * LINK;
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        const dx = pos[i*3]-pos[j*3], dy = pos[i*3+1]-pos[j*3+1], dz = pos[i*3+2]-pos[j*3+2];
+        if (dx*dx + dy*dy + dz*dz < ld2) {
+          lineBuf[seg*6]   = pos[i*3];   lineBuf[seg*6+1] = pos[i*3+1]; lineBuf[seg*6+2] = pos[i*3+2];
+          lineBuf[seg*6+3] = pos[j*3];   lineBuf[seg*6+4] = pos[j*3+1]; lineBuf[seg*6+5] = pos[j*3+2];
+          seg++;
+        }
+      }
+    }
+    if (linesRef.current) {
+      linesRef.current.geometry.setDrawRange(0, seg * 2);
+      linesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+    if (groupRef.current) {
+      groupRef.current.rotation.y = clock.elapsedTime * 0.035;
+      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.022) * 0.12;
+    }
+  });
+
+  const dotColor   = isDark ? '#a5b4fc' : '#6d28d9';
+  const lineColor  = isDark ? '#7c3aed' : '#7c3aed';
+  const dotOpacity  = isDark ? 0.75 : 0.55;
+  const lineOpacity = isDark ? 0.20 : 0.10;
+
+  return (
+    <group ref={groupRef}>
+      <points ref={coreRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={N} array={pos} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial size={0.10} sizeAttenuation color={dotColor} transparent opacity={dotOpacity} />
+      </points>
+      <lineSegments ref={linesRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={N * N * 2} array={lineBuf} itemSize={3} />
+        </bufferGeometry>
+        <lineBasicMaterial color={lineColor} transparent opacity={lineOpacity} />
+      </lineSegments>
+    </group>
+  );
+}
 
 const METRIC_STYLES = {
   1: { icon: TrendingUp, color: 'text-white', bg: 'bg-white/10' },
@@ -255,8 +351,21 @@ export default function DashboardShell() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-crm-darker overflow-hidden text-crm-text font-sans relative z-10 animate-in fade-in duration-500">
-      <aside className="w-64 glass-panel-heavy flex-col hidden md:flex m-4 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+    <div className="flex flex-col md:flex-row h-[100dvh] bg-crm-darker overflow-hidden text-crm-text font-sans relative animate-in fade-in duration-500">
+
+      {/* ── Persistent neural-network background (all tabs) ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <Canvas
+          camera={{ position: [0, 0, 14], fov: 50 }}
+          gl={{ alpha: true, antialias: false }}
+          onCreated={({ gl }) => gl.setClearColor(0, 0, 0, 0)}
+        >
+          <ambientLight intensity={1} />
+          <NeuralNet />
+        </Canvas>
+      </div>
+
+      <aside className="relative z-10 w-64 glass-panel-heavy flex-col hidden md:flex m-4 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)]">
         <div className="p-6">
           <div className="flex justify-center mb-2">
             <img src="/logo.png" alt="FY INTECH" className="h-12 w-auto object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
@@ -297,7 +406,7 @@ export default function DashboardShell() {
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+      <main className="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden">
         {showIosTip && (
           <div className="mx-3 md:mx-4 mt-3 md:mt-4 px-4 py-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
