@@ -23,6 +23,8 @@
           ? { '--color-crm-dark':'#0a0a0a','--color-crm-darker':'#000000','--color-crm-card':'#121212','--color-crm-border':'#262626','--color-crm-text':'#ffffff','--color-crm-textMuted':'#a3a3a3' }
           : { '--color-crm-dark':'#f1f5f9','--color-crm-darker':'#f8fafc','--color-crm-card':'#ffffff','--color-crm-border':'#e2e8f0','--color-crm-text':'#0f172a','--color-crm-textMuted':'#64748b' };
         Object.keys(vars).forEach(function(k){ root.style.setProperty(k, vars[k]); });
+        /* Also set as a CSS variable on <html> for the background colour */
+        root.style.background = isDark ? '#000000' : '#f8fafc';
       } catch (_) {}
     </script>
   </head>

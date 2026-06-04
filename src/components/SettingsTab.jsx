@@ -25,7 +25,18 @@ const LIGHT_VARS = {
 export function applyTheme(isDark) {
   const root = document.documentElement;
   const vars = isDark ? DARK_VARS : LIGHT_VARS;
-  Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+
+  // Set on <html> AND <body> — Tailwind v4 @theme vars may be
+  // registered as non-inheriting, so body won't see html's inline vars
+  Object.entries(vars).forEach(([k, v]) => {
+    root.style.setProperty(k, v);
+    document.body?.style.setProperty(k, v);
+  });
+
+  // Also set body background/color directly — belt-and-suspenders
+  document.body.style.backgroundColor = isDark ? '#000000' : '#f8fafc';
+  document.body.style.color           = isDark ? '#ffffff' : '#0f172a';
+
   root.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 

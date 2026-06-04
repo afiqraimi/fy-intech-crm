@@ -255,7 +255,7 @@ export default function DashboardShell() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-transparent overflow-hidden text-crm-text font-sans relative z-10 animate-in fade-in duration-500">
+    <div className="flex flex-col md:flex-row h-[100dvh] bg-crm-darker overflow-hidden text-crm-text font-sans relative z-10 animate-in fade-in duration-500">
       <aside className="w-64 glass-panel-heavy flex-col hidden md:flex m-4 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)]">
         <div className="p-6">
           <div className="flex justify-center mb-2">
