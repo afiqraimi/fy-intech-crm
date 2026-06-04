@@ -1678,6 +1678,7 @@ def create_avatar_token(request: Request):
             json={
                 "mode": "FULL",
                 "is_sandbox": False,
+                "max_duration": 300,
                 "avatar_id": LIVEAVATAR_AVATAR_ID,
                 "avatar_persona": {
                     "voice_id": LIVEAVATAR_VOICE_ID,
@@ -1723,6 +1724,7 @@ def create_avatar_embed(request: Request):
                 "context_id": LIVEAVATAR_CONTEXT_ID,
                 "voice_id": LIVEAVATAR_VOICE_ID,
                 "is_sandbox": False,
+                "max_duration": 300,
                 "default_language": "en",
             },
             timeout=30,
