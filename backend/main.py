@@ -1677,7 +1677,9 @@ def create_avatar_token(request: Request):
     Injects live CRM data into the context before each session. No auth."""
     if not LIVEAVATAR_API_KEY:
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
-    
+
+    _update_context_with_live_data()  # refresh context with latest CRM data
+
     try:
         # ── Create session token ─────────────────────────────────────────
         token_resp = requests.post(
@@ -1718,10 +1720,12 @@ def create_avatar_token(request: Request):
 @app.post("/api/public/avatar-embed")
 @limiter.limit("10/minute")
 def create_avatar_embed(request: Request):
-    """Create a LiveAvatar embed for the public website. No auth. No auth."""
+    """Create a LiveAvatar embed for the public website. No auth."""
     if not LIVEAVATAR_API_KEY:
         raise HTTPException(status_code=503, detail="LiveAvatar not configured")
-    
+
+    _update_context_with_live_data()  # refresh context with latest CRM data
+
     try:
         # ── Create the embed ─────────────────────────────────────────────
         resp = requests.post(
