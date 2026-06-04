@@ -24,13 +24,16 @@ import requests
 import time
 import logging
 
-if os.environ.get("DATABASE_URL"):
-    from pythonjsonlogger import jsonlogger as _jl
-    _handler = logging.StreamHandler()
-    _handler.setFormatter(_jl.JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
-    logging.root.addHandler(_handler)
-    logging.root.setLevel(logging.INFO)
-else:
+try:
+    if os.environ.get("DATABASE_URL"):
+        from pythonjsonlogger import jsonlogger as _jl
+        _handler = logging.StreamHandler()
+        _handler.setFormatter(_jl.JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+        logging.root.addHandler(_handler)
+        logging.root.setLevel(logging.INFO)
+    else:
+        raise ImportError
+except Exception:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger("main")
 
@@ -599,7 +602,8 @@ app = FastAPI(title="FY Intech CRM API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", "")
+_ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
 
 app.add_middleware(
     CORSMiddleware,
