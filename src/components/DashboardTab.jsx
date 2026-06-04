@@ -30,26 +30,26 @@ function HologramCore() {
       <mesh ref={meshRef} position={[0, 0, 0]}>
         <icosahedronGeometry args={[3.5, 1]} />
         <meshStandardMaterial
-          color={isDark ? '#ffffff' : '#1e293b'}
+          color={isDark ? '#ffffff' : '#0f172a'}
           wireframe={true}
           transparent={true}
-          opacity={isDark ? 0.08 : 0.18}
+          opacity={isDark ? 0.08 : 0.22}
         />
       </mesh>
 
       <mesh scale={0.9} position={[0, 0, -0.5]}>
         <icosahedronGeometry args={[3, 2]} />
         <MeshDistortMaterial
-          color={isDark ? '#333333' : '#6366f1'}
+          color={isDark ? '#333333' : '#818cf8'}
           envMapIntensity={1}
           clearcoat={1}
           clearcoatRoughness={0}
-          metalness={1}
-          roughness={0.2}
+          metalness={0}
+          roughness={0.4}
           distort={0.3}
           speed={1.5}
           transparent={true}
-          opacity={isDark ? 0.15 : 0.08}
+          opacity={isDark ? 0.15 : 0.12}
         />
       </mesh>
     </Float>
@@ -148,10 +148,14 @@ export default function DashboardTab({ metrics, leads = [], setActiveTab, projec
     <div className="relative min-h-full w-full flex flex-col items-center animate-in fade-in duration-1000">
       {/* 3D Background — transparent canvas, colours switch with theme */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
-        <Canvas camera={{ position: [0, 0, 12], fov: 45 }} gl={{ alpha: true }}>
+        <Canvas
+          camera={{ position: [0, 0, 12], fov: 45 }}
+          gl={{ alpha: true }}
+          onCreated={({ gl }) => gl.setClearColor(0, 0, 0, 0)}
+        >
           <ambientLight intensity={0.6} />
-          <directionalLight position={[10, 10, 5]} intensity={1.2} color="#ffffff" />
-          <pointLight position={[-10, -10, -5]} intensity={0.6} color="#ffffff" />
+          <directionalLight position={[10, 10, 5]} intensity={1.2} />
+          <pointLight position={[-10, -10, -5]} intensity={0.6} />
           <HologramCore />
         </Canvas>
       </div>
