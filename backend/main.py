@@ -1568,7 +1568,7 @@ class AvatarTokenResponse(BaseModel):
 
 
 _context_cache: dict = {"ts": 0.0}
-_CONTEXT_CACHE_TTL = 300  # 5 minutes
+_CONTEXT_CACHE_TTL = 30  # 30 seconds — short enough to always reflect new data
 
 
 def _update_context_with_live_data():
@@ -1582,29 +1582,32 @@ def _update_context_with_live_data():
     try:
         from database import SessionLocal
         db = SessionLocal()
-        
-        # Lead stats
+
         import models
+        # Lead stats
         total_leads = db.query(models.Lead).count()
         new_leads = db.query(models.Lead).filter(models.Lead.status == "New").count()
         in_progress = db.query(models.Lead).filter(models.Lead.status.in_(["To Approach", "Approached", "Proposal Sent"])).count()
         closed_leads = db.query(models.Lead).filter(models.Lead.status == "Closed").count()
-        
-        # Recent leads
-        recent = db.query(models.Lead).order_by(models.Lead.id.desc()).limit(5).all()
-        
-        # Active projects
+
+        # Recent leads — top 10 newest
+        recent = db.query(models.Lead).order_by(models.Lead.id.desc()).limit(10).all()
+
+        # ALL active projects (no stage filter means nothing is missed)
         projects = db.query(models.Project).filter(
             ~models.Project.stage.in_(["Completed", "Deployed", "Closed"])
-        ).order_by(models.Project.last_update.desc()).limit(5).all()
-        
+        ).order_by(models.Project.last_update.desc()).limit(20).all()
+
+        # All projects including completed (so avatar knows full history)
+        all_projects = db.query(models.Project).order_by(models.Project.last_update.desc()).limit(30).all()
+
         db.close()
-        
+
         # Lead engine schedule
         from lead_schedule import load_schedule
         schedule = load_schedule()
         enabled_count = sum(1 for s in schedule if s.get("enabled", False))
-        
+
         # Build text
         lines = [
             "LIVE CRM DATA (current as of this session):",
@@ -1614,15 +1617,23 @@ def _update_context_with_live_data():
             f"- Closed leads: {closed_leads}",
         ]
         if recent:
-            lines.append("- Recent companies added:")
+            lines.append("- 10 most recently added companies:")
             for l in recent:
                 lines.append(f"  * {l.company} ({l.industry}) — Status: {l.status}, Score: {l.score}%")
         if projects:
-            lines.append("- Active projects:")
+            lines.append(f"- Active projects ({len(projects)} total):")
             for p in projects:
-                lines.append(f"  * {p.project_name} for {p.client} — Stage: {p.stage}")
+                lines.append(f"  * {p.project_name} for {p.client} — Stage: {p.stage}, Last updated: {p.last_update}")
+                if p.next_action:
+                    lines.append(f"    Next action: {p.next_action}")
         else:
             lines.append("- No active projects currently.")
+        if all_projects:
+            completed = [p for p in all_projects if p.stage in ["Completed", "Deployed", "Closed"]]
+            if completed:
+                lines.append(f"- Completed/Deployed projects ({len(completed)}):")
+                for p in completed:
+                    lines.append(f"  * {p.project_name} for {p.client} — Stage: {p.stage}")
         lines.append(f"- Lead Engine: {enabled_count} of 12 industries scheduled daily (2AM-1PM MYT)")
         
         live_text = "\n".join(lines)

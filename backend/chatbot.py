@@ -134,27 +134,56 @@ def _get_live_data() -> str:
         import models
         db = SessionLocal()
         try:
-            # Active projects (not completed/deployed)
+            # Active projects — all, ordered by most recently updated
             projects = db.query(models.Project).filter(
                 ~models.Project.stage.in_(["Completed", "Deployed", "Closed"])
+            ).order_by(models.Project.last_update.desc()).limit(20).all()
+
+            # Completed projects
+            done_projects = db.query(models.Project).filter(
+                models.Project.stage.in_(["Completed", "Deployed", "Closed"])
             ).order_by(models.Project.last_update.desc()).limit(10).all()
-            
-            # Lead stats
+
+            # Lead stats — use actual CRM pipeline statuses
             total_leads = db.query(models.Lead).count()
             new_leads = db.query(models.Lead).filter(models.Lead.status == "New").count()
-            in_progress = db.query(models.Lead).filter(models.Lead.status == "In Progress").count()
-            
+            in_pipeline = db.query(models.Lead).filter(
+                models.Lead.status.in_(["To Approach", "Approached", "Proposal Sent"])
+            ).count()
+            closed_leads = db.query(models.Lead).filter(models.Lead.status == "Closed").count()
+            hot_leads = db.query(models.Lead).filter(models.Lead.score >= 80).count()
+
+            # 10 most recent leads
+            recent_leads = db.query(models.Lead).order_by(models.Lead.id.desc()).limit(10).all()
+
             lines = []
-            
+
             if projects:
-                lines.append("## CURRENT PROJECTS:")
+                lines.append(f"## ACTIVE PROJECTS ({len(projects)} total):")
                 for p in projects:
-                    lines.append(f"- {p.project_name} (Client: {p.client}, Stage: {p.stage})")
+                    lines.append(f"- {p.project_name} | Client: {p.client} | Stage: {p.stage} | Last updated: {p.last_update}")
+                    if p.next_action:
+                        lines.append(f"  Next action: {p.next_action}")
             else:
-                lines.append("## CURRENT PROJECTS: No active projects at the moment.")
-            
-            lines.append(f"\n## LEAD STATS: {total_leads} total leads, {new_leads} new, {in_progress} in progress")
-            
+                lines.append("## ACTIVE PROJECTS: No active projects at the moment.")
+
+            if done_projects:
+                lines.append(f"\n## COMPLETED/DEPLOYED PROJECTS ({len(done_projects)}):")
+                for p in done_projects:
+                    lines.append(f"- {p.project_name} | Client: {p.client} | Stage: {p.stage}")
+
+            lines.append(f"\n## LEAD STATS:")
+            lines.append(f"- Total leads: {total_leads}")
+            lines.append(f"- New (uncontacted): {new_leads}")
+            lines.append(f"- In pipeline (To Approach / Approached / Proposal Sent): {in_pipeline}")
+            lines.append(f"- Hot prospects (score ≥80%): {hot_leads}")
+            lines.append(f"- Closed: {closed_leads}")
+
+            if recent_leads:
+                lines.append(f"\n## 10 MOST RECENT LEADS:")
+                for l in recent_leads:
+                    lines.append(f"- {l.company} ({l.industry}) — Status: {l.status}, Score: {l.score}%")
+
             return "\n".join(lines)
         finally:
             db.close()
