@@ -194,18 +194,31 @@ export default function DashboardShell() {
     return () => { cancelled = true; };
   }, [fetchData, refreshProfile]);
 
+  const recomputeMetrics = React.useCallback((currentLeads) => {
+    setMetrics(prev => prev.map(m => {
+      if (m.id === 1) return { ...m, value: String(currentLeads.length) };
+      if (m.id === 2) return { ...m, value: String(currentLeads.filter(l => l.score >= 80).length) };
+      if (m.id === 3) return { ...m, value: String(currentLeads.filter(l => l.status === 'Proposal Sent').length) };
+      return m; // id 4 = Active Projects, stays from backend
+    }));
+  }, []);
+
   const updateLeadStatus = async (leadId, newStatus) => {
     const previousLeads = leads;
+    const previousMetrics = metrics;
     const lead = leads.find(l => l.id === leadId);
-    setLeads(currentLeads =>
-      currentLeads.map(l => l.id === leadId ? { ...l, status: newStatus } : l)
-    );
+    const updatedLeads = leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l);
+
+    // Optimistic update — leads AND metrics update instantly, no round-trip
+    setLeads(updatedLeads);
+    recomputeMetrics(updatedLeads);
 
     try {
       await apiJson(`/api/leads/${leadId}`, {
         method: 'PUT',
         body: JSON.stringify({ status: newStatus }),
       });
+      // Refresh from backend for accuracy (includes all DB leads, not just page 1)
       const metricsData = await apiJson('/api/metrics');
       setMetrics(metricsData.map(m => ({ ...m, ...METRIC_STYLES[m.id] })));
       if (lead) {
@@ -214,6 +227,7 @@ export default function DashboardShell() {
     } catch (error) {
       console.error('Error updating lead status:', error);
       setLeads(previousLeads);
+      setMetrics(previousMetrics); // roll back metrics too
       toast.error('Failed to update lead status');
     }
   };
@@ -370,7 +384,7 @@ export default function DashboardShell() {
             <>
               {activeTab === 'Dashboard' && <DashboardTab metrics={metrics} leads={leads} setActiveTab={setActiveTab} projects={projects} />}
               {activeTab === 'Active Projects' && <ProjectsTab />}
-              {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} updateLeadStatus={updateLeadStatus} searchQuery={searchQuery} onSearchChange={setSearchQuery} />}
+              {activeTab === 'Lead Radar' && <LeadRadarTab leads={leads} updateLeadStatus={updateLeadStatus} searchQuery={searchQuery} onSearchChange={setSearchQuery} onRefresh={fetchData} />}
               {activeTab === 'Pipeline' && <PipelineTab leads={leads} updateLeadStatus={updateLeadStatus} />}
               {activeTab === 'AI Avatar' && <AvatarTab />}
               {activeTab === 'Settings' && <SettingsTab onProfileChange={handleProfileChange} />}

@@ -36,7 +36,7 @@ const SortHeader = ({ label, field, sortField, sortDirection, onClick, className
   </th>
 );
 
-export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = '', onSearchChange }) {
+export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = '', onSearchChange, onRefresh }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [selectedLeadDetails, setSelectedLeadDetails] = useState(null);
@@ -762,7 +762,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
             source_lead_name: promoteTarget.company,
           }}
           onClose={() => setPromoteTarget(null)}
-          onSave={() => {}}
+          onSave={() => { setPromoteTarget(null); onRefresh?.(); }}
         />
       )}
 
