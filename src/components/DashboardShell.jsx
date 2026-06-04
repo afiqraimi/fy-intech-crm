@@ -157,7 +157,7 @@ export default function DashboardShell() {
       for (let attempt = 0; attempt < 3; attempt += 1) {
         try {
           const [leadsData, metricsData, projectsData] = await Promise.all([
-            apiJson('/api/leads', {}, { timeoutMs: 30000 }),
+            apiJson('/api/leads?limit=500', {}, { timeoutMs: 30000 }),
             apiJson('/api/metrics', {}, { timeoutMs: 30000 }),
             apiJson('/api/projects', {}, { timeoutMs: 30000 }),
           ]);

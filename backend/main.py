@@ -950,7 +950,21 @@ def get_leads(
 ):
     try:
         limit = min(limit, 500)
-        return db.query(models.Lead).offset(skip).limit(limit).all()
+        from sqlalchemy import case
+        status_order = case(
+            (models.Lead.status == "Proposal Sent", 0),
+            (models.Lead.status == "Approached", 1),
+            (models.Lead.status == "To Approach", 2),
+            (models.Lead.status == "New", 3),
+            else_=4,
+        )
+        return (
+            db.query(models.Lead)
+            .order_by(status_order, models.Lead.id.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
     except Exception as e:
         logger.error("get_leads failed: %s", e)
         raise HTTPException(status_code=500, detail="Failed to fetch leads")

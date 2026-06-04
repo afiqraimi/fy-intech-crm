@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { MeshDistortMaterial, Float } from '@react-three/drei';
@@ -8,8 +8,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 function HologramCore() {
   const meshRef = useRef();
   const { gl } = useThree();
+  const [isDark, setIsDark] = useState(
+    document.documentElement.getAttribute('data-theme') !== 'light'
+  );
 
-  useEffect(() => () => gl.dispose(), [gl]);
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => { observer.disconnect(); gl.dispose(); };
+  }, [gl]);
 
   useFrame((state, delta) => {
     meshRef.current.rotation.x += delta * 0.1;
@@ -21,17 +30,17 @@ function HologramCore() {
       <mesh ref={meshRef} position={[0, 0, 0]}>
         <icosahedronGeometry args={[3.5, 1]} />
         <meshStandardMaterial
-          color="#ffffff"
+          color={isDark ? '#ffffff' : '#1e293b'}
           wireframe={true}
           transparent={true}
-          opacity={0.08}
+          opacity={isDark ? 0.08 : 0.18}
         />
       </mesh>
 
       <mesh scale={0.9} position={[0, 0, -0.5]}>
         <icosahedronGeometry args={[3, 2]} />
         <MeshDistortMaterial
-          color="#333333"
+          color={isDark ? '#333333' : '#6366f1'}
           envMapIntensity={1}
           clearcoat={1}
           clearcoatRoughness={0}
@@ -40,7 +49,7 @@ function HologramCore() {
           distort={0.3}
           speed={1.5}
           transparent={true}
-          opacity={0.15}
+          opacity={isDark ? 0.15 : 0.08}
         />
       </mesh>
     </Float>
@@ -137,17 +146,15 @@ export default function DashboardTab({ metrics, leads = [], setActiveTab, projec
 
   return (
     <div className="relative min-h-full w-full flex flex-col items-center animate-in fade-in duration-1000">
-      {/* 3D Background — hidden in light mode via CSS */}
-      <div className="three-bg absolute inset-0 z-0 pointer-events-none opacity-60">
-        <Canvas camera={{ position: [0, 0, 12], fov: 45 }}>
+      {/* 3D Background — transparent canvas, colours switch with theme */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
+        <Canvas camera={{ position: [0, 0, 12], fov: 45 }} gl={{ alpha: true }}>
           <ambientLight intensity={0.6} />
           <directionalLight position={[10, 10, 5]} intensity={1.2} color="#ffffff" />
           <pointLight position={[-10, -10, -5]} intensity={0.6} color="#ffffff" />
           <HologramCore />
         </Canvas>
       </div>
-      {/* Light mode background gradient */}
-      <div className="light-bg absolute inset-0 z-0 pointer-events-none hidden" />
 
       {/* Header */}
       <div className="z-10 flex flex-col items-center justify-center text-center w-full mt-6 md:mt-10">
