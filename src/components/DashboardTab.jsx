@@ -1,58 +1,118 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { MeshDistortMaterial, Float } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Radar, ArrowRight, Rocket, CheckCircle, Clock, Loader, BarChart3, PieChart, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 
-function HologramCore() {
-  const meshRef = useRef();
-  const { gl } = useThree();
+// ── Watches data-theme changes so 3-D scene re-colours instantly ────
+function useIsDark() {
   const [isDark, setIsDark] = useState(
     document.documentElement.getAttribute('data-theme') !== 'light'
   );
-
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light');
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => { observer.disconnect(); gl.dispose(); };
-  }, [gl]);
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light')
+    );
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
 
-  useFrame((state, delta) => {
-    meshRef.current.rotation.x += delta * 0.1;
-    meshRef.current.rotation.y += delta * 0.15;
+// ── Neural-network particle background ─────────────────────────────
+const N       = 130;          // particle count
+const LINK    = 3.0;          // max connection distance
+const SPEED   = 0.0028;       // base drift speed
+const BOUNDS  = 9;            // half-size of the particle space
+
+function NeuralNet() {
+  const isDark    = useIsDark();
+  const groupRef  = useRef();
+  const coreRef   = useRef();
+  const linesRef  = useRef();
+
+  // Allocate buffers once; mutate them every frame
+  const { pos, vel, lineBuf } = useMemo(() => {
+    const pos    = new Float32Array(N * 3);
+    const vel    = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      pos[i*3]   = (Math.random() - 0.5) * BOUNDS * 2;
+      pos[i*3+1] = (Math.random() - 0.5) * BOUNDS * 2;
+      pos[i*3+2] = (Math.random() - 0.5) * BOUNDS;
+      const s = SPEED * (0.5 + Math.random());
+      const a = Math.random() * Math.PI * 2;
+      vel[i*3]   = Math.cos(a) * s;
+      vel[i*3+1] = Math.sin(a) * s;
+      vel[i*3+2] = (Math.random() - 0.5) * s * 0.35;
+    }
+    // upper-bound buffer for all possible line segments
+    const lineBuf = new Float32Array(N * N * 6);
+    return { pos, vel, lineBuf };
+  }, []);
+
+  useFrame(({ clock }) => {
+    // ── Move particles & bounce off walls ──────────────────────────
+    for (let i = 0; i < N; i++) {
+      const b = i * 3;
+      pos[b]   += vel[b];   if (Math.abs(pos[b])   > BOUNDS)        vel[b]   *= -1;
+      pos[b+1] += vel[b+1]; if (Math.abs(pos[b+1]) > BOUNDS)        vel[b+1] *= -1;
+      pos[b+2] += vel[b+2]; if (Math.abs(pos[b+2]) > BOUNDS * 0.55) vel[b+2] *= -1;
+    }
+
+    // ── Update point cloud ─────────────────────────────────────────
+    if (coreRef.current) {
+      coreRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // ── Build connection lines ─────────────────────────────────────
+    let seg = 0;
+    const ld2 = LINK * LINK;
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        const dx = pos[i*3]-pos[j*3], dy = pos[i*3+1]-pos[j*3+1], dz = pos[i*3+2]-pos[j*3+2];
+        if (dx*dx + dy*dy + dz*dz < ld2) {
+          lineBuf[seg*6]   = pos[i*3];   lineBuf[seg*6+1] = pos[i*3+1]; lineBuf[seg*6+2] = pos[i*3+2];
+          lineBuf[seg*6+3] = pos[j*3];   lineBuf[seg*6+4] = pos[j*3+1]; lineBuf[seg*6+5] = pos[j*3+2];
+          seg++;
+        }
+      }
+    }
+    if (linesRef.current) {
+      linesRef.current.geometry.setDrawRange(0, seg * 2);
+      linesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // ── Slow continuous rotation + gentle sine tilt ─────────────────
+    if (groupRef.current) {
+      groupRef.current.rotation.y = clock.elapsedTime * 0.035;
+      groupRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.022) * 0.12;
+    }
   });
 
-  return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-      <mesh ref={meshRef} position={[0, 0, 0]}>
-        <icosahedronGeometry args={[3.5, 1]} />
-        <meshStandardMaterial
-          color={isDark ? '#ffffff' : '#0f172a'}
-          wireframe={true}
-          transparent={true}
-          opacity={isDark ? 0.08 : 0.22}
-        />
-      </mesh>
+  // Colour tokens — swap on theme change
+  const dotColor  = isDark ? '#a5b4fc' : '#3730a3';
+  const lineColor = isDark ? '#6366f1' : '#4f46e5';
+  const dotOpacity  = isDark ? 0.85 : 0.70;
+  const lineOpacity = isDark ? 0.22 : 0.13;
 
-      <mesh scale={0.9} position={[0, 0, -0.5]}>
-        <icosahedronGeometry args={[3, 2]} />
-        <MeshDistortMaterial
-          color={isDark ? '#333333' : '#818cf8'}
-          envMapIntensity={1}
-          clearcoat={1}
-          clearcoatRoughness={0}
-          metalness={0}
-          roughness={0.4}
-          distort={0.3}
-          speed={1.5}
-          transparent={true}
-          opacity={isDark ? 0.15 : 0.12}
-        />
-      </mesh>
-    </Float>
+  return (
+    <group ref={groupRef}>
+      {/* Particle dots */}
+      <points ref={coreRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={N} array={pos} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial size={0.10} sizeAttenuation color={dotColor} transparent opacity={dotOpacity} />
+      </points>
+
+      {/* Connection lines */}
+      <lineSegments ref={linesRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={N * N * 2} array={lineBuf} itemSize={3} />
+        </bufferGeometry>
+        <lineBasicMaterial color={lineColor} transparent opacity={lineOpacity} />
+      </lineSegments>
+    </group>
   );
 }
 
@@ -146,17 +206,17 @@ export default function DashboardTab({ metrics, leads = [], setActiveTab, projec
 
   return (
     <div className="relative min-h-full w-full flex flex-col items-center animate-in fade-in duration-1000">
-      {/* 3D Background — transparent canvas, colours switch with theme */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
+      {/* Neural-network particle background — transparent, theme-aware */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas
-          camera={{ position: [0, 0, 12], fov: 45 }}
-          gl={{ alpha: true }}
-          onCreated={({ gl }) => gl.setClearColor(0, 0, 0, 0)}
+          camera={{ position: [0, 0, 14], fov: 50 }}
+          gl={{ alpha: true, antialias: false }}
+          onCreated={({ gl }) => {
+            gl.setClearColor(0, 0, 0, 0);  // fully transparent every frame
+          }}
         >
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[10, 10, 5]} intensity={1.2} />
-          <pointLight position={[-10, -10, -5]} intensity={0.6} />
-          <HologramCore />
+          <ambientLight intensity={1} />
+          <NeuralNet />
         </Canvas>
       </div>
 
