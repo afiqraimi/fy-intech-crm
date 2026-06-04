@@ -1722,7 +1722,7 @@ def create_avatar_embed(request: Request):
                 "avatar_id": LIVEAVATAR_AVATAR_ID,
                 "context_id": LIVEAVATAR_CONTEXT_ID,
                 "voice_id": LIVEAVATAR_VOICE_ID,
-                "is_sandbox": True,
+                "is_sandbox": False,
                 "default_language": "en",
             },
             timeout=30,
