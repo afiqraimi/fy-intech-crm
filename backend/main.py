@@ -1064,6 +1064,8 @@ class LeadCreate(BaseModel):
     personnel_data: Optional[str] = None
     priority: Optional[str] = None
     lead_source: Optional[str] = "manual"
+    email_subject: Optional[str] = None
+    email_body: Optional[str] = None
 
 @app.put("/api/leads/{lead_id}")
 def update_lead_status(

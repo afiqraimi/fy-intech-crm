@@ -583,6 +583,14 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                           <Mail size={13} /> {selectedLeadDetails.email_primary}
                         </span>
                       )}
+                      {selectedLeadDetails.email_primary && (
+                        <button
+                          onClick={() => openSendEmail(selectedLeadDetails)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors text-sm"
+                        >
+                          <Send size={13} /> Send Email
+                        </button>
+                      )}
                       {selectedLeadDetails.email_additional && (
                         <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
                           <Mail size={13} /> {selectedLeadDetails.email_additional}
@@ -680,17 +688,7 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                   {/* Outreach Content */}
                   {(selectedLeadDetails.email_subject || selectedLeadDetails.email_body || selectedLeadDetails.personalization_notes) && (
                     <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5"><MessageSquare size={14} /> Outreach Email</h3>
-                        {selectedLeadDetails.email_primary && (
-                          <button
-                            onClick={() => openSendEmail(selectedLeadDetails)}
-                            className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors text-xs font-medium"
-                          >
-                            <Send size={11} /> Send Email
-                          </button>
-                        )}
-                      </div>
+                      <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><MessageSquare size={14} /> Outreach Email</h3>
                       <div className="space-y-3">
                         {selectedLeadDetails.email_subject && (
                           <div className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-lg">
