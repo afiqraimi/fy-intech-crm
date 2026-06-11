@@ -583,14 +583,6 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                           <Mail size={13} /> {selectedLeadDetails.email_primary}
                         </span>
                       )}
-                      {selectedLeadDetails.email_primary && (
-                        <button
-                          onClick={() => openSendEmail(selectedLeadDetails)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors text-sm"
-                        >
-                          <Send size={13} /> Send Email
-                        </button>
-                      )}
                       {selectedLeadDetails.email_additional && (
                         <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-crm-border rounded-lg text-crm-textMuted">
                           <Mail size={13} /> {selectedLeadDetails.email_additional}
@@ -751,6 +743,15 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                 </>
               ) : (
                 <>
+                  {selectedLeadDetails.email_primary && (
+                    <button
+                      onClick={() => openSendEmail(selectedLeadDetails)}
+                      className="px-5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                      <Send size={14} />
+                      <span>Send Email</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => openEditDetails(selectedLeadDetails)}
                     className="px-5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-lg transition-colors flex items-center space-x-2"
