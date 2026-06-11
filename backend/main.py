@@ -21,8 +21,13 @@ import hmac
 import json
 import os
 import requests
+import smtplib
+import ssl
 import time
 import logging
+from datetime import datetime, timezone
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 try:
     if os.environ.get("DATABASE_URL"):
@@ -65,6 +70,7 @@ def _migrate_lead_columns():
             ("contact_page", "TEXT", None),
             ("personalization_notes", "TEXT", None),
             ("notes_internal", "TEXT", None),
+            ("last_email_sent_at", "TEXT", None),
         ]
         with engine.begin() as conn:
             for col_name, col_type, pg_type in new_columns:
@@ -688,6 +694,7 @@ class LeadResponse(BaseModel):
     contact_page: str | None = None
     personalization_notes: str | None = None
     notes_internal: str | None = None
+    last_email_sent_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -811,6 +818,34 @@ def _send_resend_email(to_emails: list[str], subject: str, body: str) -> dict:
     if response.status_code >= 400:
         raise HTTPException(status_code=response.status_code, detail=result.get("message", "Failed to send email via Resend."))
     return result
+
+def _send_gmail_email(to_email: str, subject: str, body: str) -> None:
+    sender = os.environ.get("GMAIL_SENDER")
+    password = os.environ.get("GMAIL_APP_PASSWORD")
+    if not sender or not password:
+        raise HTTPException(status_code=500, detail="Gmail credentials are not configured on the backend.")
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"FY Intech CRM <{sender}>"
+    msg["To"] = to_email
+
+    escaped = html.escape(body).replace("\n", "<br />")
+    html_body = f"""<html><body style="font-family:Arial,sans-serif;color:#333;padding:20px;">
+      <div style="max-width:600px;margin:0 auto;">
+        <p style="line-height:1.8;font-size:14px;">{escaped}</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;"/>
+        <p style="color:#999;font-size:11px;">Sent via FY Intech CRM</p>
+      </div>
+    </body></html>"""
+
+    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(sender, password)
+        server.sendmail(sender, to_email, msg.as_string())
 
 def _send_crm_notification(db: Session, subject: str, body: str) -> None:
     settings = _notification_settings(db)
@@ -1086,6 +1121,44 @@ def update_lead_status(
             f"{lead.company} has moved from {previous_status} to {lead.status}.\n\nIndustry: {lead.industry}\nLocation: {lead.location}",
         )
     return lead
+
+class SendEmailRequest(BaseModel):
+    to_email: Optional[str] = None
+    subject: Optional[str] = None
+    body: Optional[str] = None
+
+@app.post("/api/leads/{lead_id}/send-email")
+def send_lead_email(
+    lead_id: int,
+    data: SendEmailRequest,
+    db: Session = Depends(get_db),
+    admin: models.AdminUser = Depends(get_current_admin),
+):
+    lead = db.query(models.Lead).filter(models.Lead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    to_email = data.to_email or lead.email_primary
+    subject = data.subject or lead.email_subject
+    body = data.body or lead.email_body
+
+    if not to_email:
+        raise HTTPException(status_code=400, detail="No recipient email address on this lead.")
+    if not subject or not body:
+        raise HTTPException(status_code=400, detail="Email subject and body cannot be empty.")
+
+    try:
+        _send_gmail_email(to_email, subject, body)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("send_lead_email failed: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(exc)}")
+
+    lead.last_email_sent_at = datetime.now(timezone.utc).isoformat()
+    db.commit()
+    db.refresh(lead)
+    return {"ok": True, "sent_to": to_email, "last_email_sent_at": lead.last_email_sent_at}
 
 @app.post("/api/leads", response_model=LeadResponse)
 def create_lead(

@@ -28,6 +28,7 @@ class Lead(Base):
     contact_page = Column(String(500), nullable=True)
     personalization_notes = Column(Text, nullable=True)
     notes_internal = Column(Text, nullable=True)
+    last_email_sent_at = Column(String, nullable=True)
 
 class Project(Base):
     __tablename__ = "projects"

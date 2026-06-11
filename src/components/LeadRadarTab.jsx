@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag, Sparkles, ExternalLink, MessageSquare, FileText, Printer, Layers } from 'lucide-react';
+import { Radar, MoreVertical, ChevronLeft, ChevronRight, Edit2, Trash2, X, Info, Flame, Target, Rocket, Check, Loader2, AlertTriangle, ArrowUp, ArrowDown, Search, Globe, Mail, Phone, MapPin, Users, Flag, Sparkles, ExternalLink, MessageSquare, FileText, Printer, Layers, Send } from 'lucide-react';
 import ProjectFormModal from './ProjectFormModal';
 import { apiJson } from '../utils/api';
 import toast from 'react-hot-toast';
@@ -55,9 +55,39 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
   const [sortField, setSortField] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
   const [localSearch, setLocalSearch] = useState('');
+  const [sendEmailModal, setSendEmailModal] = useState(null);
+  const [sendSubject, setSendSubject] = useState('');
+  const [sendBody, setSendBody] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const itemsPerPage = 50;
 
   const query = searchQuery || localSearch;
+
+  const openSendEmail = (lead) => {
+    setSendSubject(lead.email_subject || '');
+    setSendBody(lead.email_body || '');
+    setSendEmailModal(lead);
+  };
+
+  const handleSendEmail = async () => {
+    if (!sendEmailModal) return;
+    setIsSendingEmail(true);
+    try {
+      const result = await apiJson(`/api/leads/${sendEmailModal.id}/send-email`, {
+        method: 'POST',
+        body: JSON.stringify({ subject: sendSubject, body: sendBody }),
+      });
+      toast.success(`Email sent to ${result.sent_to}`);
+      if (selectedLeadDetails?.id === sendEmailModal.id) {
+        setSelectedLeadDetails(prev => ({ ...prev, last_email_sent_at: result.last_email_sent_at }));
+      }
+      setSendEmailModal(null);
+    } catch (err) {
+      toast.error(err.message || 'Failed to send email');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -650,7 +680,17 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                   {/* Outreach Content */}
                   {(selectedLeadDetails.email_subject || selectedLeadDetails.email_body || selectedLeadDetails.personalization_notes) && (
                     <div>
-                      <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5"><MessageSquare size={14} /> Outreach Email</h3>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-amber-400 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5"><MessageSquare size={14} /> Outreach Email</h3>
+                        {selectedLeadDetails.email_primary && (
+                          <button
+                            onClick={() => openSendEmail(selectedLeadDetails)}
+                            className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors text-xs font-medium"
+                          >
+                            <Send size={11} /> Send Email
+                          </button>
+                        )}
+                      </div>
                       <div className="space-y-3">
                         {selectedLeadDetails.email_subject && (
                           <div className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-lg">
@@ -668,6 +708,12 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
                           <div className="bg-white/5 border border-crm-border p-3 rounded-lg">
                             <p className="text-crm-textMuted text-xs font-semibold mb-1 flex items-center gap-1"><FileText size={12} /> Talking Points</p>
                             <p className="text-crm-textMuted text-sm whitespace-pre-wrap">{selectedLeadDetails.personalization_notes}</p>
+                          </div>
+                        )}
+                        {selectedLeadDetails.last_email_sent_at && (
+                          <div className="flex items-center gap-1.5 px-3 py-2 bg-green-500/5 border border-green-500/20 rounded-lg">
+                            <Check size={12} className="text-green-400" />
+                            <span className="text-green-400 text-xs">Last sent: {new Date(selectedLeadDetails.last_email_sent_at).toLocaleString()}</span>
                           </div>
                         )}
                       </div>
@@ -764,6 +810,59 @@ export default function LeadRadarTab({ leads, updateLeadStatus, searchQuery = ''
           onClose={() => setPromoteTarget(null)}
           onSave={() => { setPromoteTarget(null); onRefresh?.(); }}
         />
+      )}
+
+      {sendEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-crm-card border border-amber-500/20 rounded-2xl p-6 max-w-lg w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-white font-bold text-lg">Send Email</h3>
+                <p className="text-crm-textMuted text-xs mt-0.5">To: {sendEmailModal.email_primary}</p>
+              </div>
+              <button onClick={() => setSendEmailModal(null)} className="text-crm-textMuted hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Subject</label>
+                <input
+                  value={sendSubject}
+                  onChange={e => setSendSubject(e.target.value)}
+                  className="w-full bg-crm-darker border border-amber-500/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                  placeholder="Email subject"
+                />
+              </div>
+              <div>
+                <label className="text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Body</label>
+                <textarea
+                  rows={8}
+                  value={sendBody}
+                  onChange={e => setSendBody(e.target.value)}
+                  className="w-full bg-crm-darker border border-amber-500/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-crm-textMuted focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none"
+                  placeholder="Email body"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setSendEmailModal(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-crm-border text-crm-textMuted hover:text-white transition-colors text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendEmail}
+                disabled={isSendingEmail || !sendSubject.trim() || !sendBody.trim()}
+                className="flex-1 px-4 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-400 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSendingEmail ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                {isSendingEmail ? 'Sending...' : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
